@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "fims-web",
+      "runtimeExecutable": "C:\\Users\\papyd\\OneDrive\\Documents\\CLAUDE CODE\\run-dev.cmd",
+      "runtimeArgs": [],
+      "port": 3000
+    }
+  ]
+}
