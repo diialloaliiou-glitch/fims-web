@@ -67,6 +67,61 @@ export type BankJournal = {
   libelle: string | null;
 };
 
+export type Rubrique = {
+  id: number;
+  organization_id: string;
+  rubrique: string;
+  code: string;
+};
+
+export type BudgetLine = {
+  id: number;
+  organization_id: string;
+  project_id: string;
+  code_1: string;
+  icp: string | null;
+  budget_line: string | null;
+  our_line_code: string | null;
+  description: string | null;
+  rubrique: string | null;
+  categorie: string | null;
+  unit: string | null;
+  quantity: number | null;
+  frequence: number | null;
+  unit_cost: number | null;
+  total_cost: number | null;
+  ajustement: number | null;
+  note: string | null;
+  t_pec: string | null;
+  unit_cost_devise: number | null;
+  devise: string | null;
+  taux_conversion: number | null;
+  t_ic: string | null;
+};
+
+export type BudgetLineStaging = {
+  id: number;
+  organization_id: string;
+  project_id: string;
+  code_1: string;
+  icp: string | null;
+  budget_line: string | null;
+  our_line_code: string | null;
+  description: string | null;
+  rubrique: string | null;
+  unit: string | null;
+  quantity: number | null;
+  frequence: number | null;
+  ajustement: number | null;
+  note: string | null;
+  t_pec: string | null;
+  unit_cost_devise: number | null;
+  devise: string | null;
+  taux_conversion: number | null;
+  t_ic: string | null;
+  statut: string;
+};
+
 export type JournalEntry = {
   id: number;
   organization_id: string;

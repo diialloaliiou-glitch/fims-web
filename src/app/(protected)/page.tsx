@@ -126,7 +126,7 @@ export default function DashboardPage() {
     { key: "erb", label: "ERB", tone: "info" as const },
     { key: "jaux", label: "J-Auxiliaire", href: "/journal-auxiliaire", tone: "info" as const },
     { key: "balance", label: "Balance", href: "/balance", tone: "info" as const },
-    { key: "reporting", label: "Reporting", tone: "info" as const },
+    { key: "reporting", label: "Reporting", href: "/budget", tone: "info" as const },
     { key: "parametre", label: "Paramètre", href: "/parametres", tone: "muted" as const },
   ];
 
@@ -199,13 +199,13 @@ export default function DashboardPage() {
         </form>
 
         <div className="flex flex-wrap justify-center gap-3 pt-1">
-          <button
-            onClick={() => comingSoon("Suivi budgétaire")}
+          <Link
+            href="/budget"
             className="flex items-center gap-2 rounded-full border border-slate-600 px-4 py-1.5 text-sm text-slate-300 hover:bg-slate-800"
           >
             <span className="h-4 w-4">{icon(ICONS.clockbars)}</span>
             Voir le suivi budgétaire
-          </button>
+          </Link>
           <button
             onClick={() => comingSoon("Accès base de données")}
             className="flex items-center gap-2 rounded-full border border-slate-600 px-4 py-1.5 text-sm text-slate-300 hover:bg-slate-800"
