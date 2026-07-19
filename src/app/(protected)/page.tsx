@@ -25,10 +25,10 @@ function icon(path: string) {
 
 const ICONS = {
   saisie: "M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z M15 5l4 4",
-  paf: "M12 20c-4-1-8-4-8-9a8 8 0 0 1 16 0c0 5-4 8-8 9Z M9 11l2 2 4-4",
+  paf: "M20.24 12.24a6 6 0 0 0-8.49-8.49L5 10.5V19h8.5Z M16 8L2 22 M17.5 15L9 15",
   glivre: "M4 5c2-1 5-1 8 0v14c-3-1-6-1-8 0Z M20 5c-2-1-5-1-8 0v14c3-1 6-1 8 0Z",
-  erb: "M3 21h18 M4 21V9l8-5 8 5v12 M9 21v-6h6v6",
-  jaux: "M4 6h16M4 6v13M20 6v13M4 19h16 M4 12h16 M4 9h16",
+  erb: "M3 21h18 M4 21V10l8-6 8 6v11 M7 21v-8 M12 21v-8 M17 21v-8",
+  jaux: "M4 20V5h4v15Z M10 20V7h4v13Z M16 20V4h4v16Z",
   balance: "M12 3v18 M5 7h14 M5 7l-3 6a3 3 0 0 0 6 0Z M19 7l-3 6a3 3 0 0 0 6 0Z",
   reporting: "M4 20V10 M10 20V4 M16 20v-7 M4 20h16",
   parametre:
@@ -149,7 +149,7 @@ export default function DashboardPage() {
       />
 
       <div className="relative mb-8 flex flex-col items-center gap-4 px-4 py-8 text-center">
-        <div className="absolute right-0 top-0 flex flex-wrap items-center gap-3">
+        <div className="absolute right-0 top-0 flex items-center gap-3">
           <div className="rounded-xl border border-border-default bg-surface-2 px-4 py-2 text-left">
             <p className="text-xs text-fg-muted">Solde disponible</p>
             <p className="text-lg font-bold text-accent-green">
@@ -158,6 +158,9 @@ export default function DashboardPage() {
                 : Math.round(soldeTresorerie).toLocaleString("fr-FR")}
             </p>
           </div>
+        </div>
+
+        <div className="absolute right-0 top-24 flex flex-col gap-3">
           <div className="rounded-xl border border-border-default bg-surface-2 px-4 py-2 text-left">
             <p className="text-xs text-fg-muted">Dernière opération</p>
             <p className="text-lg font-bold text-accent-blue">
