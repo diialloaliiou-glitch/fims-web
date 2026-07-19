@@ -52,6 +52,13 @@ export type OperationType = {
   code: string;
 };
 
+export type Zone = {
+  id: number;
+  organization_id: string;
+  code: string;
+  country_id: number | null;
+};
+
 export type BankJournal = {
   id: number;
   organization_id: string;

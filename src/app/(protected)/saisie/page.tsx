@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/lib/auth-context";
-import type { ChartOfAccount, ThirdParty } from "@/lib/types";
+import type { ChartOfAccount, ThirdParty, Zone } from "@/lib/types";
 
 const JOURNAUX = ["AC", "BQ", "OD", "SA"];
 const TYPES_OPERATION = [
@@ -45,6 +45,7 @@ export default function SaisiePage() {
 
   const [accounts, setAccounts] = useState<ChartOfAccount[]>([]);
   const [thirdParties, setThirdParties] = useState<ThirdParty[]>([]);
+  const [zones, setZones] = useState<Zone[]>([]);
 
   const [dateOperation, setDateOperation] = useState(todayIso());
   const [journal, setJournal] = useState("BQ");
@@ -55,6 +56,10 @@ export default function SaisiePage() {
   const [tiers, setTiers] = useState("");
   const [libelle, setLibelle] = useState("");
   const [nPiece, setNPiece] = useState("");
+  const [bSLine, setBSLine] = useState("");
+  const [zoneId, setZoneId] = useState("");
+  const [refFactD, setRefFactD] = useState("");
+  const [nChequeOv, setNChequeOv] = useState("");
 
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -75,6 +80,13 @@ export default function SaisiePage() {
       .select("*")
       .eq("project_id", project.id)
       .then(({ data }) => setThirdParties((data as ThirdParty[]) ?? []));
+
+    supabase
+      .from("zones")
+      .select("*")
+      .eq("organization_id", project.organization_id)
+      .order("code")
+      .then(({ data }) => setZones((data as Zone[]) ?? []));
 
     nextSequence(project.id, "n_piece", "PC").then(setNPiece);
   }, [project]);
@@ -125,6 +137,10 @@ export default function SaisiePage() {
       n_piece: nPiece || null,
       tiers: tiers || null,
       libelle,
+      b_s_line: bSLine || null,
+      zone_id: zoneId ? parseInt(zoneId, 10) : null,
+      ref_fact_d: refFactD || null,
+      n_cheque_ov: nChequeOv || null,
       date_heure_saisie: new Date().toISOString(),
       utilisateur: profile.nom_utilisateur,
       created_at: new Date().toISOString(),
@@ -160,6 +176,10 @@ export default function SaisiePage() {
     setCompteDebit("");
     setCompteCredit("");
     setTiers("");
+    setBSLine("");
+    setZoneId("");
+    setRefFactD("");
+    setNChequeOv("");
     nextSequence(project.id, "n_piece", "PC").then(setNPiece);
   }
 
@@ -297,6 +317,58 @@ export default function SaisiePage() {
                 <option key={t.id} value={t.nom_tiers} />
               ))}
             </datalist>
+          </div>
+
+          <div>
+            <label className="mb-1 block text-sm text-slate-300">Zone</label>
+            <select
+              value={zoneId}
+              onChange={(e) => setZoneId(e.target.value)}
+              className="w-full rounded-md border border-slate-600 bg-slate-800 px-3 py-2 text-slate-100"
+            >
+              <option value="">—</option>
+              {zones.map((z) => (
+                <option key={z.id} value={z.id}>
+                  {z.code}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div>
+            <label className="mb-1 block text-sm text-slate-300">
+              B-S-Line
+            </label>
+            <input
+              type="text"
+              value={bSLine}
+              onChange={(e) => setBSLine(e.target.value)}
+              className="w-full rounded-md border border-slate-600 bg-slate-800 px-3 py-2 text-slate-100"
+            />
+          </div>
+
+          <div>
+            <label className="mb-1 block text-sm text-slate-300">
+              Réf. Facture/Devis
+            </label>
+            <input
+              type="text"
+              value={refFactD}
+              onChange={(e) => setRefFactD(e.target.value)}
+              className="w-full rounded-md border border-slate-600 bg-slate-800 px-3 py-2 text-slate-100"
+            />
+          </div>
+
+          <div>
+            <label className="mb-1 block text-sm text-slate-300">
+              N° Chèque/OV
+            </label>
+            <input
+              type="text"
+              value={nChequeOv}
+              onChange={(e) => setNChequeOv(e.target.value)}
+              className="w-full rounded-md border border-slate-600 bg-slate-800 px-3 py-2 text-slate-100"
+            />
           </div>
 
           <div className="sm:col-span-2">
