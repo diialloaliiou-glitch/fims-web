@@ -103,6 +103,20 @@ export type PeriodClosure = {
   created_at: string;
 };
 
+export type ErbLine = {
+  id: number;
+  organization_id: string;
+  project_id: string;
+  cote: "CHEZ_MOI" | "CHEZ_BANQUE";
+  date_operation: string | null;
+  reference: string | null;
+  operation: string | null;
+  montant_debit: number;
+  montant_credit: number;
+  pointe: boolean;
+  created_at: string;
+};
+
 export type Donor = {
   id: number;
   organization_id: string;

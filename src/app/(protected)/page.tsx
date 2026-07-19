@@ -123,7 +123,7 @@ export default function DashboardPage() {
     { key: "saisie", label: "Saisie", href: "/saisie", tone: "accent" as const },
     { key: "paf", label: "PAF", href: "/paf", tone: "accent" as const },
     { key: "glivre", label: "G-Livre", href: "/grand-livre", tone: "info" as const },
-    { key: "erb", label: "ERB", tone: "info" as const },
+    { key: "erb", label: "ERB", href: "/erb", tone: "info" as const },
     { key: "jaux", label: "J-Auxiliaire", href: "/journal-auxiliaire", tone: "info" as const },
     { key: "balance", label: "Balance", href: "/balance", tone: "info" as const },
     { key: "reporting", label: "Reporting", href: "/reporting", tone: "info" as const },
