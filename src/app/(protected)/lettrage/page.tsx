@@ -1,0 +1,240 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import { supabase } from "@/lib/supabase";
+import { useAuth } from "@/lib/auth-context";
+import type { JournalEntry } from "@/lib/types";
+
+// Reproduit LettrageAutomatique_JDEPENSE() du FIMS original (VBA) :
+// pour chaque pièce, apparie deux écritures non lettrées portant sur
+// le même compte dont (crédit - débit) s'annule à 0.01 près, et leur
+// attribue un même code LTR-XXX.
+function calculerLettrage(entries: JournalEntry[]): {
+  updates: JournalEntry[];
+  nbPaires: number;
+} {
+  const byPiece = new Map<string, JournalEntry[]>();
+  entries.forEach((e) => {
+    if (e.n_lettrage) return;
+    const key = e.n_piece ?? `__id_${e.id}`;
+    const list = byPiece.get(key) ?? [];
+    list.push(e);
+    byPiece.set(key, list);
+  });
+
+  const updates: JournalEntry[] = [];
+  let compteur = 1;
+
+  byPiece.forEach((group) => {
+    const used = new Set<number>();
+    for (let i = 0; i < group.length; i++) {
+      if (used.has(group[i].id)) continue;
+      const compteI = group[i].compte_debit || group[i].compte_credit;
+      const montantI = group[i].montant_credit - group[i].montant_debit;
+
+      for (let j = i + 1; j < group.length; j++) {
+        if (used.has(group[j].id)) continue;
+        const compteJ = group[j].compte_debit || group[j].compte_credit;
+        const montantJ = group[j].montant_credit - group[j].montant_debit;
+
+        if (compteI && compteI === compteJ && Math.abs(montantI + montantJ) <= 0.01) {
+          const code = `LTR-${String(compteur).padStart(3, "0")}`;
+          compteur++;
+          updates.push({ ...group[i], n_lettrage: code });
+          updates.push({ ...group[j], n_lettrage: code });
+          used.add(group[i].id);
+          used.add(group[j].id);
+          break;
+        }
+      }
+    }
+  });
+
+  return { updates, nbPaires: updates.length / 2 };
+}
+
+export default function LettragePage() {
+  const { project } = useAuth();
+  const [entries, setEntries] = useState<JournalEntry[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [compte, setCompte] = useState("");
+  const [running, setRunning] = useState(false);
+  const [message, setMessage] = useState<string | null>(null);
+
+  async function loadEntries() {
+    if (!project) return;
+    setLoading(true);
+    const { data } = await supabase
+      .from("journal_entries")
+      .select("*")
+      .eq("project_id", project.id)
+      .order("n_piece");
+    setEntries((data as JournalEntry[]) ?? []);
+    setLoading(false);
+  }
+
+  useEffect(() => {
+    loadEntries();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [project]);
+
+  async function runLettrage() {
+    setRunning(true);
+    setMessage(null);
+    const { updates, nbPaires } = calculerLettrage(entries);
+
+    if (updates.length === 0) {
+      setRunning(false);
+      setMessage("Aucune nouvelle correspondance trouvée.");
+      return;
+    }
+
+    const results = await Promise.all(
+      updates.map((u) =>
+        supabase
+          .from("journal_entries")
+          .update({ n_lettrage: u.n_lettrage })
+          .eq("id", u.id)
+      )
+    );
+
+    setRunning(false);
+
+    const failed = results.find((r) => r.error);
+    if (failed?.error) {
+      setMessage(`Erreur : ${failed.error.message}`);
+      return;
+    }
+
+    setMessage(`Lettrage terminé : ${nbPaires} paire(s) rapprochée(s).`);
+    loadEntries();
+  }
+
+  async function runDelettrage() {
+    if (!project) return;
+    if (!window.confirm("Voulez-vous vraiment supprimer tous les lettrages ?")) {
+      return;
+    }
+    setRunning(true);
+    setMessage(null);
+
+    const { error } = await supabase
+      .from("journal_entries")
+      .update({ n_lettrage: null })
+      .eq("project_id", project.id);
+
+    setRunning(false);
+
+    if (error) {
+      setMessage(`Erreur : ${error.message}`);
+      return;
+    }
+
+    setMessage("Tous les lettrages ont été supprimés.");
+    loadEntries();
+  }
+
+  const filtered = entries.filter((e) => {
+    if (!compte.trim()) return true;
+    const c = compte.toLowerCase();
+    return (
+      (e.compte_debit ?? "").toLowerCase().includes(c) ||
+      (e.compte_credit ?? "").toLowerCase().includes(c)
+    );
+  });
+
+  const nbLettrees = entries.filter((e) => e.n_lettrage).length;
+
+  return (
+    <div>
+      <h1 className="mb-6 text-2xl font-semibold text-slate-100">Lettrage</h1>
+
+      <div className="mb-6 flex flex-wrap items-center gap-3 rounded-xl border border-slate-700 bg-slate-900/60 p-4">
+        <button
+          onClick={runLettrage}
+          disabled={running || loading}
+          className="rounded-md bg-emerald-500 px-4 py-2 text-sm font-medium text-slate-950 hover:bg-emerald-400 disabled:opacity-60"
+        >
+          {running ? "..." : "Lancer le lettrage automatique"}
+        </button>
+        <button
+          onClick={runDelettrage}
+          disabled={running || loading}
+          className="rounded-md border border-slate-600 px-4 py-2 text-sm text-slate-300 hover:bg-slate-800 disabled:opacity-60"
+        >
+          Tout délettrer
+        </button>
+        <span className="text-sm text-slate-400">
+          {nbLettrees} / {entries.length} écritures lettrées
+        </span>
+      </div>
+
+      {message && (
+        <p className="mb-4 rounded-md bg-slate-800 px-4 py-2 text-sm text-emerald-300">
+          {message}
+        </p>
+      )}
+
+      <input
+        type="text"
+        value={compte}
+        onChange={(e) => setCompte(e.target.value)}
+        placeholder="Filtrer par compte..."
+        className="mb-4 w-full max-w-sm rounded-md border border-slate-600 bg-slate-800 px-3 py-2 text-slate-100"
+      />
+
+      <div className="overflow-x-auto rounded-xl border border-slate-700">
+        <table className="min-w-full text-sm">
+          <thead className="bg-slate-800 text-slate-300">
+            <tr>
+              <th className="px-3 py-2 text-left">Pièce</th>
+              <th className="px-3 py-2 text-left">Date</th>
+              <th className="px-3 py-2 text-left">Compte</th>
+              <th className="px-3 py-2 text-left">Libellé</th>
+              <th className="px-3 py-2 text-right">Débit</th>
+              <th className="px-3 py-2 text-right">Crédit</th>
+              <th className="px-3 py-2 text-left">Lettrage</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-slate-800 bg-slate-900/40">
+            {loading && (
+              <tr>
+                <td colSpan={7} className="px-3 py-4 text-center text-slate-400">
+                  Chargement...
+                </td>
+              </tr>
+            )}
+            {!loading &&
+              filtered.map((e) => (
+                <tr key={e.id} className="text-slate-200">
+                  <td className="px-3 py-2">{e.n_piece}</td>
+                  <td className="px-3 py-2">
+                    {new Date(e.date_operation).toLocaleDateString("fr-FR")}
+                  </td>
+                  <td className="px-3 py-2">
+                    {e.compte_debit ?? e.compte_credit}
+                  </td>
+                  <td className="px-3 py-2">{e.libelle}</td>
+                  <td className="px-3 py-2 text-right">
+                    {e.montant_debit ? e.montant_debit.toLocaleString("fr-FR") : ""}
+                  </td>
+                  <td className="px-3 py-2 text-right">
+                    {e.montant_credit ? e.montant_credit.toLocaleString("fr-FR") : ""}
+                  </td>
+                  <td className="px-3 py-2">
+                    {e.n_lettrage ? (
+                      <span className="rounded-full bg-emerald-900/50 px-2 py-0.5 text-xs text-emerald-300">
+                        {e.n_lettrage}
+                      </span>
+                    ) : (
+                      <span className="text-xs text-slate-500">—</span>
+                    )}
+                  </td>
+                </tr>
+              ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}

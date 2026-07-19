@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/lib/auth-context";
 import type { ChartOfAccount, ThirdParty, Zone } from "@/lib/types";
@@ -185,9 +186,14 @@ export default function SaisiePage() {
 
   return (
     <div>
-      <h1 className="mb-6 text-2xl font-semibold text-slate-100">
-        Saisie d&apos;écriture
-      </h1>
+      <div className="mb-6 flex items-center justify-between">
+        <h1 className="text-2xl font-semibold text-slate-100">
+          Saisie d&apos;écriture
+        </h1>
+        <Link href="/lettrage" className="text-sm text-sky-400 hover:underline">
+          Lettrage / Délettrage →
+        </Link>
+      </div>
 
       <form
         onSubmit={handleSubmit}
