@@ -103,6 +103,12 @@ export type PeriodClosure = {
   created_at: string;
 };
 
+export type Donor = {
+  id: number;
+  organization_id: string;
+  nom: string;
+};
+
 export type Rubrique = {
   id: number;
   organization_id: string;
