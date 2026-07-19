@@ -117,46 +117,54 @@ export default function ReportingPage() {
   return (
     <div>
       <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
-        <h1 className="text-2xl font-semibold text-slate-100">Reporting</h1>
-        <Link href="/budget" className="text-sm text-sky-400 hover:underline">
-          Voir le Financial Report →
-        </Link>
+        <h1 className="text-2xl font-semibold text-fg-primary">Reporting</h1>
+        <div className="flex items-center gap-4 print:hidden">
+          <Link href="/budget" className="text-sm text-accent-blue hover:underline">
+            Voir le Financial Report →
+          </Link>
+          <button
+            onClick={() => window.print()}
+            className="rounded-md border border-border-default px-4 py-2 text-sm text-fg-secondary hover:bg-surface-2"
+          >
+            Imprimer
+          </button>
+        </div>
       </div>
 
-      <div className="mb-6 flex flex-wrap items-end gap-4 rounded-xl border border-slate-700 bg-slate-900/60 p-4">
+      <div className="mb-6 flex flex-wrap items-end gap-4 rounded-xl border border-border-default bg-surface-1 p-4 print:hidden">
         <div>
-          <label className="mb-1 block text-sm text-slate-300">
+          <label className="mb-1 block text-sm text-fg-secondary">
             Date de début
           </label>
           <input
             type="date"
             value={dateDebut}
             onChange={(e) => setDateDebut(e.target.value)}
-            className="rounded-md border border-slate-600 bg-slate-800 px-3 py-2 text-slate-100"
+            className="rounded-md border border-border-default bg-surface-2 px-3 py-2 text-fg-primary"
           />
         </div>
         <div>
-          <label className="mb-1 block text-sm text-slate-300">
+          <label className="mb-1 block text-sm text-fg-secondary">
             Date de fin
           </label>
           <input
             type="date"
             value={dateFin}
             onChange={(e) => setDateFin(e.target.value)}
-            className="rounded-md border border-slate-600 bg-slate-800 px-3 py-2 text-slate-100"
+            className="rounded-md border border-border-default bg-surface-2 px-3 py-2 text-fg-primary"
           />
         </div>
-        <div className="rounded-md border border-slate-700 bg-slate-800/60 px-4 py-2">
-          <p className="text-xs text-slate-400">Total dépenses</p>
-          <p className="text-lg font-bold text-amber-400">
+        <div className="rounded-md border border-border-default bg-surface-2 px-4 py-2">
+          <p className="text-xs text-fg-muted">Total dépenses</p>
+          <p className="text-lg font-bold text-warning">
             {totalDepenses.toLocaleString("fr-FR")}
           </p>
         </div>
       </div>
 
-      <div className="overflow-x-auto rounded-xl border border-slate-700">
+      <div className="overflow-x-auto rounded-xl border border-border-default">
         <table className="min-w-full text-sm">
-          <thead className="bg-slate-800 text-slate-300">
+          <thead className="bg-surface-2 text-fg-secondary">
             <tr>
               <th className="px-3 py-2 text-left">Date</th>
               <th className="px-3 py-2 text-left">Part_Code</th>
@@ -171,23 +179,23 @@ export default function ReportingPage() {
               <th className="px-3 py-2 text-left">N°Pièce</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-800 bg-slate-900/40">
+          <tbody className="divide-y divide-border-default bg-surface-1/60">
             {loading && (
               <tr>
-                <td colSpan={11} className="px-3 py-4 text-center text-slate-400">
+                <td colSpan={11} className="px-3 py-4 text-center text-fg-muted">
                   Chargement...
                 </td>
               </tr>
             )}
             {!loading && rows.length === 0 && (
               <tr>
-                <td colSpan={11} className="px-3 py-4 text-center text-slate-400">
+                <td colSpan={11} className="px-3 py-4 text-center text-fg-muted">
                   Aucune dépense sur cette période.
                 </td>
               </tr>
             )}
             {rows.map((r, idx) => (
-              <tr key={idx} className="text-slate-200">
+              <tr key={idx} className="text-fg-primary">
                 <td className="px-3 py-2">
                   {new Date(r.date).toLocaleDateString("fr-FR")}
                 </td>
@@ -207,7 +215,7 @@ export default function ReportingPage() {
             ))}
           </tbody>
           {rows.length > 0 && (
-            <tfoot className="bg-slate-800 font-semibold text-slate-100">
+            <tfoot className="bg-surface-2 font-semibold text-fg-primary">
               <tr>
                 <td className="px-3 py-2" colSpan={9}>
                   TOTAL

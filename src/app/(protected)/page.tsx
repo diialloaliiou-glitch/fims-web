@@ -131,52 +131,54 @@ export default function DashboardPage() {
   ];
 
   const toneClasses = {
-    accent: "border-emerald-700 bg-emerald-900/40 text-emerald-300 hover:bg-emerald-900/60",
-    info: "border-slate-700 bg-slate-800/60 text-sky-300 hover:border-emerald-400 hover:bg-slate-800",
-    muted: "border-slate-700 bg-slate-800/30 text-slate-500 hover:bg-slate-800/50",
+    accent: "border-accent-green bg-accent-green-bg text-accent-green-fg hover:bg-accent-green-bg",
+    info: "border-border-default bg-surface-2 text-accent-blue hover:border-accent-green hover:bg-surface-2",
+    muted: "border-border-default bg-surface-2/60 text-fg-muted hover:bg-surface-2",
   };
 
   return (
     <div className="relative overflow-hidden">
       <div
         aria-hidden
-        className="pointer-events-none absolute -bottom-32 -right-32 h-96 w-96 rounded-full bg-slate-800/40"
+        className="pointer-events-none absolute -bottom-32 -right-32 h-96 w-96 rounded-full bg-surface-2"
       />
 
       <div className="relative mb-8 flex flex-col items-center gap-4 px-4 py-8 text-center">
         <div className="absolute right-0 top-0 flex flex-wrap items-center gap-3">
-          <div className="rounded-xl border border-slate-700 bg-slate-800/60 px-4 py-2 text-left">
-            <p className="text-xs text-slate-400">Solde disponible</p>
-            <p className="text-lg font-bold text-emerald-400">
+          <div className="rounded-xl border border-border-default bg-surface-2 px-4 py-2 text-left">
+            <p className="text-xs text-fg-muted">Solde disponible</p>
+            <p className="text-lg font-bold text-accent-green">
               {soldeTresorerie === null
                 ? "..."
                 : Math.round(soldeTresorerie).toLocaleString("fr-FR")}
             </p>
           </div>
-          <div className="rounded-xl border border-slate-700 bg-slate-800/60 px-4 py-2 text-left">
-            <p className="text-xs text-slate-400">Dernière opération</p>
-            <p className="text-lg font-bold text-sky-400">
+          <div className="rounded-xl border border-border-default bg-surface-2 px-4 py-2 text-left">
+            <p className="text-xs text-fg-muted">Dernière opération</p>
+            <p className="text-lg font-bold text-accent-blue">
               {lastEntry?.n_ecriture_journal ?? "—"}
             </p>
           </div>
-          <div className="rounded-xl border border-slate-700 bg-slate-800/60 px-4 py-2 text-left">
-            <p className="text-xs text-slate-400">Écritures ce mois</p>
-            <p className="text-lg font-bold text-amber-400">
+          <div className="rounded-xl border border-border-default bg-surface-2 px-4 py-2 text-left">
+            <p className="text-xs text-fg-muted">Écritures ce mois</p>
+            <p className="text-lg font-bold text-warning">
               {entriesThisMonth === null ? "..." : entriesThisMonth}
             </p>
           </div>
         </div>
 
-        <span className="text-emerald-400">{icon(ICONS.wallet)}</span>
-        <p className="text-xl font-bold tracking-wide text-slate-100">FIMS</p>
-        <p className="-mt-3 text-xs text-slate-500">
+        <span className="text-accent-green">{icon(ICONS.wallet)}</span>
+        <p className="font-display text-xl font-bold tracking-wide text-fg-primary">
+          FIMS
+        </p>
+        <p className="-mt-3 text-xs text-fg-muted">
           Financial Information Management System
         </p>
 
-        <h1 className="mt-4 rounded-lg border border-slate-700 px-6 py-2 text-3xl font-bold tracking-tight text-slate-100">
+        <h1 className="font-display mt-4 rounded-lg border border-border-default px-6 py-2 text-3xl font-light tracking-tight text-fg-primary">
           [ BIENVENUE ]
         </h1>
-        <p className="text-sm text-slate-400">
+        <p className="text-sm text-fg-muted">
           {project?.nom_projet}
           {project ? ` (${project.code_projet})` : ""}
         </p>
@@ -187,12 +189,12 @@ export default function DashboardPage() {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="BQ-0015"
-            className="w-full rounded-full border border-slate-600 bg-slate-800 px-4 py-2 text-sm text-slate-100 outline-none focus:border-emerald-400"
+            className="w-full rounded-full border border-border-default bg-surface-2 px-4 py-2 text-sm text-fg-primary outline-none focus:border-accent-green"
           />
           <button
             type="submit"
             aria-label="Rechercher"
-            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-sky-600 text-white hover:bg-sky-500"
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-accent-blue text-white hover:opacity-90"
           >
             {icon(ICONS.search)}
           </button>
@@ -201,14 +203,14 @@ export default function DashboardPage() {
         <div className="flex flex-wrap justify-center gap-3 pt-1">
           <Link
             href="/budget"
-            className="flex items-center gap-2 rounded-full border border-slate-600 px-4 py-1.5 text-sm text-slate-300 hover:bg-slate-800"
+            className="flex items-center gap-2 rounded-full border border-border-default px-4 py-1.5 text-sm text-fg-secondary hover:bg-surface-2"
           >
             <span className="h-4 w-4">{icon(ICONS.clockbars)}</span>
             Voir le suivi budgétaire
           </Link>
           <button
             onClick={() => comingSoon("Accès base de données")}
-            className="flex items-center gap-2 rounded-full border border-slate-600 px-4 py-1.5 text-sm text-slate-300 hover:bg-slate-800"
+            className="flex items-center gap-2 rounded-full border border-border-default px-4 py-1.5 text-sm text-fg-secondary hover:bg-surface-2"
           >
             <span className="h-4 w-4">{icon(ICONS.database)}</span>
             Accéder à la base de données
@@ -216,16 +218,16 @@ export default function DashboardPage() {
         </div>
 
         {notice && (
-          <p className="rounded-md bg-slate-800 px-4 py-2 text-sm text-amber-300">
+          <p className="rounded-md bg-surface-2 px-4 py-2 text-sm text-warning">
             {notice}
           </p>
         )}
       </div>
 
       {searchResults !== null && (
-        <div className="relative mb-8 overflow-x-auto rounded-xl border border-slate-700">
+        <div className="relative mb-8 overflow-x-auto rounded-xl border border-border-default">
           <table className="min-w-full text-sm">
-            <thead className="bg-slate-800 text-slate-300">
+            <thead className="bg-surface-2 text-fg-secondary">
               <tr>
                 <th className="px-3 py-2 text-left">N° Écriture</th>
                 <th className="px-3 py-2 text-left">Pièce</th>
@@ -235,23 +237,23 @@ export default function DashboardPage() {
                 <th className="px-3 py-2 text-right">Crédit</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-800 bg-slate-900/40">
+            <tbody className="divide-y divide-border-default bg-surface-1/60">
               {searching && (
                 <tr>
-                  <td colSpan={6} className="px-3 py-4 text-center text-slate-400">
+                  <td colSpan={6} className="px-3 py-4 text-center text-fg-muted">
                     Recherche...
                   </td>
                 </tr>
               )}
               {!searching && searchResults.length === 0 && (
                 <tr>
-                  <td colSpan={6} className="px-3 py-4 text-center text-slate-400">
+                  <td colSpan={6} className="px-3 py-4 text-center text-fg-muted">
                     Aucun résultat pour &quot;{search}&quot;.
                   </td>
                 </tr>
               )}
               {searchResults.map((e) => (
-                <tr key={e.id} className="text-slate-200">
+                <tr key={e.id} className="text-fg-primary">
                   <td className="px-3 py-2">{e.n_ecriture_journal}</td>
                   <td className="px-3 py-2">{e.n_piece}</td>
                   <td className="px-3 py-2">

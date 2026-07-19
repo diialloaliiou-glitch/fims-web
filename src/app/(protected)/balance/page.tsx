@@ -131,17 +131,25 @@ export default function BalancePage() {
 
   return (
     <div>
-      <h1 className="mb-6 text-2xl font-semibold text-slate-100">Balance</h1>
+      <div className="mb-6 flex items-center justify-between">
+        <h1 className="text-2xl font-semibold text-fg-primary">Balance</h1>
+        <button
+          onClick={() => window.print()}
+          className="rounded-md border border-border-default px-4 py-2 text-sm text-fg-secondary hover:bg-surface-2 print:hidden"
+        >
+          Imprimer
+        </button>
+      </div>
 
-      <div className="mb-6 flex flex-wrap items-end gap-4 rounded-xl border border-slate-700 bg-slate-900/60 p-4">
+      <div className="mb-6 flex flex-wrap items-end gap-4 rounded-xl border border-border-default bg-surface-1 p-4 print:hidden">
         <div>
-          <label className="mb-1 block text-sm text-slate-300">
+          <label className="mb-1 block text-sm text-fg-secondary">
             Type de balance
           </label>
           <select
             value={mode}
             onChange={(e) => setMode(e.target.value as "GENERAL" | "AUXILIAIRE")}
-            className="rounded-md border border-slate-600 bg-slate-800 px-3 py-2 text-slate-100"
+            className="rounded-md border border-border-default bg-surface-2 px-3 py-2 text-fg-primary"
           >
             <option value="GENERAL">Balance générale</option>
             <option value="AUXILIAIRE">Balance auxiliaire</option>
@@ -149,40 +157,40 @@ export default function BalancePage() {
         </div>
         {mode === "AUXILIAIRE" && (
           <div>
-            <label className="mb-1 block text-sm text-slate-300">
+            <label className="mb-1 block text-sm text-fg-secondary">
               Préfixe compte tiers (ex: 40, 401)
             </label>
             <input
               type="text"
               value={filtreAux}
               onChange={(e) => setFiltreAux(e.target.value)}
-              className="w-40 rounded-md border border-slate-600 bg-slate-800 px-3 py-2 text-slate-100"
+              className="w-40 rounded-md border border-border-default bg-surface-2 px-3 py-2 text-fg-primary"
             />
           </div>
         )}
         <div>
-          <label className="mb-1 block text-sm text-slate-300">Du</label>
+          <label className="mb-1 block text-sm text-fg-secondary">Du</label>
           <input
             type="date"
             value={dateDebut}
             onChange={(e) => setDateDebut(e.target.value)}
-            className="rounded-md border border-slate-600 bg-slate-800 px-3 py-2 text-slate-100"
+            className="rounded-md border border-border-default bg-surface-2 px-3 py-2 text-fg-primary"
           />
         </div>
         <div>
-          <label className="mb-1 block text-sm text-slate-300">Au</label>
+          <label className="mb-1 block text-sm text-fg-secondary">Au</label>
           <input
             type="date"
             value={dateFin}
             onChange={(e) => setDateFin(e.target.value)}
-            className="rounded-md border border-slate-600 bg-slate-800 px-3 py-2 text-slate-100"
+            className="rounded-md border border-border-default bg-surface-2 px-3 py-2 text-fg-primary"
           />
         </div>
       </div>
 
-      <div className="overflow-x-auto rounded-xl border border-slate-700">
+      <div className="overflow-x-auto rounded-xl border border-border-default">
         <table className="min-w-full text-sm">
-          <thead className="bg-slate-800 text-slate-300">
+          <thead className="bg-surface-2 text-fg-secondary">
             <tr>
               <th className="px-3 py-2 text-left">N°Compte</th>
               <th className="px-3 py-2 text-left">Intitulé de compte</th>
@@ -193,23 +201,23 @@ export default function BalancePage() {
               <th className="px-3 py-2 text-right">Solde créditeur</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-800 bg-slate-900/40">
+          <tbody className="divide-y divide-border-default bg-surface-1/60">
             {loading && (
               <tr>
-                <td colSpan={7} className="px-3 py-4 text-center text-slate-400">
+                <td colSpan={7} className="px-3 py-4 text-center text-fg-muted">
                   Chargement...
                 </td>
               </tr>
             )}
             {!loading && rows.length === 0 && (
               <tr>
-                <td colSpan={7} className="px-3 py-4 text-center text-slate-400">
+                <td colSpan={7} className="px-3 py-4 text-center text-fg-muted">
                   Aucun mouvement sur cette période.
                 </td>
               </tr>
             )}
             {rows.map((r) => (
-              <tr key={r.compte} className="text-slate-200">
+              <tr key={r.compte} className="text-fg-primary">
                 <td className="px-3 py-2">{r.compte}</td>
                 <td className="px-3 py-2">{r.libelle}</td>
                 <td className="px-3 py-2 text-right">
@@ -231,7 +239,7 @@ export default function BalancePage() {
             ))}
           </tbody>
           {rows.length > 0 && (
-            <tfoot className="bg-slate-800 font-semibold text-slate-100">
+            <tfoot className="bg-surface-2 font-semibold text-fg-primary">
               <tr>
                 <td className="px-3 py-2" colSpan={2}>
                   TOTAL

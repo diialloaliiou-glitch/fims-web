@@ -194,14 +194,14 @@ export default function SaisiePage() {
   return (
     <div>
       <div className="mb-6 flex items-center justify-between">
-        <h1 className="text-2xl font-semibold text-slate-100">
+        <h1 className="text-2xl font-semibold text-fg-primary">
           Saisie d&apos;écriture
         </h1>
         <div className="flex gap-4">
-          <Link href="/lettrage" className="text-sm text-sky-400 hover:underline">
+          <Link href="/lettrage" className="text-sm text-accent-blue hover:underline">
             Lettrage / Délettrage →
           </Link>
-          <Link href="/cloture" className="text-sm text-sky-400 hover:underline">
+          <Link href="/cloture" className="text-sm text-accent-blue hover:underline">
             Clôture de période →
           </Link>
         </div>
@@ -209,11 +209,11 @@ export default function SaisiePage() {
 
       <form
         onSubmit={handleSubmit}
-        className="max-w-2xl rounded-xl border border-slate-700 bg-slate-900/60 p-6"
+        className="max-w-2xl rounded-xl border border-border-default bg-surface-1 p-6"
       >
         <div className="mb-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div>
-            <label className="mb-1 block text-sm text-slate-300">
+            <label className="mb-1 block text-sm text-fg-secondary">
               Date de la pièce *
             </label>
             <input
@@ -221,30 +221,30 @@ export default function SaisiePage() {
               required
               value={dateOperation}
               onChange={(e) => setDateOperation(e.target.value)}
-              className="w-full rounded-md border border-slate-600 bg-slate-800 px-3 py-2 text-slate-100"
+              className="w-full rounded-md border border-border-default bg-surface-2 px-3 py-2 text-fg-primary"
             />
           </div>
 
           <div>
-            <label className="mb-1 block text-sm text-slate-300">
+            <label className="mb-1 block text-sm text-fg-secondary">
               N° Pièce
             </label>
             <input
               type="text"
               value={nPiece}
               onChange={(e) => setNPiece(e.target.value)}
-              className="w-full rounded-md border border-slate-600 bg-slate-800 px-3 py-2 text-slate-100"
+              className="w-full rounded-md border border-border-default bg-surface-2 px-3 py-2 text-fg-primary"
             />
           </div>
 
           <div>
-            <label className="mb-1 block text-sm text-slate-300">
+            <label className="mb-1 block text-sm text-fg-secondary">
               Journal *
             </label>
             <select
               value={journal}
               onChange={(e) => setJournal(e.target.value)}
-              className="w-full rounded-md border border-slate-600 bg-slate-800 px-3 py-2 text-slate-100"
+              className="w-full rounded-md border border-border-default bg-surface-2 px-3 py-2 text-fg-primary"
             >
               {JOURNAUX.map((j) => (
                 <option key={j} value={j}>
@@ -255,13 +255,13 @@ export default function SaisiePage() {
           </div>
 
           <div>
-            <label className="mb-1 block text-sm text-slate-300">
+            <label className="mb-1 block text-sm text-fg-secondary">
               Type d&apos;opération *
             </label>
             <select
               value={typeOperation}
               onChange={(e) => setTypeOperation(e.target.value)}
-              className="w-full rounded-md border border-slate-600 bg-slate-800 px-3 py-2 text-slate-100"
+              className="w-full rounded-md border border-border-default bg-surface-2 px-3 py-2 text-fg-primary"
             >
               {TYPES_OPERATION.map((t) => (
                 <option key={t} value={t}>
@@ -272,7 +272,7 @@ export default function SaisiePage() {
           </div>
 
           <div>
-            <label className="mb-1 block text-sm text-slate-300">
+            <label className="mb-1 block text-sm text-fg-secondary">
               Compte débit *
             </label>
             <input
@@ -281,12 +281,12 @@ export default function SaisiePage() {
               value={compteDebit}
               onChange={(e) => setCompteDebit(e.target.value)}
               placeholder="Rechercher un compte..."
-              className="w-full rounded-md border border-slate-600 bg-slate-800 px-3 py-2 text-slate-100"
+              className="w-full rounded-md border border-border-default bg-surface-2 px-3 py-2 text-fg-primary"
             />
           </div>
 
           <div>
-            <label className="mb-1 block text-sm text-slate-300">
+            <label className="mb-1 block text-sm text-fg-secondary">
               Compte crédit *
             </label>
             <input
@@ -295,7 +295,7 @@ export default function SaisiePage() {
               value={compteCredit}
               onChange={(e) => setCompteCredit(e.target.value)}
               placeholder="Rechercher un compte..."
-              className="w-full rounded-md border border-slate-600 bg-slate-800 px-3 py-2 text-slate-100"
+              className="w-full rounded-md border border-border-default bg-surface-2 px-3 py-2 text-fg-primary"
             />
           </div>
 
@@ -308,7 +308,7 @@ export default function SaisiePage() {
           </datalist>
 
           <div>
-            <label className="mb-1 block text-sm text-slate-300">
+            <label className="mb-1 block text-sm text-fg-secondary">
               Montant *
             </label>
             <input
@@ -318,17 +318,17 @@ export default function SaisiePage() {
               required
               value={montant}
               onChange={(e) => setMontant(e.target.value)}
-              className="w-full rounded-md border border-slate-600 bg-slate-800 px-3 py-2 text-slate-100"
+              className="w-full rounded-md border border-border-default bg-surface-2 px-3 py-2 text-fg-primary"
             />
           </div>
 
           <div>
-            <label className="mb-1 block text-sm text-slate-300">Tiers</label>
+            <label className="mb-1 block text-sm text-fg-secondary">Tiers</label>
             <input
               list="tiers-list"
               value={tiers}
               onChange={(e) => setTiers(e.target.value)}
-              className="w-full rounded-md border border-slate-600 bg-slate-800 px-3 py-2 text-slate-100"
+              className="w-full rounded-md border border-border-default bg-surface-2 px-3 py-2 text-fg-primary"
             />
             <datalist id="tiers-list">
               {thirdParties.map((t) => (
@@ -338,11 +338,11 @@ export default function SaisiePage() {
           </div>
 
           <div>
-            <label className="mb-1 block text-sm text-slate-300">Zone</label>
+            <label className="mb-1 block text-sm text-fg-secondary">Zone</label>
             <select
               value={zoneId}
               onChange={(e) => setZoneId(e.target.value)}
-              className="w-full rounded-md border border-slate-600 bg-slate-800 px-3 py-2 text-slate-100"
+              className="w-full rounded-md border border-border-default bg-surface-2 px-3 py-2 text-fg-primary"
             >
               <option value="">—</option>
               {zones.map((z) => (
@@ -354,43 +354,43 @@ export default function SaisiePage() {
           </div>
 
           <div>
-            <label className="mb-1 block text-sm text-slate-300">
+            <label className="mb-1 block text-sm text-fg-secondary">
               B-S-Line
             </label>
             <input
               type="text"
               value={bSLine}
               onChange={(e) => setBSLine(e.target.value)}
-              className="w-full rounded-md border border-slate-600 bg-slate-800 px-3 py-2 text-slate-100"
+              className="w-full rounded-md border border-border-default bg-surface-2 px-3 py-2 text-fg-primary"
             />
           </div>
 
           <div>
-            <label className="mb-1 block text-sm text-slate-300">
+            <label className="mb-1 block text-sm text-fg-secondary">
               Réf. Facture/Devis
             </label>
             <input
               type="text"
               value={refFactD}
               onChange={(e) => setRefFactD(e.target.value)}
-              className="w-full rounded-md border border-slate-600 bg-slate-800 px-3 py-2 text-slate-100"
+              className="w-full rounded-md border border-border-default bg-surface-2 px-3 py-2 text-fg-primary"
             />
           </div>
 
           <div>
-            <label className="mb-1 block text-sm text-slate-300">
+            <label className="mb-1 block text-sm text-fg-secondary">
               N° Chèque/OV
             </label>
             <input
               type="text"
               value={nChequeOv}
               onChange={(e) => setNChequeOv(e.target.value)}
-              className="w-full rounded-md border border-slate-600 bg-slate-800 px-3 py-2 text-slate-100"
+              className="w-full rounded-md border border-border-default bg-surface-2 px-3 py-2 text-fg-primary"
             />
           </div>
 
           <div className="sm:col-span-2">
-            <label className="mb-1 block text-sm text-slate-300">
+            <label className="mb-1 block text-sm text-fg-secondary">
               Libellé *
             </label>
             <input
@@ -398,20 +398,20 @@ export default function SaisiePage() {
               required
               value={libelle}
               onChange={(e) => setLibelle(e.target.value)}
-              className="w-full rounded-md border border-slate-600 bg-slate-800 px-3 py-2 text-slate-100"
+              className="w-full rounded-md border border-border-default bg-surface-2 px-3 py-2 text-fg-primary"
             />
           </div>
         </div>
 
-        {error && <p className="mb-4 text-sm text-red-400">{error}</p>}
+        {error && <p className="mb-4 text-sm text-danger">{error}</p>}
         {success && (
-          <p className="mb-4 text-sm text-emerald-400">{success}</p>
+          <p className="mb-4 text-sm text-accent-green">{success}</p>
         )}
 
         <button
           type="submit"
           disabled={submitting}
-          className="rounded-md bg-emerald-500 px-6 py-2 font-medium text-slate-950 hover:bg-emerald-400 disabled:opacity-60"
+          className="rounded-md bg-accent-green px-6 py-2 font-medium text-on-accent hover:opacity-90 disabled:opacity-60"
         >
           {submitting ? "Enregistrement..." : "Valider"}
         </button>

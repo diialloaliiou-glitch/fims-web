@@ -114,20 +114,20 @@ export default function FichePaiementPage() {
 
   return (
     <div>
-      <h1 className="mb-6 text-2xl font-semibold text-slate-100 print:hidden">
+      <h1 className="mb-6 text-2xl font-semibold text-fg-primary print:hidden">
         Fiche de Paiement
       </h1>
 
       <div className="mb-6 flex flex-wrap items-end gap-3 print:hidden">
         <div>
-          <label className="mb-1 block text-sm text-slate-300">
+          <label className="mb-1 block text-sm text-fg-secondary">
             N° Écriture (ex: BQ-0019)
           </label>
           <input
             list="nej-list"
             value={numEJ}
             onChange={(e) => setNumEJ(e.target.value)}
-            className="w-56 rounded-md border border-slate-600 bg-slate-800 px-3 py-2 text-slate-100"
+            className="w-56 rounded-md border border-border-default bg-surface-2 px-3 py-2 text-fg-primary"
           />
           <datalist id="nej-list">
             {options.map((o) => (
@@ -138,24 +138,24 @@ export default function FichePaiementPage() {
         <button
           onClick={() => chargerFiche(numEJ)}
           disabled={loading}
-          className="rounded-md bg-emerald-500 px-5 py-2 font-medium text-slate-950 hover:bg-emerald-400 disabled:opacity-60"
+          className="rounded-md bg-accent-green px-5 py-2 font-medium text-on-accent hover:opacity-90 disabled:opacity-60"
         >
           {loading ? "Chargement..." : "Charger"}
         </button>
         {lignes.length > 0 && !estPieceAnterieure && (
           <button
             onClick={() => window.print()}
-            className="rounded-md border border-slate-600 px-5 py-2 text-slate-300 hover:bg-slate-800"
+            className="rounded-md border border-border-default px-5 py-2 text-fg-secondary hover:bg-surface-2"
           >
             Imprimer
           </button>
         )}
       </div>
 
-      {error && <p className="mb-4 text-sm text-red-400 print:hidden">{error}</p>}
+      {error && <p className="mb-4 text-sm text-danger print:hidden">{error}</p>}
 
       {estPieceAnterieure && (
-        <div className="mb-4 rounded-md border border-red-700 bg-red-950/50 px-4 py-3 text-sm text-red-300">
+        <div className="mb-4 rounded-md border border-danger bg-danger-bg px-4 py-3 text-sm text-danger">
           Pièce antérieure — le solde ne peut pas être calculé de façon fiable.
           Une opération plus récente existe sur ce compte : {dernierNEJCompte}.
           Impression indisponible.
@@ -163,18 +163,18 @@ export default function FichePaiementPage() {
       )}
 
       {premiere && (
-        <div className="rounded-xl border border-slate-700 bg-slate-900/60 p-6 print:border-black print:bg-white print:text-black">
+        <div className="rounded-xl border border-border-default bg-surface-1 p-6 print:border-black print:bg-white print:text-black">
           <div className="mb-6 flex items-start justify-between">
             <div>
-              <p className="text-sm text-slate-400 print:text-black">
+              <p className="text-sm text-fg-muted print:text-black">
                 Item No.
               </p>
-              <p className="text-lg font-bold text-emerald-400 print:text-black">
+              <p className="text-lg font-bold text-accent-green print:text-black">
                 {numEJ}
               </p>
             </div>
             <div className="text-right">
-              <p className="text-xl font-bold text-slate-100 print:text-black">
+              <p className="text-xl font-bold text-fg-primary print:text-black">
                 PAYMENT AUTHORIZATION FORM
               </p>
             </div>
@@ -182,32 +182,32 @@ export default function FichePaiementPage() {
 
           <div className="mb-6 grid grid-cols-2 gap-4 text-sm">
             <p>
-              <span className="text-slate-400">N°/Chq/OV/Bcs : </span>
+              <span className="text-fg-muted">N°/Chq/OV/Bcs : </span>
               {premiere.n_cheque_ov}
             </p>
             <p>
-              <span className="text-slate-400">Date : </span>
+              <span className="text-fg-muted">Date : </span>
               {new Date(premiere.date_operation).toLocaleDateString("fr-FR")}
             </p>
             <p>
-              <span className="text-slate-400">Beneficiary : </span>
+              <span className="text-fg-muted">Beneficiary : </span>
               {premiere.tiers}
             </p>
             <p>
-              <span className="text-slate-400">Project ID : </span>
+              <span className="text-fg-muted">Project ID : </span>
               {project?.code_projet}
             </p>
             <p>
-              <span className="text-slate-400">Organization : </span>
+              <span className="text-fg-muted">Organization : </span>
               {organization?.nom}
             </p>
             <p>
-              <span className="text-slate-400">Seized by : </span>
+              <span className="text-fg-muted">Seized by : </span>
               {premiere.utilisateur}
             </p>
           </div>
 
-          <div className="mb-6 grid grid-cols-2 gap-4 rounded-lg border border-slate-700 p-4 text-sm print:border-black">
+          <div className="mb-6 grid grid-cols-2 gap-4 rounded-lg border border-border-default p-4 text-sm print:border-black">
             <p>
               Approved Budget :{" "}
               <span className="font-semibold">
@@ -240,7 +240,7 @@ export default function FichePaiementPage() {
 
           <table className="mb-6 min-w-full text-sm">
             <thead>
-              <tr className="border-b border-slate-700 text-left text-slate-400 print:border-black print:text-black">
+              <tr className="border-b border-border-default text-left text-fg-muted print:border-black print:text-black">
                 <th className="py-1">Budget code</th>
                 <th className="py-1">Account No.</th>
                 <th className="py-1">Libellé</th>
@@ -250,7 +250,7 @@ export default function FichePaiementPage() {
             </thead>
             <tbody>
               {lignes.map((l) => (
-                <tr key={l.id} className="border-b border-slate-800 print:border-gray-300">
+                <tr key={l.id} className="border-b border-border-default print:border-gray-300">
                   <td className="py-1">{l.b_s_line}</td>
                   <td className="py-1">
                     {l.montant_debit > 0 ? l.compte_debit : l.compte_credit}
@@ -284,7 +284,7 @@ export default function FichePaiementPage() {
 
           <div className="grid grid-cols-2 gap-8 text-sm">
             <div>
-              <p className="mb-1 text-slate-400 print:text-black">
+              <p className="mb-1 text-fg-muted print:text-black">
                 Prepared by : Administrative &amp; Financial Manager
               </p>
               <input
@@ -292,12 +292,12 @@ export default function FichePaiementPage() {
                 value={preparePar}
                 onChange={(e) => setPreparePar(e.target.value)}
                 placeholder="Nom"
-                className="w-full rounded-md border border-slate-600 bg-slate-800 px-3 py-2 text-slate-100 print:border-b print:border-black print:bg-transparent print:text-black"
+                className="w-full rounded-md border border-border-default bg-surface-2 px-3 py-2 text-fg-primary print:border-b print:border-black print:bg-transparent print:text-black"
               />
-              <p className="mt-1 text-xs text-slate-500 print:text-black">Date :</p>
+              <p className="mt-1 text-xs text-fg-muted print:text-black">Date :</p>
             </div>
             <div>
-              <p className="mb-1 text-slate-400 print:text-black">
+              <p className="mb-1 text-fg-muted print:text-black">
                 Approved by : Program Coordinator/President
               </p>
               <input
@@ -305,9 +305,9 @@ export default function FichePaiementPage() {
                 value={approuvePar}
                 onChange={(e) => setApprouvePar(e.target.value)}
                 placeholder="Nom"
-                className="w-full rounded-md border border-slate-600 bg-slate-800 px-3 py-2 text-slate-100 print:border-b print:border-black print:bg-transparent print:text-black"
+                className="w-full rounded-md border border-border-default bg-surface-2 px-3 py-2 text-fg-primary print:border-b print:border-black print:bg-transparent print:text-black"
               />
-              <p className="mt-1 text-xs text-slate-500 print:text-black">Date :</p>
+              <p className="mt-1 text-xs text-fg-muted print:text-black">Date :</p>
             </div>
           </div>
         </div>

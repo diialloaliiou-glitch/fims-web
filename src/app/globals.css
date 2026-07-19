@@ -1,19 +1,100 @@
 @import "tailwindcss";
 
 :root {
-  --background: #0b1c33;
+  --background: #0a1730;
   --foreground: #e8edf4;
+
+  --surface-1: #101e3d;
+  --surface-2: #12294f;
+  --surface-3: #0f3a34;
+  --border-default: #223056;
+
+  --fg-primary: #ffffff;
+  --fg-secondary: #a7aec2;
+  --fg-muted: #6b7594;
+
+  --accent-green: #4ea72e;
+  --accent-green-bg: #10331a;
+  --accent-green-fg: #7be05a;
+  --accent-blue: #0f9ed5;
+  --accent-blue-bg: #0c2a3a;
+  --warning: #f2c265;
+  --warning-bg: #3a2f10;
+  --danger: #ff6b6b;
+  --danger-bg: #3a1414;
+  --on-accent: #ffffff;
+}
+
+[data-theme="light"] {
+  --background: #ffffff;
+  --foreground: #212529;
+
+  --surface-1: #f8f9fa;
+  --surface-2: #e9ecef;
+  --surface-3: #eaf8e5;
+  --border-default: #dee2e6;
+
+  --fg-primary: #212529;
+  --fg-secondary: #495057;
+  --fg-muted: #6c757d;
+
+  --accent-green: #196b24;
+  --accent-green-bg: #eaf8e5;
+  --accent-green-fg: #196b24;
+  --accent-blue: #0070c0;
+  --accent-blue-bg: #e6f2fb;
+  --warning: #e97132;
+  --warning-bg: #fdf0e5;
+  --danger: #c00000;
+  --danger-bg: #fbe9e9;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-surface-1: var(--surface-1);
+  --color-surface-2: var(--surface-2);
+  --color-surface-3: var(--surface-3);
+  --color-border-default: var(--border-default);
+  --color-fg-primary: var(--fg-primary);
+  --color-fg-secondary: var(--fg-secondary);
+  --color-fg-muted: var(--fg-muted);
+  --color-accent-green: var(--accent-green);
+  --color-accent-green-bg: var(--accent-green-bg);
+  --color-accent-green-fg: var(--accent-green-fg);
+  --color-accent-blue: var(--accent-blue);
+  --color-accent-blue-bg: var(--accent-blue-bg);
+  --color-warning: var(--warning);
+  --color-warning-bg: var(--warning-bg);
+  --color-danger: var(--danger);
+  --color-danger-bg: var(--danger-bg);
+  --color-on-accent: var(--on-accent);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+  --font-display: var(--font-montserrat);
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+}
+
+@media print {
+  :root,
+  [data-theme="light"],
+  [data-theme="dark"] {
+    --background: #ffffff;
+    --foreground: #000000;
+    --surface-1: #ffffff;
+    --surface-2: #f8f9fa;
+    --surface-3: #eaf8e5;
+    --border-default: #000000;
+    --fg-primary: #000000;
+    --fg-secondary: #333333;
+    --fg-muted: #6c757d;
+  }
+
+  .print\:hidden {
+    display: none !important;
+  }
 }

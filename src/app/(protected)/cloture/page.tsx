@@ -139,65 +139,65 @@ export default function CloturePage() {
 
   return (
     <div>
-      <h1 className="mb-6 text-2xl font-semibold text-slate-100">
+      <h1 className="mb-6 text-2xl font-semibold text-fg-primary">
         Clôture de période
       </h1>
 
       {canCloturer ? (
         <form
           onSubmit={handleCloturer}
-          className="mb-6 max-w-lg rounded-xl border border-slate-700 bg-slate-900/60 p-6"
+          className="mb-6 max-w-lg rounded-xl border border-border-default bg-surface-1 p-6"
         >
-          <p className="mb-4 text-sm font-medium text-slate-300">
+          <p className="mb-4 text-sm font-medium text-fg-secondary">
             Clôturer une période
           </p>
           <div className="mb-4 grid grid-cols-2 gap-4">
             <div>
-              <label className="mb-1 block text-sm text-slate-300">Type</label>
+              <label className="mb-1 block text-sm text-fg-secondary">Type</label>
               <select
                 value={type}
                 onChange={(e) =>
                   changeType(e.target.value as "MENSUELLE" | "ANNUELLE")
                 }
-                className="w-full rounded-md border border-slate-600 bg-slate-800 px-3 py-2 text-slate-100"
+                className="w-full rounded-md border border-border-default bg-surface-2 px-3 py-2 text-fg-primary"
               >
                 <option value="MENSUELLE">Mensuelle</option>
                 <option value="ANNUELLE">Annuelle</option>
               </select>
             </div>
             <div>
-              <label className="mb-1 block text-sm text-slate-300">
+              <label className="mb-1 block text-sm text-fg-secondary">
                 {type === "MENSUELLE" ? "Mois (MM/AAAA)" : "Année (AAAA)"}
               </label>
               <input
                 type="text"
                 value={periode}
                 onChange={(e) => setPeriode(e.target.value)}
-                className="w-full rounded-md border border-slate-600 bg-slate-800 px-3 py-2 text-slate-100"
+                className="w-full rounded-md border border-border-default bg-surface-2 px-3 py-2 text-fg-primary"
               />
             </div>
           </div>
 
-          {error && <p className="mb-3 text-sm text-red-400">{error}</p>}
+          {error && <p className="mb-3 text-sm text-danger">{error}</p>}
 
           <button
             type="submit"
             disabled={saving}
-            className="rounded-md bg-emerald-500 px-5 py-2 font-medium text-slate-950 hover:bg-emerald-400 disabled:opacity-60"
+            className="rounded-md bg-accent-green px-5 py-2 font-medium text-on-accent hover:opacity-90 disabled:opacity-60"
           >
             {saving ? "Clôture..." : "Clôturer"}
           </button>
         </form>
       ) : (
-        <p className="mb-6 text-sm text-slate-500">
+        <p className="mb-6 text-sm text-fg-muted">
           Ton rôle ({profile?.role}) ne permet pas de clôturer ou rouvrir une
           période — seuls ADMIN_N1 et RAF le peuvent.
         </p>
       )}
 
-      <div className="overflow-x-auto rounded-xl border border-slate-700">
+      <div className="overflow-x-auto rounded-xl border border-border-default">
         <table className="min-w-full text-sm">
-          <thead className="bg-slate-800 text-slate-300">
+          <thead className="bg-surface-2 text-fg-secondary">
             <tr>
               <th className="px-3 py-2 text-left">Type</th>
               <th className="px-3 py-2 text-left">Période</th>
@@ -208,48 +208,48 @@ export default function CloturePage() {
               <th className="px-3 py-2 text-right">Action</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-800 bg-slate-900/40">
+          <tbody className="divide-y divide-border-default bg-surface-1/60">
             {loading && (
               <tr>
-                <td colSpan={7} className="px-3 py-4 text-center text-slate-400">
+                <td colSpan={7} className="px-3 py-4 text-center text-fg-muted">
                   Chargement...
                 </td>
               </tr>
             )}
             {!loading && closures.length === 0 && (
               <tr>
-                <td colSpan={7} className="px-3 py-4 text-center text-slate-400">
+                <td colSpan={7} className="px-3 py-4 text-center text-fg-muted">
                   Aucune clôture enregistrée pour ce projet.
                 </td>
               </tr>
             )}
             {closures.map((c) => (
-              <tr key={c.id} className="text-slate-200">
+              <tr key={c.id} className="text-fg-primary">
                 <td className="px-3 py-2">{c.type}</td>
                 <td className="px-3 py-2">{c.periode}</td>
                 <td className="px-3 py-2">
                   <span
                     className={
                       c.statut === "CLOTUREE"
-                        ? "rounded-full bg-red-900/50 px-2 py-0.5 text-xs text-red-300"
-                        : "rounded-full bg-emerald-900/50 px-2 py-0.5 text-xs text-emerald-300"
+                        ? "rounded-full bg-danger-bg px-2 py-0.5 text-xs text-danger"
+                        : "rounded-full bg-accent-green-bg px-2 py-0.5 text-xs text-accent-green-fg"
                     }
                   >
                     {c.statut}
                   </span>
                 </td>
-                <td className="px-3 py-2 text-slate-400">{c.cloture_par}</td>
-                <td className="px-3 py-2 text-slate-400">
+                <td className="px-3 py-2 text-fg-muted">{c.cloture_par}</td>
+                <td className="px-3 py-2 text-fg-muted">
                   {new Date(c.date_cloture).toLocaleDateString("fr-FR")}
                 </td>
-                <td className="px-3 py-2 text-slate-400">
+                <td className="px-3 py-2 text-fg-muted">
                   {c.motif_reouverture}
                 </td>
                 <td className="px-3 py-2 text-right">
                   {c.statut === "CLOTUREE" && canCloturer && (
                     <button
                       onClick={() => openReopen(c.id)}
-                      className="text-sky-400 hover:underline"
+                      className="text-accent-blue hover:underline"
                     >
                       Rouvrir
                     </button>
@@ -263,11 +263,11 @@ export default function CloturePage() {
 
       {reopeningId !== null && (
         <div className="fixed inset-0 flex items-center justify-center bg-black/60 p-4">
-          <div className="w-full max-w-sm rounded-xl border border-slate-700 bg-slate-900 p-6">
-            <p className="mb-4 font-medium text-slate-100">
+          <div className="w-full max-w-sm rounded-xl border border-border-default bg-surface-1 p-6">
+            <p className="mb-4 font-medium text-fg-primary">
               Rouvrir la période #{reopeningId}
             </p>
-            <label className="mb-1 block text-sm text-slate-300">
+            <label className="mb-1 block text-sm text-fg-secondary">
               Motif de la réouverture *
             </label>
             <input
@@ -275,22 +275,22 @@ export default function CloturePage() {
               autoFocus
               value={motif}
               onChange={(e) => setMotif(e.target.value)}
-              className="mb-3 w-full rounded-md border border-slate-600 bg-slate-800 px-3 py-2 text-slate-100"
+              className="mb-3 w-full rounded-md border border-border-default bg-surface-2 px-3 py-2 text-fg-primary"
             />
             {reopenError && (
-              <p className="mb-3 text-sm text-red-400">{reopenError}</p>
+              <p className="mb-3 text-sm text-danger">{reopenError}</p>
             )}
             <div className="flex gap-3">
               <button
                 onClick={confirmReopen}
                 disabled={reopening}
-                className="rounded-md bg-emerald-500 px-4 py-2 font-medium text-slate-950 hover:bg-emerald-400 disabled:opacity-60"
+                className="rounded-md bg-accent-green px-4 py-2 font-medium text-on-accent hover:opacity-90 disabled:opacity-60"
               >
                 {reopening ? "..." : "Confirmer"}
               </button>
               <button
                 onClick={() => setReopeningId(null)}
-                className="rounded-md border border-slate-600 px-4 py-2 text-slate-300 hover:bg-slate-800"
+                className="rounded-md border border-border-default px-4 py-2 text-fg-secondary hover:bg-surface-2"
               >
                 Annuler
               </button>

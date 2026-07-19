@@ -23,16 +23,16 @@ export default function ParametresPage() {
 
   return (
     <div>
-      <h1 className="mb-6 text-2xl font-semibold text-slate-100">Paramètres</h1>
+      <h1 className="mb-6 text-2xl font-semibold text-fg-primary">Paramètres</h1>
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         {cards.map((c) => (
           <Link
             key={c.href}
             href={c.href}
-            className="rounded-xl border border-slate-700 bg-slate-800/60 p-5 transition-colors hover:border-emerald-400 hover:bg-slate-800"
+            className="rounded-xl border border-border-default bg-surface-2 p-5 transition-colors hover:border-accent-green hover:bg-surface-2"
           >
-            <p className="font-medium text-slate-100">{c.label}</p>
-            <p className="mt-1 text-sm text-slate-400">{c.desc}</p>
+            <p className="font-medium text-fg-primary">{c.label}</p>
+            <p className="mt-1 text-sm text-fg-muted">{c.desc}</p>
           </Link>
         ))}
       </div>

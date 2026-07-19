@@ -59,17 +59,17 @@ export default function GrandLivrePage() {
 
   return (
     <div>
-      <h1 className="mb-6 text-2xl font-semibold text-slate-100">
+      <h1 className="mb-6 text-2xl font-semibold text-fg-primary">
         Grand Livre
       </h1>
 
-      <div className="mb-6 flex flex-wrap gap-4 rounded-xl border border-slate-700 bg-slate-900/60 p-4">
+      <div className="mb-6 flex flex-wrap gap-4 rounded-xl border border-border-default bg-surface-1 p-4">
         <div>
-          <label className="mb-1 block text-sm text-slate-300">Compte</label>
+          <label className="mb-1 block text-sm text-fg-secondary">Compte</label>
           <select
             value={compte}
             onChange={(e) => setCompte(e.target.value)}
-            className="rounded-md border border-slate-600 bg-slate-800 px-3 py-2 text-slate-100"
+            className="rounded-md border border-border-default bg-surface-2 px-3 py-2 text-fg-primary"
           >
             <option value="">Tous les comptes</option>
             {accounts.map((a) => (
@@ -80,28 +80,28 @@ export default function GrandLivrePage() {
           </select>
         </div>
         <div>
-          <label className="mb-1 block text-sm text-slate-300">Du</label>
+          <label className="mb-1 block text-sm text-fg-secondary">Du</label>
           <input
             type="date"
             value={dateDebut}
             onChange={(e) => setDateDebut(e.target.value)}
-            className="rounded-md border border-slate-600 bg-slate-800 px-3 py-2 text-slate-100"
+            className="rounded-md border border-border-default bg-surface-2 px-3 py-2 text-fg-primary"
           />
         </div>
         <div>
-          <label className="mb-1 block text-sm text-slate-300">Au</label>
+          <label className="mb-1 block text-sm text-fg-secondary">Au</label>
           <input
             type="date"
             value={dateFin}
             onChange={(e) => setDateFin(e.target.value)}
-            className="rounded-md border border-slate-600 bg-slate-800 px-3 py-2 text-slate-100"
+            className="rounded-md border border-border-default bg-surface-2 px-3 py-2 text-fg-primary"
           />
         </div>
       </div>
 
-      <div className="overflow-x-auto rounded-xl border border-slate-700">
+      <div className="overflow-x-auto rounded-xl border border-border-default">
         <table className="min-w-full text-sm">
-          <thead className="bg-slate-800 text-slate-300">
+          <thead className="bg-surface-2 text-fg-secondary">
             <tr>
               <th className="px-3 py-2 text-left">Date</th>
               <th className="px-3 py-2 text-left">Pièce</th>
@@ -113,17 +113,17 @@ export default function GrandLivrePage() {
               <th className="px-3 py-2 text-right">Solde cumulé</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-800 bg-slate-900/40">
+          <tbody className="divide-y divide-border-default bg-surface-1/60">
             {loading && (
               <tr>
-                <td colSpan={8} className="px-3 py-4 text-center text-slate-400">
+                <td colSpan={8} className="px-3 py-4 text-center text-fg-muted">
                   Chargement...
                 </td>
               </tr>
             )}
             {!loading && entries.length === 0 && (
               <tr>
-                <td colSpan={8} className="px-3 py-4 text-center text-slate-400">
+                <td colSpan={8} className="px-3 py-4 text-center text-fg-muted">
                   Aucune écriture sur cette période.
                 </td>
               </tr>
@@ -131,7 +131,7 @@ export default function GrandLivrePage() {
             {entries.map((e) => {
               running += e.montant_debit - e.montant_credit;
               return (
-                <tr key={e.id} className="text-slate-200">
+                <tr key={e.id} className="text-fg-primary">
                   <td className="px-3 py-2">
                     {new Date(e.date_operation).toLocaleDateString("fr-FR")}
                   </td>

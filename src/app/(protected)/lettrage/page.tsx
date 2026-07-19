@@ -147,30 +147,30 @@ export default function LettragePage() {
 
   return (
     <div>
-      <h1 className="mb-6 text-2xl font-semibold text-slate-100">Lettrage</h1>
+      <h1 className="mb-6 text-2xl font-semibold text-fg-primary">Lettrage</h1>
 
-      <div className="mb-6 flex flex-wrap items-center gap-3 rounded-xl border border-slate-700 bg-slate-900/60 p-4">
+      <div className="mb-6 flex flex-wrap items-center gap-3 rounded-xl border border-border-default bg-surface-1 p-4">
         <button
           onClick={runLettrage}
           disabled={running || loading}
-          className="rounded-md bg-emerald-500 px-4 py-2 text-sm font-medium text-slate-950 hover:bg-emerald-400 disabled:opacity-60"
+          className="rounded-md bg-accent-green px-4 py-2 text-sm font-medium text-on-accent hover:opacity-90 disabled:opacity-60"
         >
           {running ? "..." : "Lancer le lettrage automatique"}
         </button>
         <button
           onClick={runDelettrage}
           disabled={running || loading}
-          className="rounded-md border border-slate-600 px-4 py-2 text-sm text-slate-300 hover:bg-slate-800 disabled:opacity-60"
+          className="rounded-md border border-border-default px-4 py-2 text-sm text-fg-secondary hover:bg-surface-2 disabled:opacity-60"
         >
           Tout délettrer
         </button>
-        <span className="text-sm text-slate-400">
+        <span className="text-sm text-fg-muted">
           {nbLettrees} / {entries.length} écritures lettrées
         </span>
       </div>
 
       {message && (
-        <p className="mb-4 rounded-md bg-slate-800 px-4 py-2 text-sm text-emerald-300">
+        <p className="mb-4 rounded-md bg-surface-2 px-4 py-2 text-sm text-accent-green-fg">
           {message}
         </p>
       )}
@@ -180,12 +180,12 @@ export default function LettragePage() {
         value={compte}
         onChange={(e) => setCompte(e.target.value)}
         placeholder="Filtrer par compte..."
-        className="mb-4 w-full max-w-sm rounded-md border border-slate-600 bg-slate-800 px-3 py-2 text-slate-100"
+        className="mb-4 w-full max-w-sm rounded-md border border-border-default bg-surface-2 px-3 py-2 text-fg-primary"
       />
 
-      <div className="overflow-x-auto rounded-xl border border-slate-700">
+      <div className="overflow-x-auto rounded-xl border border-border-default">
         <table className="min-w-full text-sm">
-          <thead className="bg-slate-800 text-slate-300">
+          <thead className="bg-surface-2 text-fg-secondary">
             <tr>
               <th className="px-3 py-2 text-left">Pièce</th>
               <th className="px-3 py-2 text-left">Date</th>
@@ -196,17 +196,17 @@ export default function LettragePage() {
               <th className="px-3 py-2 text-left">Lettrage</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-800 bg-slate-900/40">
+          <tbody className="divide-y divide-border-default bg-surface-1/60">
             {loading && (
               <tr>
-                <td colSpan={7} className="px-3 py-4 text-center text-slate-400">
+                <td colSpan={7} className="px-3 py-4 text-center text-fg-muted">
                   Chargement...
                 </td>
               </tr>
             )}
             {!loading &&
               filtered.map((e) => (
-                <tr key={e.id} className="text-slate-200">
+                <tr key={e.id} className="text-fg-primary">
                   <td className="px-3 py-2">{e.n_piece}</td>
                   <td className="px-3 py-2">
                     {new Date(e.date_operation).toLocaleDateString("fr-FR")}
@@ -223,11 +223,11 @@ export default function LettragePage() {
                   </td>
                   <td className="px-3 py-2">
                     {e.n_lettrage ? (
-                      <span className="rounded-full bg-emerald-900/50 px-2 py-0.5 text-xs text-emerald-300">
+                      <span className="rounded-full bg-accent-green-bg px-2 py-0.5 text-xs text-accent-green-fg">
                         {e.n_lettrage}
                       </span>
                     ) : (
-                      <span className="text-xs text-slate-500">—</span>
+                      <span className="text-xs text-fg-muted">—</span>
                     )}
                   </td>
                 </tr>

@@ -180,20 +180,20 @@ export default function PersonnelPage() {
 
   return (
     <div>
-      <h1 className="mb-6 text-2xl font-semibold text-slate-100">
+      <h1 className="mb-6 text-2xl font-semibold text-fg-primary">
         Fiche Personnel
       </h1>
 
       <form
         onSubmit={handleSubmit}
-        className="mb-6 max-w-3xl rounded-xl border border-slate-700 bg-slate-900/60 p-6"
+        className="mb-6 max-w-3xl rounded-xl border border-border-default bg-surface-1 p-6"
       >
-        <p className="mb-4 text-sm font-medium text-slate-300">
+        <p className="mb-4 text-sm font-medium text-fg-secondary">
           {editingId ? `Modifier #${editingId}` : "Ajouter un membre du personnel"}
         </p>
         <div className="mb-4 grid grid-cols-1 gap-4 sm:grid-cols-3">
           <div>
-            <label className="mb-1 block text-sm text-slate-300">
+            <label className="mb-1 block text-sm text-fg-secondary">
               Matricule *
             </label>
             <input
@@ -201,11 +201,11 @@ export default function PersonnelPage() {
               required
               value={form.matricule}
               onChange={(e) => setForm({ ...form, matricule: e.target.value })}
-              className="w-full rounded-md border border-slate-600 bg-slate-800 px-3 py-2 text-slate-100"
+              className="w-full rounded-md border border-border-default bg-surface-2 px-3 py-2 text-fg-primary"
             />
           </div>
           <div className="sm:col-span-2">
-            <label className="mb-1 block text-sm text-slate-300">
+            <label className="mb-1 block text-sm text-fg-secondary">
               Nom complet *
             </label>
             <input
@@ -213,31 +213,31 @@ export default function PersonnelPage() {
               required
               value={form.prenom_nom}
               onChange={(e) => setForm({ ...form, prenom_nom: e.target.value })}
-              className="w-full rounded-md border border-slate-600 bg-slate-800 px-3 py-2 text-slate-100"
+              className="w-full rounded-md border border-border-default bg-surface-2 px-3 py-2 text-fg-primary"
             />
           </div>
           <div>
-            <label className="mb-1 block text-sm text-slate-300">Poste</label>
+            <label className="mb-1 block text-sm text-fg-secondary">Poste</label>
             <input
               type="text"
               value={form.poste}
               onChange={(e) => setForm({ ...form, poste: e.target.value })}
-              className="w-full rounded-md border border-slate-600 bg-slate-800 px-3 py-2 text-slate-100"
+              className="w-full rounded-md border border-border-default bg-surface-2 px-3 py-2 text-fg-primary"
             />
           </div>
           <div>
-            <label className="mb-1 block text-sm text-slate-300">
+            <label className="mb-1 block text-sm text-fg-secondary">
               B-S-Line (ligne budgétaire)
             </label>
             <input
               type="text"
               value={form.b_s_line}
               onChange={(e) => setForm({ ...form, b_s_line: e.target.value })}
-              className="w-full rounded-md border border-slate-600 bg-slate-800 px-3 py-2 text-slate-100"
+              className="w-full rounded-md border border-border-default bg-surface-2 px-3 py-2 text-fg-primary"
             />
           </div>
           <div>
-            <label className="mb-1 block text-sm text-slate-300">
+            <label className="mb-1 block text-sm text-fg-secondary">
               Compte classe 4
             </label>
             <input
@@ -247,7 +247,7 @@ export default function PersonnelPage() {
               onChange={(e) =>
                 setForm({ ...form, compte_classe_4: e.target.value })
               }
-              className="w-full rounded-md border border-slate-600 bg-slate-800 px-3 py-2 text-slate-100"
+              className="w-full rounded-md border border-border-default bg-surface-2 px-3 py-2 text-fg-primary"
             />
             <datalist id="comptes-list">
               {comptes.map((c) => (
@@ -258,11 +258,11 @@ export default function PersonnelPage() {
             </datalist>
           </div>
           <div>
-            <label className="mb-1 block text-sm text-slate-300">Zone</label>
+            <label className="mb-1 block text-sm text-fg-secondary">Zone</label>
             <select
               value={form.zone_id}
               onChange={(e) => setForm({ ...form, zone_id: e.target.value })}
-              className="w-full rounded-md border border-slate-600 bg-slate-800 px-3 py-2 text-slate-100"
+              className="w-full rounded-md border border-border-default bg-surface-2 px-3 py-2 text-fg-primary"
             >
               <option value="">—</option>
               {zones.map((z) => (
@@ -273,7 +273,7 @@ export default function PersonnelPage() {
             </select>
           </div>
           <div>
-            <label className="mb-1 block text-sm text-slate-300">
+            <label className="mb-1 block text-sm text-fg-secondary">
               Salaire brut *
             </label>
             <input
@@ -282,11 +282,11 @@ export default function PersonnelPage() {
               required
               value={form.salaire_brut}
               onChange={(e) => setForm({ ...form, salaire_brut: e.target.value })}
-              className="w-full rounded-md border border-slate-600 bg-slate-800 px-3 py-2 text-slate-100"
+              className="w-full rounded-md border border-border-default bg-surface-2 px-3 py-2 text-fg-primary"
             />
           </div>
           <div>
-            <label className="mb-1 block text-sm text-slate-300">
+            <label className="mb-1 block text-sm text-fg-secondary">
               INPS ouvrière
             </label>
             <input
@@ -296,21 +296,21 @@ export default function PersonnelPage() {
               onChange={(e) =>
                 setForm({ ...form, inps_ouvriere: e.target.value })
               }
-              className="w-full rounded-md border border-slate-600 bg-slate-800 px-3 py-2 text-slate-100"
+              className="w-full rounded-md border border-border-default bg-surface-2 px-3 py-2 text-fg-primary"
             />
           </div>
           <div>
-            <label className="mb-1 block text-sm text-slate-300">ITS</label>
+            <label className="mb-1 block text-sm text-fg-secondary">ITS</label>
             <input
               type="number"
               step="0.01"
               value={form.its}
               onChange={(e) => setForm({ ...form, its: e.target.value })}
-              className="w-full rounded-md border border-slate-600 bg-slate-800 px-3 py-2 text-slate-100"
+              className="w-full rounded-md border border-border-default bg-surface-2 px-3 py-2 text-fg-primary"
             />
           </div>
           <div>
-            <label className="mb-1 block text-sm text-slate-300">
+            <label className="mb-1 block text-sm text-fg-secondary">
               INPS patronale
             </label>
             <input
@@ -320,11 +320,11 @@ export default function PersonnelPage() {
               onChange={(e) =>
                 setForm({ ...form, inps_patronale: e.target.value })
               }
-              className="w-full rounded-md border border-slate-600 bg-slate-800 px-3 py-2 text-slate-100"
+              className="w-full rounded-md border border-border-default bg-surface-2 px-3 py-2 text-fg-primary"
             />
           </div>
           <div>
-            <label className="mb-1 block text-sm text-slate-300">
+            <label className="mb-1 block text-sm text-fg-secondary">
               TL patronale
             </label>
             <input
@@ -334,51 +334,51 @@ export default function PersonnelPage() {
               onChange={(e) =>
                 setForm({ ...form, tl_patronale: e.target.value })
               }
-              className="w-full rounded-md border border-slate-600 bg-slate-800 px-3 py-2 text-slate-100"
+              className="w-full rounded-md border border-border-default bg-surface-2 px-3 py-2 text-fg-primary"
             />
           </div>
           <div>
-            <label className="mb-1 block text-sm text-slate-300">
+            <label className="mb-1 block text-sm text-fg-secondary">
               Salaire net (calculé)
             </label>
             <input
               type="text"
               disabled
               value={salaireNetPreview.toLocaleString("fr-FR")}
-              className="w-full rounded-md border border-slate-700 bg-slate-800/50 px-3 py-2 text-slate-400"
+              className="w-full rounded-md border border-border-default bg-surface-2 px-3 py-2 text-fg-muted"
             />
           </div>
           <div>
-            <label className="mb-1 block text-sm text-slate-300">
+            <label className="mb-1 block text-sm text-fg-secondary">
               Date début
             </label>
             <input
               type="date"
               value={form.date_debut}
               onChange={(e) => setForm({ ...form, date_debut: e.target.value })}
-              className="w-full rounded-md border border-slate-600 bg-slate-800 px-3 py-2 text-slate-100"
+              className="w-full rounded-md border border-border-default bg-surface-2 px-3 py-2 text-fg-primary"
             />
           </div>
           <div>
-            <label className="mb-1 block text-sm text-slate-300">
+            <label className="mb-1 block text-sm text-fg-secondary">
               Date fin
             </label>
             <input
               type="date"
               value={form.date_fin}
               onChange={(e) => setForm({ ...form, date_fin: e.target.value })}
-              className="w-full rounded-md border border-slate-600 bg-slate-800 px-3 py-2 text-slate-100"
+              className="w-full rounded-md border border-border-default bg-surface-2 px-3 py-2 text-fg-primary"
             />
           </div>
         </div>
 
-        {error && <p className="mb-3 text-sm text-red-400">{error}</p>}
+        {error && <p className="mb-3 text-sm text-danger">{error}</p>}
 
         <div className="flex gap-3">
           <button
             type="submit"
             disabled={saving}
-            className="rounded-md bg-emerald-500 px-5 py-2 font-medium text-slate-950 hover:bg-emerald-400 disabled:opacity-60"
+            className="rounded-md bg-accent-green px-5 py-2 font-medium text-on-accent hover:opacity-90 disabled:opacity-60"
           >
             {saving ? "Enregistrement..." : editingId ? "Mettre à jour" : "Ajouter"}
           </button>
@@ -386,7 +386,7 @@ export default function PersonnelPage() {
             <button
               type="button"
               onClick={startCreate}
-              className="rounded-md border border-slate-600 px-5 py-2 text-slate-300 hover:bg-slate-800"
+              className="rounded-md border border-border-default px-5 py-2 text-fg-secondary hover:bg-surface-2"
             >
               Annuler
             </button>
@@ -399,12 +399,12 @@ export default function PersonnelPage() {
         value={filter}
         onChange={(e) => setFilter(e.target.value)}
         placeholder="Filtrer par nom ou matricule..."
-        className="mb-4 w-full max-w-sm rounded-md border border-slate-600 bg-slate-800 px-3 py-2 text-slate-100"
+        className="mb-4 w-full max-w-sm rounded-md border border-border-default bg-surface-2 px-3 py-2 text-fg-primary"
       />
 
-      <div className="overflow-x-auto rounded-xl border border-slate-700">
+      <div className="overflow-x-auto rounded-xl border border-border-default">
         <table className="min-w-full text-sm">
-          <thead className="bg-slate-800 text-slate-300">
+          <thead className="bg-surface-2 text-fg-secondary">
             <tr>
               <th className="px-3 py-2 text-left">Matricule</th>
               <th className="px-3 py-2 text-left">Nom</th>
@@ -414,20 +414,20 @@ export default function PersonnelPage() {
               <th className="px-3 py-2 text-right">Action</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-800 bg-slate-900/40">
+          <tbody className="divide-y divide-border-default bg-surface-1/60">
             {loading && (
               <tr>
-                <td colSpan={6} className="px-3 py-4 text-center text-slate-400">
+                <td colSpan={6} className="px-3 py-4 text-center text-fg-muted">
                   Chargement...
                 </td>
               </tr>
             )}
             {!loading &&
               filtered.map((p) => (
-                <tr key={p.id} className="text-slate-200">
+                <tr key={p.id} className="text-fg-primary">
                   <td className="px-3 py-2">{p.matricule}</td>
                   <td className="px-3 py-2">{p.prenom_nom}</td>
-                  <td className="px-3 py-2 text-slate-400">{p.poste}</td>
+                  <td className="px-3 py-2 text-fg-muted">{p.poste}</td>
                   <td className="px-3 py-2 text-right">
                     {p.salaire_net.toLocaleString("fr-FR")}
                   </td>
@@ -436,8 +436,8 @@ export default function PersonnelPage() {
                       onClick={() => toggleStatut(p)}
                       className={
                         p.statut === "Actif"
-                          ? "rounded-full bg-emerald-900/50 px-2 py-0.5 text-xs text-emerald-300"
-                          : "rounded-full bg-slate-700 px-2 py-0.5 text-xs text-slate-400"
+                          ? "rounded-full bg-accent-green-bg px-2 py-0.5 text-xs text-accent-green-fg"
+                          : "rounded-full bg-surface-2 px-2 py-0.5 text-xs text-fg-muted"
                       }
                     >
                       {p.statut}
@@ -446,7 +446,7 @@ export default function PersonnelPage() {
                   <td className="px-3 py-2 text-right">
                     <button
                       onClick={() => startEdit(p)}
-                      className="text-sky-400 hover:underline"
+                      className="text-accent-blue hover:underline"
                     >
                       Modifier
                     </button>

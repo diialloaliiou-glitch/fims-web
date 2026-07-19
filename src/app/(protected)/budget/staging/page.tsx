@@ -215,56 +215,56 @@ export default function BudgetStagingPage() {
   return (
     <div>
       <div className="mb-6 flex items-center justify-between">
-        <h1 className="text-2xl font-semibold text-slate-100">
+        <h1 className="text-2xl font-semibold text-fg-primary">
           Propositions budgétaires
         </h1>
-        <Link href="/budget" className="text-sm text-sky-400 hover:underline">
+        <Link href="/budget" className="text-sm text-accent-blue hover:underline">
           Voir le Financial Report →
         </Link>
       </div>
 
       <form
         onSubmit={handleSubmit}
-        className="mb-6 max-w-3xl rounded-xl border border-slate-700 bg-slate-900/60 p-6"
+        className="mb-6 max-w-3xl rounded-xl border border-border-default bg-surface-1 p-6"
       >
-        <p className="mb-4 text-sm font-medium text-slate-300">
+        <p className="mb-4 text-sm font-medium text-fg-secondary">
           {editingId ? `Modifier la proposition #${editingId}` : "Proposer une ligne budgétaire"}
         </p>
         <div className="mb-4 grid grid-cols-1 gap-4 sm:grid-cols-3">
           <div>
-            <label className="mb-1 block text-sm text-slate-300">Code *</label>
+            <label className="mb-1 block text-sm text-fg-secondary">Code *</label>
             <input
               type="text"
               required
               value={form.code_1}
               onChange={(e) => setForm({ ...form, code_1: e.target.value })}
-              className="w-full rounded-md border border-slate-600 bg-slate-800 px-3 py-2 text-slate-100"
+              className="w-full rounded-md border border-border-default bg-surface-2 px-3 py-2 text-fg-primary"
             />
           </div>
           <div>
-            <label className="mb-1 block text-sm text-slate-300">
+            <label className="mb-1 block text-sm text-fg-secondary">
               Ligne budgétaire
             </label>
             <input
               type="text"
               value={form.budget_line}
               onChange={(e) => setForm({ ...form, budget_line: e.target.value })}
-              className="w-full rounded-md border border-slate-600 bg-slate-800 px-3 py-2 text-slate-100"
+              className="w-full rounded-md border border-border-default bg-surface-2 px-3 py-2 text-fg-primary"
             />
           </div>
           <div>
-            <label className="mb-1 block text-sm text-slate-300">
+            <label className="mb-1 block text-sm text-fg-secondary">
               Code interne
             </label>
             <input
               type="text"
               value={form.our_line_code}
               onChange={(e) => setForm({ ...form, our_line_code: e.target.value })}
-              className="w-full rounded-md border border-slate-600 bg-slate-800 px-3 py-2 text-slate-100"
+              className="w-full rounded-md border border-border-default bg-surface-2 px-3 py-2 text-fg-primary"
             />
           </div>
           <div className="sm:col-span-3">
-            <label className="mb-1 block text-sm text-slate-300">
+            <label className="mb-1 block text-sm text-fg-secondary">
               Description *
             </label>
             <input
@@ -272,15 +272,15 @@ export default function BudgetStagingPage() {
               required
               value={form.description}
               onChange={(e) => setForm({ ...form, description: e.target.value })}
-              className="w-full rounded-md border border-slate-600 bg-slate-800 px-3 py-2 text-slate-100"
+              className="w-full rounded-md border border-border-default bg-surface-2 px-3 py-2 text-fg-primary"
             />
           </div>
           <div>
-            <label className="mb-1 block text-sm text-slate-300">Rubrique</label>
+            <label className="mb-1 block text-sm text-fg-secondary">Rubrique</label>
             <select
               value={form.rubrique}
               onChange={(e) => setForm({ ...form, rubrique: e.target.value })}
-              className="w-full rounded-md border border-slate-600 bg-slate-800 px-3 py-2 text-slate-100"
+              className="w-full rounded-md border border-border-default bg-surface-2 px-3 py-2 text-fg-primary"
             >
               <option value="">—</option>
               {rubriques.map((r) => (
@@ -291,56 +291,56 @@ export default function BudgetStagingPage() {
             </select>
           </div>
           <div>
-            <label className="mb-1 block text-sm text-slate-300">Unité</label>
+            <label className="mb-1 block text-sm text-fg-secondary">Unité</label>
             <input
               type="text"
               value={form.unit}
               onChange={(e) => setForm({ ...form, unit: e.target.value })}
-              className="w-full rounded-md border border-slate-600 bg-slate-800 px-3 py-2 text-slate-100"
+              className="w-full rounded-md border border-border-default bg-surface-2 px-3 py-2 text-fg-primary"
             />
           </div>
           <div>
-            <label className="mb-1 block text-sm text-slate-300">Quantité</label>
+            <label className="mb-1 block text-sm text-fg-secondary">Quantité</label>
             <input
               type="number"
               step="0.01"
               value={form.quantity}
               onChange={(e) => setForm({ ...form, quantity: e.target.value })}
-              className="w-full rounded-md border border-slate-600 bg-slate-800 px-3 py-2 text-slate-100"
+              className="w-full rounded-md border border-border-default bg-surface-2 px-3 py-2 text-fg-primary"
             />
           </div>
           <div>
-            <label className="mb-1 block text-sm text-slate-300">Fréquence</label>
+            <label className="mb-1 block text-sm text-fg-secondary">Fréquence</label>
             <input
               type="number"
               step="0.01"
               value={form.frequence}
               onChange={(e) => setForm({ ...form, frequence: e.target.value })}
-              className="w-full rounded-md border border-slate-600 bg-slate-800 px-3 py-2 text-slate-100"
+              className="w-full rounded-md border border-border-default bg-surface-2 px-3 py-2 text-fg-primary"
             />
           </div>
           <div>
-            <label className="mb-1 block text-sm text-slate-300">
+            <label className="mb-1 block text-sm text-fg-secondary">
               % pris en charge (T-PEC)
             </label>
             <input
               type="text"
               value={form.t_pec}
               onChange={(e) => setForm({ ...form, t_pec: e.target.value })}
-              className="w-full rounded-md border border-slate-600 bg-slate-800 px-3 py-2 text-slate-100"
+              className="w-full rounded-md border border-border-default bg-surface-2 px-3 py-2 text-fg-primary"
             />
           </div>
           <div>
-            <label className="mb-1 block text-sm text-slate-300">Devise</label>
+            <label className="mb-1 block text-sm text-fg-secondary">Devise</label>
             <input
               type="text"
               value={form.devise}
               onChange={(e) => setForm({ ...form, devise: e.target.value })}
-              className="w-full rounded-md border border-slate-600 bg-slate-800 px-3 py-2 text-slate-100"
+              className="w-full rounded-md border border-border-default bg-surface-2 px-3 py-2 text-fg-primary"
             />
           </div>
           <div>
-            <label className="mb-1 block text-sm text-slate-300">
+            <label className="mb-1 block text-sm text-fg-secondary">
               Coût unitaire (devise)
             </label>
             <input
@@ -348,11 +348,11 @@ export default function BudgetStagingPage() {
               step="0.01"
               value={form.unit_cost_devise}
               onChange={(e) => setForm({ ...form, unit_cost_devise: e.target.value })}
-              className="w-full rounded-md border border-slate-600 bg-slate-800 px-3 py-2 text-slate-100"
+              className="w-full rounded-md border border-border-default bg-surface-2 px-3 py-2 text-fg-primary"
             />
           </div>
           <div>
-            <label className="mb-1 block text-sm text-slate-300">
+            <label className="mb-1 block text-sm text-fg-secondary">
               Taux de conversion
             </label>
             <input
@@ -360,27 +360,27 @@ export default function BudgetStagingPage() {
               step="0.0001"
               value={form.taux_conversion}
               onChange={(e) => setForm({ ...form, taux_conversion: e.target.value })}
-              className="w-full rounded-md border border-slate-600 bg-slate-800 px-3 py-2 text-slate-100"
+              className="w-full rounded-md border border-border-default bg-surface-2 px-3 py-2 text-fg-primary"
             />
           </div>
           <div className="sm:col-span-3">
-            <label className="mb-1 block text-sm text-slate-300">Note</label>
+            <label className="mb-1 block text-sm text-fg-secondary">Note</label>
             <input
               type="text"
               value={form.note}
               onChange={(e) => setForm({ ...form, note: e.target.value })}
-              className="w-full rounded-md border border-slate-600 bg-slate-800 px-3 py-2 text-slate-100"
+              className="w-full rounded-md border border-border-default bg-surface-2 px-3 py-2 text-fg-primary"
             />
           </div>
         </div>
 
-        {error && <p className="mb-3 text-sm text-red-400">{error}</p>}
+        {error && <p className="mb-3 text-sm text-danger">{error}</p>}
 
         <div className="flex gap-3">
           <button
             type="submit"
             disabled={saving}
-            className="rounded-md bg-emerald-500 px-5 py-2 font-medium text-slate-950 hover:bg-emerald-400 disabled:opacity-60"
+            className="rounded-md bg-accent-green px-5 py-2 font-medium text-on-accent hover:opacity-90 disabled:opacity-60"
           >
             {saving ? "Enregistrement..." : editingId ? "Mettre à jour" : "Proposer"}
           </button>
@@ -388,7 +388,7 @@ export default function BudgetStagingPage() {
             <button
               type="button"
               onClick={startCreate}
-              className="rounded-md border border-slate-600 px-5 py-2 text-slate-300 hover:bg-slate-800"
+              className="rounded-md border border-border-default px-5 py-2 text-fg-secondary hover:bg-surface-2"
             >
               Annuler
             </button>
@@ -397,15 +397,15 @@ export default function BudgetStagingPage() {
       </form>
 
       {!canValidate && (
-        <p className="mb-4 text-sm text-slate-500">
+        <p className="mb-4 text-sm text-fg-muted">
           Ton rôle ({profile?.role}) permet de proposer des lignes, mais seul un
           ADMIN_N1 ou un RAF peut les valider et les transférer au budget officiel.
         </p>
       )}
 
-      <div className="overflow-x-auto rounded-xl border border-slate-700">
+      <div className="overflow-x-auto rounded-xl border border-border-default">
         <table className="min-w-full text-sm">
-          <thead className="bg-slate-800 text-slate-300">
+          <thead className="bg-surface-2 text-fg-secondary">
             <tr>
               <th className="px-3 py-2 text-left">Code</th>
               <th className="px-3 py-2 text-left">Description</th>
@@ -415,33 +415,33 @@ export default function BudgetStagingPage() {
               <th className="px-3 py-2 text-right">Action</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-800 bg-slate-900/40">
+          <tbody className="divide-y divide-border-default bg-surface-1/60">
             {loading && (
               <tr>
-                <td colSpan={6} className="px-3 py-4 text-center text-slate-400">
+                <td colSpan={6} className="px-3 py-4 text-center text-fg-muted">
                   Chargement...
                 </td>
               </tr>
             )}
             {!loading && rows.length === 0 && (
               <tr>
-                <td colSpan={6} className="px-3 py-4 text-center text-slate-400">
+                <td colSpan={6} className="px-3 py-4 text-center text-fg-muted">
                   Aucune proposition pour ce projet.
                 </td>
               </tr>
             )}
             {rows.map((r) => (
-              <tr key={r.id} className="text-slate-200">
+              <tr key={r.id} className="text-fg-primary">
                 <td className="px-3 py-2">{r.code_1}</td>
                 <td className="px-3 py-2">{r.description}</td>
-                <td className="px-3 py-2 text-slate-400">{r.rubrique}</td>
+                <td className="px-3 py-2 text-fg-muted">{r.rubrique}</td>
                 <td className="px-3 py-2 text-right">{r.quantity ?? ""}</td>
                 <td className="px-3 py-2">
                   <span
                     className={
                       r.statut === "Validée"
-                        ? "rounded-full bg-emerald-900/50 px-2 py-0.5 text-xs text-emerald-300"
-                        : "rounded-full bg-amber-900/50 px-2 py-0.5 text-xs text-amber-300"
+                        ? "rounded-full bg-accent-green-bg px-2 py-0.5 text-xs text-accent-green-fg"
+                        : "rounded-full bg-warning-bg px-2 py-0.5 text-xs text-warning"
                     }
                   >
                     {r.statut}
@@ -452,14 +452,14 @@ export default function BudgetStagingPage() {
                     <div className="flex justify-end gap-3">
                       <button
                         onClick={() => startEdit(r)}
-                        className="text-sky-400 hover:underline"
+                        className="text-accent-blue hover:underline"
                       >
                         Modifier
                       </button>
                       {canValidate && (
                         <button
                           onClick={() => openValidate(r.id)}
-                          className="text-emerald-400 hover:underline"
+                          className="text-accent-green hover:underline"
                         >
                           Valider
                         </button>
@@ -475,11 +475,11 @@ export default function BudgetStagingPage() {
 
       {validatingId !== null && (
         <div className="fixed inset-0 flex items-center justify-center bg-black/60 p-4">
-          <div className="w-full max-w-sm rounded-xl border border-slate-700 bg-slate-900 p-6">
-            <p className="mb-4 font-medium text-slate-100">
+          <div className="w-full max-w-sm rounded-xl border border-border-default bg-surface-1 p-6">
+            <p className="mb-4 font-medium text-fg-primary">
               Valider la proposition #{validatingId}
             </p>
-            <label className="mb-1 block text-sm text-slate-300">
+            <label className="mb-1 block text-sm text-fg-secondary">
               Coût unitaire (FCFA) *
             </label>
             <input
@@ -488,15 +488,15 @@ export default function BudgetStagingPage() {
               autoFocus
               value={unitCostInput}
               onChange={(e) => setUnitCostInput(e.target.value)}
-              className="mb-3 w-full rounded-md border border-slate-600 bg-slate-800 px-3 py-2 text-slate-100"
+              className="mb-3 w-full rounded-md border border-border-default bg-surface-2 px-3 py-2 text-fg-primary"
             />
-            <p className="mb-3 text-xs text-slate-500">
+            <p className="mb-3 text-xs text-fg-muted">
               Le coût total sera calculé automatiquement (quantité × fréquence ×
               coût unitaire), et la ligne sera ajoutée au budget officiel du
               projet.
             </p>
             {validateError && (
-              <p className="mb-3 text-sm text-red-400">{validateError}</p>
+              <p className="mb-3 text-sm text-danger">{validateError}</p>
             )}
             <div className="flex gap-3">
               <button
@@ -505,13 +505,13 @@ export default function BudgetStagingPage() {
                   if (row) confirmValidate(row);
                 }}
                 disabled={validating}
-                className="rounded-md bg-emerald-500 px-4 py-2 font-medium text-slate-950 hover:bg-emerald-400 disabled:opacity-60"
+                className="rounded-md bg-accent-green px-4 py-2 font-medium text-on-accent hover:opacity-90 disabled:opacity-60"
               >
                 {validating ? "Validation..." : "Confirmer"}
               </button>
               <button
                 onClick={() => setValidatingId(null)}
-                className="rounded-md border border-slate-600 px-4 py-2 text-slate-300 hover:bg-slate-800"
+                className="rounded-md border border-border-default px-4 py-2 text-fg-secondary hover:bg-surface-2"
               >
                 Annuler
               </button>

@@ -140,18 +140,18 @@ export default function TiersPage() {
 
   return (
     <div>
-      <h1 className="mb-6 text-2xl font-semibold text-slate-100">Tiers</h1>
+      <h1 className="mb-6 text-2xl font-semibold text-fg-primary">Tiers</h1>
 
       <form
         onSubmit={handleSubmit}
-        className="mb-6 max-w-3xl rounded-xl border border-slate-700 bg-slate-900/60 p-6"
+        className="mb-6 max-w-3xl rounded-xl border border-border-default bg-surface-1 p-6"
       >
-        <p className="mb-4 text-sm font-medium text-slate-300">
+        <p className="mb-4 text-sm font-medium text-fg-secondary">
           {editingId ? `Modifier le tiers #${editingId}` : "Ajouter un tiers"}
         </p>
         <div className="mb-4 grid grid-cols-1 gap-4 sm:grid-cols-3">
           <div className="sm:col-span-2">
-            <label className="mb-1 block text-sm text-slate-300">
+            <label className="mb-1 block text-sm text-fg-secondary">
               Nom du tiers *
             </label>
             <input
@@ -159,15 +159,15 @@ export default function TiersPage() {
               required
               value={form.nom_tiers}
               onChange={(e) => setForm({ ...form, nom_tiers: e.target.value })}
-              className="w-full rounded-md border border-slate-600 bg-slate-800 px-3 py-2 text-slate-100"
+              className="w-full rounded-md border border-border-default bg-surface-2 px-3 py-2 text-fg-primary"
             />
           </div>
           <div>
-            <label className="mb-1 block text-sm text-slate-300">Type</label>
+            <label className="mb-1 block text-sm text-fg-secondary">Type</label>
             <select
               value={form.type}
               onChange={(e) => setForm({ ...form, type: e.target.value })}
-              className="w-full rounded-md border border-slate-600 bg-slate-800 px-3 py-2 text-slate-100"
+              className="w-full rounded-md border border-border-default bg-surface-2 px-3 py-2 text-fg-primary"
             >
               {TYPES_TIERS.map((t) => (
                 <option key={t} value={t}>
@@ -177,7 +177,7 @@ export default function TiersPage() {
             </select>
           </div>
           <div>
-            <label className="mb-1 block text-sm text-slate-300">
+            <label className="mb-1 block text-sm text-fg-secondary">
               Compte classe 4 *
             </label>
             <input
@@ -188,7 +188,7 @@ export default function TiersPage() {
               onChange={(e) =>
                 setForm({ ...form, compte_classe_4: e.target.value })
               }
-              className="w-full rounded-md border border-slate-600 bg-slate-800 px-3 py-2 text-slate-100"
+              className="w-full rounded-md border border-border-default bg-surface-2 px-3 py-2 text-fg-primary"
             />
             <datalist id="comptes-tiers-list">
               {comptesTiers.map((c) => (
@@ -199,20 +199,20 @@ export default function TiersPage() {
             </datalist>
           </div>
           <div>
-            <label className="mb-1 block text-sm text-slate-300">Contact</label>
+            <label className="mb-1 block text-sm text-fg-secondary">Contact</label>
             <input
               type="text"
               value={form.contact}
               onChange={(e) => setForm({ ...form, contact: e.target.value })}
-              className="w-full rounded-md border border-slate-600 bg-slate-800 px-3 py-2 text-slate-100"
+              className="w-full rounded-md border border-border-default bg-surface-2 px-3 py-2 text-fg-primary"
             />
           </div>
           <div>
-            <label className="mb-1 block text-sm text-slate-300">Zone</label>
+            <label className="mb-1 block text-sm text-fg-secondary">Zone</label>
             <select
               value={form.zone_id}
               onChange={(e) => setForm({ ...form, zone_id: e.target.value })}
-              className="w-full rounded-md border border-slate-600 bg-slate-800 px-3 py-2 text-slate-100"
+              className="w-full rounded-md border border-border-default bg-surface-2 px-3 py-2 text-fg-primary"
             >
               <option value="">—</option>
               {zones.map((z) => (
@@ -224,13 +224,13 @@ export default function TiersPage() {
           </div>
         </div>
 
-        {error && <p className="mb-3 text-sm text-red-400">{error}</p>}
+        {error && <p className="mb-3 text-sm text-danger">{error}</p>}
 
         <div className="flex gap-3">
           <button
             type="submit"
             disabled={saving}
-            className="rounded-md bg-emerald-500 px-5 py-2 font-medium text-slate-950 hover:bg-emerald-400 disabled:opacity-60"
+            className="rounded-md bg-accent-green px-5 py-2 font-medium text-on-accent hover:opacity-90 disabled:opacity-60"
           >
             {saving ? "Enregistrement..." : editingId ? "Mettre à jour" : "Ajouter"}
           </button>
@@ -238,7 +238,7 @@ export default function TiersPage() {
             <button
               type="button"
               onClick={startCreate}
-              className="rounded-md border border-slate-600 px-5 py-2 text-slate-300 hover:bg-slate-800"
+              className="rounded-md border border-border-default px-5 py-2 text-fg-secondary hover:bg-surface-2"
             >
               Annuler
             </button>
@@ -251,12 +251,12 @@ export default function TiersPage() {
         value={filter}
         onChange={(e) => setFilter(e.target.value)}
         placeholder="Filtrer par nom..."
-        className="mb-4 w-full max-w-sm rounded-md border border-slate-600 bg-slate-800 px-3 py-2 text-slate-100"
+        className="mb-4 w-full max-w-sm rounded-md border border-border-default bg-surface-2 px-3 py-2 text-fg-primary"
       />
 
-      <div className="overflow-x-auto rounded-xl border border-slate-700">
+      <div className="overflow-x-auto rounded-xl border border-border-default">
         <table className="min-w-full text-sm">
-          <thead className="bg-slate-800 text-slate-300">
+          <thead className="bg-surface-2 text-fg-secondary">
             <tr>
               <th className="px-3 py-2 text-left">Nom</th>
               <th className="px-3 py-2 text-left">Type</th>
@@ -265,27 +265,27 @@ export default function TiersPage() {
               <th className="px-3 py-2 text-right">Action</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-800 bg-slate-900/40">
+          <tbody className="divide-y divide-border-default bg-surface-1/60">
             {loading && (
               <tr>
-                <td colSpan={5} className="px-3 py-4 text-center text-slate-400">
+                <td colSpan={5} className="px-3 py-4 text-center text-fg-muted">
                   Chargement...
                 </td>
               </tr>
             )}
             {!loading &&
               filtered.map((t) => (
-                <tr key={t.id} className="text-slate-200">
+                <tr key={t.id} className="text-fg-primary">
                   <td className="px-3 py-2">{t.nom_tiers}</td>
-                  <td className="px-3 py-2 text-slate-400">{t.type}</td>
-                  <td className="px-3 py-2 text-slate-400">{t.contact}</td>
+                  <td className="px-3 py-2 text-fg-muted">{t.type}</td>
+                  <td className="px-3 py-2 text-fg-muted">{t.contact}</td>
                   <td className="px-3 py-2">
                     <button
                       onClick={() => toggleStatut(t)}
                       className={
                         t.statut === "Actif"
-                          ? "rounded-full bg-emerald-900/50 px-2 py-0.5 text-xs text-emerald-300"
-                          : "rounded-full bg-slate-700 px-2 py-0.5 text-xs text-slate-400"
+                          ? "rounded-full bg-accent-green-bg px-2 py-0.5 text-xs text-accent-green-fg"
+                          : "rounded-full bg-surface-2 px-2 py-0.5 text-xs text-fg-muted"
                       }
                     >
                       {t.statut ?? "Actif"}
@@ -294,7 +294,7 @@ export default function TiersPage() {
                   <td className="px-3 py-2 text-right">
                     <button
                       onClick={() => startEdit(t)}
-                      className="text-sky-400 hover:underline"
+                      className="text-accent-blue hover:underline"
                     >
                       Modifier
                     </button>
