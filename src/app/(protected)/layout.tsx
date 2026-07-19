@@ -12,7 +12,16 @@ export default function ProtectedLayout({
 }) {
   const router = useRouter();
   const pathname = usePathname();
-  const { session, profile, organization, loading, signOut } = useAuth();
+  const {
+    session,
+    profile,
+    organization,
+    projects,
+    project,
+    setActiveProjectId,
+    loading,
+    signOut,
+  } = useAuth();
 
   useEffect(() => {
     if (!loading && !session) {
@@ -57,6 +66,24 @@ export default function ProtectedLayout({
             </div>
           </div>
           <div className="flex items-center gap-3">
+            {projects.length > 1 && (
+              <select
+                value={project?.id ?? ""}
+                onChange={(e) => setActiveProjectId(e.target.value)}
+                className="rounded-full border border-slate-600 bg-slate-800 px-3 py-1.5 text-sm text-slate-200"
+              >
+                {projects.map((p) => (
+                  <option key={p.id} value={p.id}>
+                    {p.code_projet} — {p.nom_projet}
+                  </option>
+                ))}
+              </select>
+            )}
+            {projects.length === 1 && (
+              <span className="hidden text-sm text-slate-400 sm:inline">
+                Projet : {project?.code_projet}
+              </span>
+            )}
             {pathname !== "/" && (
               <Link
                 href="/"

@@ -44,6 +44,7 @@ export type ThirdParty = {
   type: string | null;
   contact: string | null;
   statut: string | null;
+  zone_id: number | null;
 };
 
 export type OperationType = {
