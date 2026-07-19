@@ -126,7 +126,7 @@ export default function DashboardPage() {
     { key: "erb", label: "ERB", tone: "info" as const },
     { key: "jaux", label: "J-Auxiliaire", href: "/journal-auxiliaire", tone: "info" as const },
     { key: "balance", label: "Balance", href: "/balance", tone: "info" as const },
-    { key: "reporting", label: "Reporting", href: "/budget", tone: "info" as const },
+    { key: "reporting", label: "Reporting", href: "/reporting", tone: "info" as const },
     { key: "parametre", label: "Paramètre", href: "/parametres", tone: "muted" as const },
   ];
 
