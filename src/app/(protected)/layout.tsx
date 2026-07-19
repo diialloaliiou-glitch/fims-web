@@ -1,17 +1,9 @@
 "use client";
 
 import { useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@/lib/auth-context";
-
-const NAV_LINKS = [
-  { href: "/", label: "Dashboard" },
-  { href: "/saisie", label: "Saisie" },
-  { href: "/grand-livre", label: "G-Livre" },
-  { href: "/journal-auxiliaire", label: "J-Auxiliaire" },
-  { href: "/balance", label: "Balance" },
-];
 
 export default function ProtectedLayout({
   children,
@@ -19,7 +11,8 @@ export default function ProtectedLayout({
   children: React.ReactNode;
 }) {
   const router = useRouter();
-  const { session, profile, project, loading, signOut } = useAuth();
+  const pathname = usePathname();
+  const { session, profile, organization, loading, signOut } = useAuth();
 
   useEffect(() => {
     if (!loading && !session) {
@@ -41,35 +34,45 @@ export default function ProtectedLayout({
 
   return (
     <div className="flex min-h-full flex-col">
-      <header className="border-b border-slate-700 bg-slate-900/60 px-4 py-3">
+      <header className="border-b border-slate-800 bg-slate-950/60 px-4 py-2">
         <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3">
-          <div className="flex items-center gap-2">
-            <span className="text-lg font-bold text-emerald-400">FIMS</span>
-            <span className="text-sm text-slate-400">
-              {profile
-                ? `Bienvenue, ${profile.nom_utilisateur} | Rôle : ${profile.role}`
-                : ""}
-              {project ? ` | Projet : ${project.nom_projet} (${project.code_projet})` : ""}
-            </span>
-          </div>
-          <button
-            onClick={() => signOut()}
-            className="rounded-md border border-slate-600 px-3 py-1 text-sm text-slate-300 hover:bg-slate-800"
-          >
-            Déconnexion
-          </button>
-        </div>
-        <nav className="mx-auto mt-3 flex max-w-6xl flex-wrap gap-2">
-          {NAV_LINKS.map((link) => (
+          <div className="flex items-center gap-3">
             <Link
-              key={link.href}
-              href={link.href}
-              className="rounded-md bg-slate-800 px-3 py-1.5 text-sm text-slate-200 hover:bg-slate-700"
+              href="/"
+              className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-800 text-slate-400 hover:bg-slate-700"
+              aria-label="Retour au dashboard"
             >
-              {link.label}
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="currentColor"
+                className="h-5 w-5"
+              >
+                <path d="M12 12c2.7 0 8 1.34 8 4v2H4v-2c0-2.66 5.3-4 8-4zm0-2a4 4 0 1 1 0-8 4 4 0 0 1 0 8z" />
+              </svg>
             </Link>
-          ))}
-        </nav>
+            <div className="rounded-full bg-slate-800/80 px-4 py-1.5 text-sm text-slate-300">
+              Bienvenue, {profile?.nom_utilisateur} | Rôle : {profile?.role} |
+              {" "}Base : {organization?.nom}
+            </div>
+          </div>
+          <div className="flex items-center gap-3">
+            {pathname !== "/" && (
+              <Link
+                href="/"
+                className="text-sm text-slate-400 hover:text-emerald-400"
+              >
+                ← Dashboard
+              </Link>
+            )}
+            <button
+              onClick={() => signOut()}
+              className="rounded-full border border-slate-600 px-4 py-1.5 text-sm text-slate-300 hover:bg-slate-800"
+            >
+              ✕ Déconnexion
+            </button>
+          </div>
+        </div>
       </header>
       <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-6">
         {children}
