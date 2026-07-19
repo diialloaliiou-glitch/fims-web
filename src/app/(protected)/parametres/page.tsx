@@ -14,6 +14,11 @@ export default function ParametresPage() {
       label: "Tiers",
       desc: "Ajouter, modifier ou désactiver les fournisseurs et partenaires",
     },
+    {
+      href: "/parametres/personnel",
+      label: "Fiche Personnel",
+      desc: "Gérer les dossiers du personnel et les salaires",
+    },
   ];
 
   return (

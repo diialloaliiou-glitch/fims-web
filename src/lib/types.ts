@@ -67,6 +67,27 @@ export type BankJournal = {
   libelle: string | null;
 };
 
+export type Personnel = {
+  id: number;
+  organization_id: string;
+  project_id: string | null;
+  matricule: string;
+  prenom_nom: string;
+  poste: string | null;
+  b_s_line: string | null;
+  compte_classe_4: string | null;
+  salaire_brut: number;
+  inps_patronale: number | null;
+  inps_ouvriere: number | null;
+  its: number | null;
+  tl_patronale: number | null;
+  salaire_net: number;
+  date_debut: string | null;
+  date_fin: string | null;
+  statut: string;
+  zone_id: number | null;
+};
+
 export type PeriodClosure = {
   id: number;
   organization_id: string;
