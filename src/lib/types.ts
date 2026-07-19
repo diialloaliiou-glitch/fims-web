@@ -67,6 +67,21 @@ export type BankJournal = {
   libelle: string | null;
 };
 
+export type PeriodClosure = {
+  id: number;
+  organization_id: string;
+  project_id: string;
+  type: string;
+  periode: string;
+  date_cloture: string;
+  cloture_par: string;
+  statut: string;
+  date_reouverture: string | null;
+  reouverture_par: string | null;
+  motif_reouverture: string | null;
+  created_at: string;
+};
+
 export type Rubrique = {
   id: number;
   organization_id: string;

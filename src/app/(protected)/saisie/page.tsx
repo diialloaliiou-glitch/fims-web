@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/lib/auth-context";
+import { periodeCouranteFermee } from "@/lib/period-closure";
 import type { ChartOfAccount, ThirdParty, Zone } from "@/lib/types";
 
 const JOURNAUX = ["AC", "BQ", "OD", "SA"];
@@ -120,6 +121,12 @@ export default function SaisiePage() {
       return;
     }
 
+    const blocageCloture = await periodeCouranteFermee(project.id);
+    if (blocageCloture) {
+      setError(blocageCloture);
+      return;
+    }
+
     setSubmitting(true);
 
     const nEcritureJournal = await nextSequence(
@@ -190,9 +197,14 @@ export default function SaisiePage() {
         <h1 className="text-2xl font-semibold text-slate-100">
           Saisie d&apos;écriture
         </h1>
-        <Link href="/lettrage" className="text-sm text-sky-400 hover:underline">
-          Lettrage / Délettrage →
-        </Link>
+        <div className="flex gap-4">
+          <Link href="/lettrage" className="text-sm text-sky-400 hover:underline">
+            Lettrage / Délettrage →
+          </Link>
+          <Link href="/cloture" className="text-sm text-sky-400 hover:underline">
+            Clôture de période →
+          </Link>
+        </div>
       </div>
 
       <form
