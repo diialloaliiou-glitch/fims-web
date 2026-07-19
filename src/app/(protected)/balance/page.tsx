@@ -17,15 +17,85 @@ function todayIso() {
 type BalanceRow = {
   compte: string;
   libelle: string;
-  totalDebit: number;
-  totalCredit: number;
+  soldeOuverture: number;
+  debit: number;
+  credit: number;
+  soldeDebiteur: number;
+  soldeCrediteur: number;
 };
+
+// Reproduit GenererBalance() / GetCleBalance() du FIMS VBA d'origine :
+// mode GENERAL (regroupe par les 6 premiers chiffres du compte) ou
+// AUXILIAIRE (filtre sur un prefixe de compte tiers, ex: 40, 401),
+// avec un vrai solde d'ouverture (mouvements avant la date de debut).
+function calculerBalance(
+  entries: JournalEntry[],
+  libelleByCompte: Map<string, string>,
+  mode: "GENERAL" | "AUXILIAIRE",
+  filtreAux: string,
+  dateDebut: string,
+  dateFin: string
+): BalanceRow[] {
+  function cle(compte: string | null): string | null {
+    if (!compte) return null;
+    const c = compte.trim();
+    if (!c) return null;
+    if (mode === "AUXILIAIRE") {
+      return c.startsWith(filtreAux) ? c : null;
+    }
+    return c.length >= 6 ? c.slice(0, 6) : c;
+  }
+
+  const openDebit = new Map<string, number>();
+  const openCredit = new Map<string, number>();
+  const perDebit = new Map<string, number>();
+  const perCredit = new Map<string, number>();
+  const add = (m: Map<string, number>, k: string, v: number) =>
+    m.set(k, (m.get(k) ?? 0) + v);
+
+  entries.forEach((e) => {
+    const avant = e.date_operation < dateDebut;
+    const dansPeriode = e.date_operation >= dateDebut && e.date_operation <= dateFin;
+    if (!avant && !dansPeriode) return;
+
+    const cD = cle(e.compte_debit);
+    const cC = cle(e.compte_credit);
+
+    if (cD) add(avant ? openDebit : perDebit, cD, e.montant_debit);
+    if (cC) add(avant ? openCredit : perCredit, cC, e.montant_credit);
+  });
+
+  const keys = new Set([...perDebit.keys(), ...perCredit.keys()]);
+
+  return Array.from(keys)
+    .map((k) => {
+      const od = openDebit.get(k) ?? 0;
+      const oc = openCredit.get(k) ?? 0;
+      const d = perDebit.get(k) ?? 0;
+      const c = perCredit.get(k) ?? 0;
+      const soldeOuverture = od - oc;
+      const soldeFinal = soldeOuverture + d - c;
+      return {
+        compte: k,
+        libelle: libelleByCompte.get(k) ?? "",
+        soldeOuverture,
+        debit: d,
+        credit: c,
+        soldeDebiteur: soldeFinal > 0 ? soldeFinal : 0,
+        soldeCrediteur: soldeFinal < 0 ? Math.abs(soldeFinal) : 0,
+      };
+    })
+    .sort((a, b) => a.compte.localeCompare(b.compte));
+}
 
 export default function BalancePage() {
   const { project } = useAuth();
+  const [mode, setMode] = useState<"GENERAL" | "AUXILIAIRE">("GENERAL");
+  const [filtreAux, setFiltreAux] = useState("40");
   const [dateDebut, setDateDebut] = useState(firstOfMonthIso());
   const [dateFin, setDateFin] = useState(todayIso());
-  const [rows, setRows] = useState<BalanceRow[]>([]);
+  const [entries, setEntries] = useState<JournalEntry[]>([]);
+  const [accounts, setAccounts] = useState<ChartOfAccount[]>([]);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -33,58 +103,63 @@ export default function BalancePage() {
     setLoading(true);
 
     Promise.all([
-      supabase
-        .from("journal_entries")
-        .select("*")
-        .eq("project_id", project.id)
-        .gte("date_operation", dateDebut)
-        .lte("date_operation", dateFin),
-      supabase
-        .from("chart_of_accounts")
-        .select("*")
-        .eq("project_id", project.id),
+      supabase.from("journal_entries").select("*").eq("project_id", project.id),
+      supabase.from("chart_of_accounts").select("*").eq("project_id", project.id),
     ]).then(([entriesRes, accountsRes]) => {
-      const entries = (entriesRes.data as JournalEntry[]) ?? [];
-      const accounts = (accountsRes.data as ChartOfAccount[]) ?? [];
-      const libelleByCompte = new Map(accounts.map((a) => [a.ccompte, a.libelle]));
-
-      const totals = new Map<string, { totalDebit: number; totalCredit: number }>();
-
-      entries.forEach((e) => {
-        if (e.compte_debit) {
-          const cur = totals.get(e.compte_debit) ?? { totalDebit: 0, totalCredit: 0 };
-          cur.totalDebit += e.montant_debit;
-          totals.set(e.compte_debit, cur);
-        }
-        if (e.compte_credit) {
-          const cur = totals.get(e.compte_credit) ?? { totalDebit: 0, totalCredit: 0 };
-          cur.totalCredit += e.montant_credit;
-          totals.set(e.compte_credit, cur);
-        }
-      });
-
-      const result: BalanceRow[] = Array.from(totals.entries())
-        .map(([compte, t]) => ({
-          compte,
-          libelle: libelleByCompte.get(compte) ?? "",
-          totalDebit: t.totalDebit,
-          totalCredit: t.totalCredit,
-        }))
-        .sort((a, b) => a.compte.localeCompare(b.compte));
-
-      setRows(result);
+      setEntries((entriesRes.data as JournalEntry[]) ?? []);
+      setAccounts((accountsRes.data as ChartOfAccount[]) ?? []);
       setLoading(false);
     });
-  }, [project, dateDebut, dateFin]);
+  }, [project]);
 
-  const grandTotalDebit = rows.reduce((sum, r) => sum + r.totalDebit, 0);
-  const grandTotalCredit = rows.reduce((sum, r) => sum + r.totalCredit, 0);
+  const libelleByCompte = new Map(accounts.map((a) => [a.ccompte, a.libelle]));
+  const rows =
+    mode === "AUXILIAIRE" && !/^\d{2,6}$/.test(filtreAux)
+      ? []
+      : calculerBalance(entries, libelleByCompte, mode, filtreAux, dateDebut, dateFin);
+
+  const totals = rows.reduce(
+    (acc, r) => ({
+      soldeOuverture: acc.soldeOuverture + r.soldeOuverture,
+      debit: acc.debit + r.debit,
+      credit: acc.credit + r.credit,
+      soldeDebiteur: acc.soldeDebiteur + r.soldeDebiteur,
+      soldeCrediteur: acc.soldeCrediteur + r.soldeCrediteur,
+    }),
+    { soldeOuverture: 0, debit: 0, credit: 0, soldeDebiteur: 0, soldeCrediteur: 0 }
+  );
 
   return (
     <div>
       <h1 className="mb-6 text-2xl font-semibold text-slate-100">Balance</h1>
 
-      <div className="mb-6 flex flex-wrap gap-4 rounded-xl border border-slate-700 bg-slate-900/60 p-4">
+      <div className="mb-6 flex flex-wrap items-end gap-4 rounded-xl border border-slate-700 bg-slate-900/60 p-4">
+        <div>
+          <label className="mb-1 block text-sm text-slate-300">
+            Type de balance
+          </label>
+          <select
+            value={mode}
+            onChange={(e) => setMode(e.target.value as "GENERAL" | "AUXILIAIRE")}
+            className="rounded-md border border-slate-600 bg-slate-800 px-3 py-2 text-slate-100"
+          >
+            <option value="GENERAL">Balance générale</option>
+            <option value="AUXILIAIRE">Balance auxiliaire</option>
+          </select>
+        </div>
+        {mode === "AUXILIAIRE" && (
+          <div>
+            <label className="mb-1 block text-sm text-slate-300">
+              Préfixe compte tiers (ex: 40, 401)
+            </label>
+            <input
+              type="text"
+              value={filtreAux}
+              onChange={(e) => setFiltreAux(e.target.value)}
+              className="w-40 rounded-md border border-slate-600 bg-slate-800 px-3 py-2 text-slate-100"
+            />
+          </div>
+        )}
         <div>
           <label className="mb-1 block text-sm text-slate-300">Du</label>
           <input
@@ -109,24 +184,26 @@ export default function BalancePage() {
         <table className="min-w-full text-sm">
           <thead className="bg-slate-800 text-slate-300">
             <tr>
-              <th className="px-3 py-2 text-left">Compte</th>
-              <th className="px-3 py-2 text-left">Libellé</th>
-              <th className="px-3 py-2 text-right">Total Débit</th>
-              <th className="px-3 py-2 text-right">Total Crédit</th>
-              <th className="px-3 py-2 text-right">Solde</th>
+              <th className="px-3 py-2 text-left">N°Compte</th>
+              <th className="px-3 py-2 text-left">Intitulé de compte</th>
+              <th className="px-3 py-2 text-right">Solde d&apos;ouverture</th>
+              <th className="px-3 py-2 text-right">Débit</th>
+              <th className="px-3 py-2 text-right">Crédit</th>
+              <th className="px-3 py-2 text-right">Solde débiteur</th>
+              <th className="px-3 py-2 text-right">Solde créditeur</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-800 bg-slate-900/40">
             {loading && (
               <tr>
-                <td colSpan={5} className="px-3 py-4 text-center text-slate-400">
+                <td colSpan={7} className="px-3 py-4 text-center text-slate-400">
                   Chargement...
                 </td>
               </tr>
             )}
             {!loading && rows.length === 0 && (
               <tr>
-                <td colSpan={5} className="px-3 py-4 text-center text-slate-400">
+                <td colSpan={7} className="px-3 py-4 text-center text-slate-400">
                   Aucun mouvement sur cette période.
                 </td>
               </tr>
@@ -136,13 +213,19 @@ export default function BalancePage() {
                 <td className="px-3 py-2">{r.compte}</td>
                 <td className="px-3 py-2">{r.libelle}</td>
                 <td className="px-3 py-2 text-right">
-                  {r.totalDebit.toLocaleString("fr-FR")}
+                  {r.soldeOuverture.toLocaleString("fr-FR")}
                 </td>
                 <td className="px-3 py-2 text-right">
-                  {r.totalCredit.toLocaleString("fr-FR")}
+                  {r.debit.toLocaleString("fr-FR")}
                 </td>
-                <td className="px-3 py-2 text-right font-medium">
-                  {(r.totalDebit - r.totalCredit).toLocaleString("fr-FR")}
+                <td className="px-3 py-2 text-right">
+                  {r.credit.toLocaleString("fr-FR")}
+                </td>
+                <td className="px-3 py-2 text-right">
+                  {r.soldeDebiteur ? r.soldeDebiteur.toLocaleString("fr-FR") : ""}
+                </td>
+                <td className="px-3 py-2 text-right">
+                  {r.soldeCrediteur ? r.soldeCrediteur.toLocaleString("fr-FR") : ""}
                 </td>
               </tr>
             ))}
@@ -151,16 +234,22 @@ export default function BalancePage() {
             <tfoot className="bg-slate-800 font-semibold text-slate-100">
               <tr>
                 <td className="px-3 py-2" colSpan={2}>
-                  TOTAUX
+                  TOTAL
                 </td>
                 <td className="px-3 py-2 text-right">
-                  {grandTotalDebit.toLocaleString("fr-FR")}
+                  {totals.soldeOuverture.toLocaleString("fr-FR")}
                 </td>
                 <td className="px-3 py-2 text-right">
-                  {grandTotalCredit.toLocaleString("fr-FR")}
+                  {totals.debit.toLocaleString("fr-FR")}
                 </td>
                 <td className="px-3 py-2 text-right">
-                  {(grandTotalDebit - grandTotalCredit).toLocaleString("fr-FR")}
+                  {totals.credit.toLocaleString("fr-FR")}
+                </td>
+                <td className="px-3 py-2 text-right">
+                  {totals.soldeDebiteur.toLocaleString("fr-FR")}
+                </td>
+                <td className="px-3 py-2 text-right">
+                  {totals.soldeCrediteur.toLocaleString("fr-FR")}
                 </td>
               </tr>
             </tfoot>
