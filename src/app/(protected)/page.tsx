@@ -121,7 +121,7 @@ export default function DashboardPage() {
 
   const tiles = [
     { key: "saisie", label: "Saisie", href: "/saisie", tone: "accent" as const },
-    { key: "paf", label: "PAF", tone: "accent" as const },
+    { key: "paf", label: "PAF", href: "/paf", tone: "accent" as const },
     { key: "glivre", label: "G-Livre", href: "/grand-livre", tone: "info" as const },
     { key: "erb", label: "ERB", tone: "info" as const },
     { key: "jaux", label: "J-Auxiliaire", href: "/journal-auxiliaire", tone: "info" as const },
