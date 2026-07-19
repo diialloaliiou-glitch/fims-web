@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/lib/auth-context";
+import { exporterCsv } from "@/lib/export-csv";
 import type { BudgetLine, JournalEntry, Zone } from "@/lib/types";
 
 function firstOfMonthIso() {
@@ -123,8 +124,50 @@ export default function ReportingPage() {
             Voir le Financial Report →
           </Link>
           <button
+            onClick={() =>
+              exporterCsv(
+                "Reporting",
+                [
+                  "Date",
+                  "Part_Code",
+                  "Part_C_Code",
+                  "Our Line Code",
+                  "Journal",
+                  "N°Compte",
+                  "Libellé",
+                  "N°CHQ/OV",
+                  "Zone",
+                  "Montant",
+                  "N°Pièce",
+                ],
+                rows.map((r) => [
+                  r.date,
+                  r.partCode,
+                  r.partCCode,
+                  r.ourLineCode,
+                  r.journal,
+                  r.compte,
+                  r.libelle,
+                  r.ref,
+                  r.zone,
+                  r.montant,
+                  r.nPiece,
+                ])
+              )
+            }
+            className="rounded-md border border-border-default px-4 py-2 text-sm text-fg-secondary hover:bg-surface-2"
+          >
+            Export Excel
+          </button>
+          <button
             onClick={() => window.print()}
             className="rounded-md border border-border-default px-4 py-2 text-sm text-fg-secondary hover:bg-surface-2"
+          >
+            Export PDF
+          </button>
+          <button
+            onClick={() => window.print()}
+            className="rounded-md bg-accent-blue px-4 py-2 text-sm text-on-accent hover:opacity-90"
           >
             Imprimer
           </button>

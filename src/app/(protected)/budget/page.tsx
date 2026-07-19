@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/lib/auth-context";
+import { exporterCsv } from "@/lib/export-csv";
 import type { BudgetLine, Donor, JournalEntry } from "@/lib/types";
 
 function todayIso() {
@@ -149,8 +150,52 @@ export default function FinancialReportPage() {
             Gérer les propositions budgétaires →
           </Link>
           <button
+            onClick={() =>
+              exporterCsv(
+                "FinancialReport",
+                [
+                  "Code",
+                  "Description",
+                  "Unit",
+                  "Qty",
+                  "Freq.",
+                  "% TO PROJECT",
+                  "Budget",
+                  "Prior Exp.",
+                  "Period Exp.",
+                  "Period Exp. (USD)",
+                  "Variance",
+                  "Burn Rate",
+                ],
+                rows.map((r) => [
+                  r.our_line_code,
+                  r.description,
+                  r.unit,
+                  r.quantity,
+                  r.frequence,
+                  r.t_pec,
+                  r.total_cost,
+                  r.priorExp,
+                  r.periodExp,
+                  r.periodExpDevise,
+                  r.variance,
+                  `${(r.burnRate * 100).toFixed(0)}%`,
+                ])
+              )
+            }
+            className="rounded-md border border-border-default px-4 py-2 text-sm text-fg-secondary hover:bg-surface-2"
+          >
+            Export Excel
+          </button>
+          <button
             onClick={() => window.print()}
             className="rounded-md border border-border-default px-4 py-2 text-sm text-fg-secondary hover:bg-surface-2"
+          >
+            Export PDF
+          </button>
+          <button
+            onClick={() => window.print()}
+            className="rounded-md bg-accent-blue px-4 py-2 text-sm text-on-accent hover:opacity-90"
           >
             Imprimer
           </button>

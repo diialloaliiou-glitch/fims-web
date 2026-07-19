@@ -99,7 +99,12 @@ export default function DashboardPage() {
 
   async function handleSearch(e: React.FormEvent) {
     e.preventDefault();
-    if (!project || !search.trim()) return;
+    if (!project) return;
+    if (!search.trim()) {
+      setNotice("Tape un numéro de pièce ou d'écriture avant de rechercher.");
+      setTimeout(() => setNotice(null), 3000);
+      return;
+    }
 
     setSearching(true);
     const { data } = await supabase

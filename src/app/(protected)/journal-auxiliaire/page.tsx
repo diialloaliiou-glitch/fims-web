@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/lib/auth-context";
+import { exporterCsv } from "@/lib/export-csv";
 import type { BankJournal, JournalEntry } from "@/lib/types";
 
 function firstOfMonthIso() {
@@ -64,11 +65,50 @@ export default function JournalAuxiliairePage() {
 
   return (
     <div>
-      <h1 className="mb-6 text-2xl font-semibold text-fg-primary">
-        Journal Auxiliaire
-      </h1>
+      <div className="mb-6 flex items-center justify-between">
+        <h1 className="text-2xl font-semibold text-fg-primary">
+          Journal Auxiliaire
+        </h1>
+        <div className="flex gap-2 print:hidden">
+          <button
+            onClick={() =>
+              exporterCsv(
+                "JournalAuxiliaire",
+                ["N°E-J", "B-S-Line", "Référence", "Date", "D", "C", "Libellé", "M_Débit", "M_Crédit", "N°Pièce"],
+                entries.map((e) => [
+                  e.n_ecriture_journal,
+                  e.b_s_line,
+                  e.n_cheque_ov,
+                  new Date(e.date_operation).toLocaleDateString("fr-FR"),
+                  e.compte_debit,
+                  e.compte_credit,
+                  e.libelle,
+                  e.montant_debit,
+                  e.montant_credit,
+                  e.n_piece,
+                ])
+              )
+            }
+            className="rounded-md border border-border-default px-4 py-2 text-sm text-fg-secondary hover:bg-surface-2"
+          >
+            Export Excel
+          </button>
+          <button
+            onClick={() => window.print()}
+            className="rounded-md border border-border-default px-4 py-2 text-sm text-fg-secondary hover:bg-surface-2"
+          >
+            Export PDF
+          </button>
+          <button
+            onClick={() => window.print()}
+            className="rounded-md bg-accent-blue px-4 py-2 text-sm text-on-accent hover:opacity-90"
+          >
+            Imprimer
+          </button>
+        </div>
+      </div>
 
-      <div className="mb-6 flex flex-wrap gap-4 rounded-xl border border-border-default bg-surface-1 p-4">
+      <div className="mb-6 flex flex-wrap gap-4 rounded-xl border border-border-default bg-surface-1 p-4 print:hidden">
         <div>
           <label className="mb-1 block text-sm text-fg-secondary">Journal</label>
           <select

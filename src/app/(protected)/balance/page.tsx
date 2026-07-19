@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/lib/auth-context";
+import { exporterCsv } from "@/lib/export-csv";
 import type { ChartOfAccount, JournalEntry } from "@/lib/types";
 
 function firstOfMonthIso() {
@@ -133,12 +134,48 @@ export default function BalancePage() {
     <div>
       <div className="mb-6 flex items-center justify-between">
         <h1 className="text-2xl font-semibold text-fg-primary">Balance</h1>
-        <button
-          onClick={() => window.print()}
-          className="rounded-md border border-border-default px-4 py-2 text-sm text-fg-secondary hover:bg-surface-2 print:hidden"
-        >
-          Imprimer
-        </button>
+        <div className="flex gap-2 print:hidden">
+          <button
+            onClick={() =>
+              exporterCsv(
+                "Balance",
+                [
+                  "N°Compte",
+                  "Intitulé",
+                  "Solde d'ouverture",
+                  "Débit",
+                  "Crédit",
+                  "Solde débiteur",
+                  "Solde créditeur",
+                ],
+                rows.map((r) => [
+                  r.compte,
+                  r.libelle,
+                  r.soldeOuverture,
+                  r.debit,
+                  r.credit,
+                  r.soldeDebiteur,
+                  r.soldeCrediteur,
+                ])
+              )
+            }
+            className="rounded-md border border-border-default px-4 py-2 text-sm text-fg-secondary hover:bg-surface-2"
+          >
+            Export Excel
+          </button>
+          <button
+            onClick={() => window.print()}
+            className="rounded-md border border-border-default px-4 py-2 text-sm text-fg-secondary hover:bg-surface-2"
+          >
+            Export PDF
+          </button>
+          <button
+            onClick={() => window.print()}
+            className="rounded-md bg-accent-blue px-4 py-2 text-sm text-on-accent hover:opacity-90"
+          >
+            Imprimer
+          </button>
+        </div>
       </div>
 
       <div className="mb-6 flex flex-wrap items-end gap-4 rounded-xl border border-border-default bg-surface-1 p-4 print:hidden">
