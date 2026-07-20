@@ -15,6 +15,12 @@ export type Project = {
   actif: boolean;
   date_debut_projet: string | null;
   date_fin_projet: string | null;
+  donor_id: number | null;
+  bank_account_number: string | null;
+  requested_by: string | null;
+  reviewed_by: string | null;
+  authorized_by: string | null;
+  country: string | null;
 };
 
 export type Organization = {
