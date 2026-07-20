@@ -4,6 +4,9 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/lib/auth-context";
 import { exporterCsv } from "@/lib/export-csv";
+import { FormField, fieldControlClass } from "@/components/ui/FormField";
+import { MiniTableHeader } from "@/components/ui/MiniTableHeader";
+import { Pill } from "@/components/ui/Pill";
 import type { ChartOfAccount, JournalEntry } from "@/lib/types";
 
 function firstOfMonthIso() {
@@ -63,7 +66,7 @@ export default function GrandLivrePage() {
       <div className="mb-6 flex items-center justify-between">
         <h1 className="text-2xl font-semibold text-text-primary">Grand Livre</h1>
         <div className="flex gap-2 print:hidden">
-          <button
+          <Pill
             onClick={() => {
               let s = 0;
               exporterCsv(
@@ -84,32 +87,22 @@ export default function GrandLivrePage() {
                 })
               );
             }}
-            className="rounded-md border border-border-subtle px-4 py-2 text-sm text-text-secondary hover:bg-bg-card"
           >
             Export Excel
-          </button>
-          <button
-            onClick={() => window.print()}
-            className="rounded-md border border-border-subtle px-4 py-2 text-sm text-text-secondary hover:bg-bg-card"
-          >
-            Export PDF
-          </button>
-          <button
-            onClick={() => window.print()}
-            className="rounded-md bg-accent-blue-solid px-4 py-2 text-sm text-on-accent-dark hover:opacity-90"
-          >
+          </Pill>
+          <Pill onClick={() => window.print()}>Export PDF</Pill>
+          <Pill solid onClick={() => window.print()}>
             Imprimer
-          </button>
+          </Pill>
         </div>
       </div>
 
       <div className="mb-6 flex flex-wrap gap-4 rounded-xl border border-border-subtle bg-bg-card p-4 print:hidden">
-        <div>
-          <label className="mb-1 block text-sm text-text-secondary">Compte</label>
+        <FormField label="Compte">
           <select
             value={compte}
             onChange={(e) => setCompte(e.target.value)}
-            className="rounded-md border border-border-subtle bg-bg-card px-3 py-2 text-text-primary"
+            className={fieldControlClass}
           >
             <option value="">Tous les comptes</option>
             {accounts.map((a) => (
@@ -118,41 +111,27 @@ export default function GrandLivrePage() {
               </option>
             ))}
           </select>
-        </div>
-        <div>
-          <label className="mb-1 block text-sm text-text-secondary">Du</label>
-          <input
-            type="date"
-            value={dateDebut}
-            onChange={(e) => setDateDebut(e.target.value)}
-            className="rounded-md border border-border-subtle bg-bg-card px-3 py-2 text-text-primary"
-          />
-        </div>
-        <div>
-          <label className="mb-1 block text-sm text-text-secondary">Au</label>
-          <input
-            type="date"
-            value={dateFin}
-            onChange={(e) => setDateFin(e.target.value)}
-            className="rounded-md border border-border-subtle bg-bg-card px-3 py-2 text-text-primary"
-          />
-        </div>
+        </FormField>
+        <FormField
+          label="Du"
+          type="date"
+          value={dateDebut}
+          onChange={(e) => setDateDebut(e.target.value)}
+        />
+        <FormField
+          label="Au"
+          type="date"
+          value={dateFin}
+          onChange={(e) => setDateFin(e.target.value)}
+        />
       </div>
 
       <div className="overflow-x-auto rounded-xl border border-border-subtle">
         <table className="min-w-full text-sm">
-          <thead className="bg-bg-card text-text-secondary">
-            <tr>
-              <th className="px-3 py-2 text-left">Date</th>
-              <th className="px-3 py-2 text-left">Pièce</th>
-              <th className="px-3 py-2 text-left">Compte D</th>
-              <th className="px-3 py-2 text-left">Compte C</th>
-              <th className="px-3 py-2 text-left">Libellé</th>
-              <th className="px-3 py-2 text-right">Débit</th>
-              <th className="px-3 py-2 text-right">Crédit</th>
-              <th className="px-3 py-2 text-right">Solde cumulé</th>
-            </tr>
-          </thead>
+          <MiniTableHeader
+            columns={["Date", "Pièce", "Compte D", "Compte C", "Libellé", "Débit", "Crédit", "Solde cumulé"]}
+            align={["left", "left", "left", "left", "left", "right", "right", "right"]}
+          />
           <tbody className="divide-y divide-border-subtle bg-bg-card/60">
             {loading && (
               <tr>

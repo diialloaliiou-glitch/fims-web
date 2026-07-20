@@ -3,6 +3,9 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/lib/auth-context";
+import { FormField, fieldControlClass } from "@/components/ui/FormField";
+import { MiniTableHeader } from "@/components/ui/MiniTableHeader";
+import { PrimaryButton } from "@/components/ui/PrimaryButton";
 import type { ErbLine } from "@/lib/types";
 
 type Cote = "CHEZ_MOI" | "CHEZ_BANQUE";
@@ -93,88 +96,66 @@ function Colonne({
         className="mb-4 rounded-xl border border-border-subtle bg-bg-card p-4"
       >
         <div className="mb-3 grid grid-cols-2 gap-3">
-          <div>
-            <label className="mb-1 block text-xs text-text-secondary">Date</label>
-            <input
-              type="date"
-              value={form.date_operation}
-              onChange={(e) =>
-                setForm({ ...form, date_operation: e.target.value })
-              }
-              className="w-full rounded-md border border-border-subtle bg-bg-card px-2 py-1.5 text-sm text-text-primary"
-            />
-          </div>
-          <div>
-            <label className="mb-1 block text-xs text-text-secondary">
-              Référence
-            </label>
-            <input
-              type="text"
-              value={form.reference}
-              onChange={(e) => setForm({ ...form, reference: e.target.value })}
-              className="w-full rounded-md border border-border-subtle bg-bg-card px-2 py-1.5 text-sm text-text-primary"
-            />
-          </div>
+          <FormField
+            label="Date"
+            type="date"
+            value={form.date_operation}
+            onChange={(e) => setForm({ ...form, date_operation: e.target.value })}
+          />
+          <FormField
+            label="Référence"
+            value={form.reference}
+            onChange={(e) => setForm({ ...form, reference: e.target.value })}
+          />
           <div className="col-span-2">
-            <label className="mb-1 block text-xs text-text-secondary">
-              Opération *
-            </label>
-            <input
-              type="text"
+            <FormField
+              label="Opération"
+              required
               value={form.operation}
               onChange={(e) => setForm({ ...form, operation: e.target.value })}
-              className="w-full rounded-md border border-border-subtle bg-bg-card px-2 py-1.5 text-sm text-text-primary"
             />
           </div>
-          <div>
-            <label className="mb-1 block text-xs text-text-secondary">
-              Montant *
-            </label>
-            <input
-              type="number"
-              step="0.01"
-              value={form.montant}
-              onChange={(e) => setForm({ ...form, montant: e.target.value })}
-              className="w-full rounded-md border border-border-subtle bg-bg-card px-2 py-1.5 text-sm text-text-primary"
-            />
-          </div>
-          <div>
-            <label className="mb-1 block text-xs text-text-secondary">Sens</label>
+          <FormField
+            label="Montant"
+            required
+            type="number"
+            step="0.01"
+            value={form.montant}
+            onChange={(e) => setForm({ ...form, montant: e.target.value })}
+          />
+          <FormField label="Sens">
             <select
               value={form.sens}
               onChange={(e) =>
                 setForm({ ...form, sens: e.target.value as "debit" | "credit" })
               }
-              className="w-full rounded-md border border-border-subtle bg-bg-card px-2 py-1.5 text-sm text-text-primary"
+              className={fieldControlClass}
             >
               <option value="debit">Débit</option>
               <option value="credit">Crédit</option>
             </select>
-          </div>
+          </FormField>
         </div>
         {error && <p className="mb-2 text-xs text-accent-red">{error}</p>}
-        <button
-          type="submit"
-          disabled={saving}
-          className="rounded-md bg-accent-teal px-4 py-1.5 text-sm font-medium text-on-accent-light hover:opacity-90 disabled:opacity-60"
-        >
+        <PrimaryButton type="submit" disabled={saving}>
           {saving ? "..." : "+ Ajouter"}
-        </button>
+        </PrimaryButton>
       </form>
 
       <div className="overflow-x-auto rounded-xl border border-border-subtle">
         <table className="min-w-full text-sm">
-          <thead className="bg-bg-card text-text-secondary">
-            <tr>
-              <th className="px-2 py-2 text-left">Date</th>
-              <th className="px-2 py-2 text-left">Référence</th>
-              <th className="px-2 py-2 text-left">Opération</th>
-              <th className="px-2 py-2 text-right">Débit</th>
-              <th className="px-2 py-2 text-right">Crédit</th>
-              {showPointe && <th className="px-2 py-2 text-center">C</th>}
-              <th className="px-2 py-2 text-right">Solde</th>
-            </tr>
-          </thead>
+          <MiniTableHeader
+            columns={
+              showPointe
+                ? ["Date", "Référence", "Opération", "Débit", "Crédit", "C", "Solde"]
+                : ["Date", "Référence", "Opération", "Débit", "Crédit", "Solde"]
+            }
+            align={
+              showPointe
+                ? ["left", "left", "left", "right", "right", "center", "right"]
+                : ["left", "left", "left", "right", "right", "right"]
+            }
+          />
           <tbody className="divide-y divide-border-subtle bg-bg-card/60">
             {sorted.length === 0 && (
               <tr>

@@ -3,6 +3,9 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/lib/auth-context";
+import { FormField, fieldControlClass } from "@/components/ui/FormField";
+import { MiniTableHeader } from "@/components/ui/MiniTableHeader";
+import { PrimaryButton } from "@/components/ui/PrimaryButton";
 import type { ChartOfAccount } from "@/lib/types";
 
 const TYPES_COMPTE = [
@@ -135,61 +138,36 @@ export default function PlanComptablePage() {
           {editingId ? `Modifier le compte #${editingId}` : "Ajouter un compte"}
         </p>
         <div className="mb-4 grid grid-cols-1 gap-4 sm:grid-cols-3">
-          <div>
-            <label className="mb-1 block text-sm text-text-secondary">
-              Compte (classe) *
-            </label>
-            <input
-              type="text"
-              required
-              value={form.compte}
-              onChange={(e) => setForm({ ...form, compte: e.target.value })}
-              className="w-full rounded-md border border-border-subtle bg-bg-card px-3 py-2 text-text-primary"
-            />
-          </div>
-          <div>
-            <label className="mb-1 block text-sm text-text-secondary">
-              Sous-compte
-            </label>
-            <input
-              type="text"
-              value={form.sous_compte}
-              onChange={(e) => setForm({ ...form, sous_compte: e.target.value })}
-              className="w-full rounded-md border border-border-subtle bg-bg-card px-3 py-2 text-text-primary"
-            />
-          </div>
-          <div>
-            <label className="mb-1 block text-sm text-text-secondary">
-              N° compte complet *
-            </label>
-            <input
-              type="text"
-              required
-              value={form.ccompte}
-              onChange={(e) => setForm({ ...form, ccompte: e.target.value })}
-              className="w-full rounded-md border border-border-subtle bg-bg-card px-3 py-2 text-text-primary"
-            />
-          </div>
+          <FormField
+            label="Compte (classe)"
+            required
+            value={form.compte}
+            onChange={(e) => setForm({ ...form, compte: e.target.value })}
+          />
+          <FormField
+            label="Sous-compte"
+            value={form.sous_compte}
+            onChange={(e) => setForm({ ...form, sous_compte: e.target.value })}
+          />
+          <FormField
+            label="N° compte complet"
+            required
+            value={form.ccompte}
+            onChange={(e) => setForm({ ...form, ccompte: e.target.value })}
+          />
           <div className="sm:col-span-2">
-            <label className="mb-1 block text-sm text-text-secondary">
-              Libellé *
-            </label>
-            <input
-              type="text"
+            <FormField
+              label="Libellé"
               required
               value={form.libelle}
               onChange={(e) => setForm({ ...form, libelle: e.target.value })}
-              className="w-full rounded-md border border-border-subtle bg-bg-card px-3 py-2 text-text-primary"
             />
           </div>
-          <div>
-            <label className="mb-1 block text-sm text-text-secondary">
-              Type de compte
-            </label>
+          <FormField label="Type de compte">
             <select
               value={form.type_compte}
               onChange={(e) => setForm({ ...form, type_compte: e.target.value })}
-              className="w-full rounded-md border border-border-subtle bg-bg-card px-3 py-2 text-text-primary"
+              className={fieldControlClass}
             >
               <option value="">—</option>
               {TYPES_COMPTE.map((t) => (
@@ -198,7 +176,7 @@ export default function PlanComptablePage() {
                 </option>
               ))}
             </select>
-          </div>
+          </FormField>
           <div className="flex items-end pb-2">
             <label className="flex items-center gap-2 text-sm text-text-secondary">
               <input
@@ -216,13 +194,9 @@ export default function PlanComptablePage() {
         {error && <p className="mb-3 text-sm text-accent-red">{error}</p>}
 
         <div className="flex gap-3">
-          <button
-            type="submit"
-            disabled={saving}
-            className="rounded-md bg-accent-teal px-5 py-2 font-medium text-on-accent-light hover:opacity-90 disabled:opacity-60"
-          >
+          <PrimaryButton type="submit" disabled={saving}>
             {saving ? "Enregistrement..." : editingId ? "Mettre à jour" : "Ajouter"}
-          </button>
+          </PrimaryButton>
           {editingId && (
             <button
               type="button"
@@ -235,25 +209,21 @@ export default function PlanComptablePage() {
         </div>
       </form>
 
-      <input
-        type="text"
-        value={filter}
-        onChange={(e) => setFilter(e.target.value)}
-        placeholder="Filtrer par compte ou libellé..."
-        className="mb-4 w-full max-w-sm rounded-md border border-border-subtle bg-bg-card px-3 py-2 text-text-primary"
-      />
+      <div className="mb-4 max-w-sm">
+        <FormField
+          label="Filtrer"
+          value={filter}
+          onChange={(e) => setFilter(e.target.value)}
+          placeholder="Compte ou libellé..."
+        />
+      </div>
 
       <div className="overflow-x-auto rounded-xl border border-border-subtle">
         <table className="min-w-full text-sm">
-          <thead className="bg-bg-card text-text-secondary">
-            <tr>
-              <th className="px-3 py-2 text-left">N° compte</th>
-              <th className="px-3 py-2 text-left">Libellé</th>
-              <th className="px-3 py-2 text-left">Type</th>
-              <th className="px-3 py-2 text-center">Tiers</th>
-              <th className="px-3 py-2 text-right">Action</th>
-            </tr>
-          </thead>
+          <MiniTableHeader
+            columns={["N° compte", "Libellé", "Type", "Tiers", "Action"]}
+            align={["left", "left", "left", "center", "right"]}
+          />
           <tbody className="divide-y divide-border-subtle bg-bg-card/60">
             {loading && (
               <tr>

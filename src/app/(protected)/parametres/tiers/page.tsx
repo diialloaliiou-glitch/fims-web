@@ -3,6 +3,9 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/lib/auth-context";
+import { FormField, fieldControlClass } from "@/components/ui/FormField";
+import { MiniTableHeader } from "@/components/ui/MiniTableHeader";
+import { PrimaryButton } from "@/components/ui/PrimaryButton";
 import type { ChartOfAccount, ThirdParty, Zone } from "@/lib/types";
 
 const TYPES_TIERS = ["Fournisseur", "Prestataire", "Bailleur", "Personnel", "Autre"];
@@ -151,23 +154,18 @@ export default function TiersPage() {
         </p>
         <div className="mb-4 grid grid-cols-1 gap-4 sm:grid-cols-3">
           <div className="sm:col-span-2">
-            <label className="mb-1 block text-sm text-text-secondary">
-              Nom du tiers *
-            </label>
-            <input
-              type="text"
+            <FormField
+              label="Nom du tiers"
               required
               value={form.nom_tiers}
               onChange={(e) => setForm({ ...form, nom_tiers: e.target.value })}
-              className="w-full rounded-md border border-border-subtle bg-bg-card px-3 py-2 text-text-primary"
             />
           </div>
-          <div>
-            <label className="mb-1 block text-sm text-text-secondary">Type</label>
+          <FormField label="Type">
             <select
               value={form.type}
               onChange={(e) => setForm({ ...form, type: e.target.value })}
-              className="w-full rounded-md border border-border-subtle bg-bg-card px-3 py-2 text-text-primary"
+              className={fieldControlClass}
             >
               {TYPES_TIERS.map((t) => (
                 <option key={t} value={t}>
@@ -175,20 +173,16 @@ export default function TiersPage() {
                 </option>
               ))}
             </select>
-          </div>
+          </FormField>
           <div>
-            <label className="mb-1 block text-sm text-text-secondary">
-              Compte classe 4 *
-            </label>
-            <input
-              type="text"
+            <FormField
+              label="Compte classe 4"
               required
               list="comptes-tiers-list"
               value={form.compte_classe_4}
               onChange={(e) =>
                 setForm({ ...form, compte_classe_4: e.target.value })
               }
-              className="w-full rounded-md border border-border-subtle bg-bg-card px-3 py-2 text-text-primary"
             />
             <datalist id="comptes-tiers-list">
               {comptesTiers.map((c) => (
@@ -198,21 +192,16 @@ export default function TiersPage() {
               ))}
             </datalist>
           </div>
-          <div>
-            <label className="mb-1 block text-sm text-text-secondary">Contact</label>
-            <input
-              type="text"
-              value={form.contact}
-              onChange={(e) => setForm({ ...form, contact: e.target.value })}
-              className="w-full rounded-md border border-border-subtle bg-bg-card px-3 py-2 text-text-primary"
-            />
-          </div>
-          <div>
-            <label className="mb-1 block text-sm text-text-secondary">Zone</label>
+          <FormField
+            label="Contact"
+            value={form.contact}
+            onChange={(e) => setForm({ ...form, contact: e.target.value })}
+          />
+          <FormField label="Zone">
             <select
               value={form.zone_id}
               onChange={(e) => setForm({ ...form, zone_id: e.target.value })}
-              className="w-full rounded-md border border-border-subtle bg-bg-card px-3 py-2 text-text-primary"
+              className={fieldControlClass}
             >
               <option value="">—</option>
               {zones.map((z) => (
@@ -221,19 +210,15 @@ export default function TiersPage() {
                 </option>
               ))}
             </select>
-          </div>
+          </FormField>
         </div>
 
         {error && <p className="mb-3 text-sm text-accent-red">{error}</p>}
 
         <div className="flex gap-3">
-          <button
-            type="submit"
-            disabled={saving}
-            className="rounded-md bg-accent-teal px-5 py-2 font-medium text-on-accent-light hover:opacity-90 disabled:opacity-60"
-          >
+          <PrimaryButton type="submit" disabled={saving}>
             {saving ? "Enregistrement..." : editingId ? "Mettre à jour" : "Ajouter"}
-          </button>
+          </PrimaryButton>
           {editingId && (
             <button
               type="button"
@@ -246,25 +231,21 @@ export default function TiersPage() {
         </div>
       </form>
 
-      <input
-        type="text"
-        value={filter}
-        onChange={(e) => setFilter(e.target.value)}
-        placeholder="Filtrer par nom..."
-        className="mb-4 w-full max-w-sm rounded-md border border-border-subtle bg-bg-card px-3 py-2 text-text-primary"
-      />
+      <div className="mb-4 max-w-sm">
+        <FormField
+          label="Filtrer"
+          value={filter}
+          onChange={(e) => setFilter(e.target.value)}
+          placeholder="Nom du tiers..."
+        />
+      </div>
 
       <div className="overflow-x-auto rounded-xl border border-border-subtle">
         <table className="min-w-full text-sm">
-          <thead className="bg-bg-card text-text-secondary">
-            <tr>
-              <th className="px-3 py-2 text-left">Nom</th>
-              <th className="px-3 py-2 text-left">Type</th>
-              <th className="px-3 py-2 text-left">Contact</th>
-              <th className="px-3 py-2 text-left">Statut</th>
-              <th className="px-3 py-2 text-right">Action</th>
-            </tr>
-          </thead>
+          <MiniTableHeader
+            columns={["Nom", "Type", "Contact", "Statut", "Action"]}
+            align={["left", "left", "left", "left", "right"]}
+          />
           <tbody className="divide-y divide-border-subtle bg-bg-card/60">
             {loading && (
               <tr>

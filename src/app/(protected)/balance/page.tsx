@@ -4,6 +4,9 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/lib/auth-context";
 import { exporterCsv } from "@/lib/export-csv";
+import { FormField, fieldControlClass } from "@/components/ui/FormField";
+import { MiniTableHeader } from "@/components/ui/MiniTableHeader";
+import { Pill } from "@/components/ui/Pill";
 import type { ChartOfAccount, JournalEntry } from "@/lib/types";
 
 function firstOfMonthIso() {
@@ -135,7 +138,7 @@ export default function BalancePage() {
       <div className="mb-6 flex items-center justify-between">
         <h1 className="text-2xl font-semibold text-text-primary">Balance</h1>
         <div className="flex gap-2 print:hidden">
-          <button
+          <Pill
             onClick={() =>
               exporterCsv(
                 "Balance",
@@ -159,85 +162,54 @@ export default function BalancePage() {
                 ])
               )
             }
-            className="rounded-md border border-border-subtle px-4 py-2 text-sm text-text-secondary hover:bg-bg-card"
           >
             Export Excel
-          </button>
-          <button
-            onClick={() => window.print()}
-            className="rounded-md border border-border-subtle px-4 py-2 text-sm text-text-secondary hover:bg-bg-card"
-          >
-            Export PDF
-          </button>
-          <button
-            onClick={() => window.print()}
-            className="rounded-md bg-accent-blue-solid px-4 py-2 text-sm text-on-accent-dark hover:opacity-90"
-          >
+          </Pill>
+          <Pill onClick={() => window.print()}>Export PDF</Pill>
+          <Pill solid onClick={() => window.print()}>
             Imprimer
-          </button>
+          </Pill>
         </div>
       </div>
 
       <div className="mb-6 flex flex-wrap items-end gap-4 rounded-xl border border-border-subtle bg-bg-card p-4 print:hidden">
-        <div>
-          <label className="mb-1 block text-sm text-text-secondary">
-            Type de balance
-          </label>
+        <FormField label="Type de balance">
           <select
             value={mode}
             onChange={(e) => setMode(e.target.value as "GENERAL" | "AUXILIAIRE")}
-            className="rounded-md border border-border-subtle bg-bg-card px-3 py-2 text-text-primary"
+            className={fieldControlClass}
           >
             <option value="GENERAL">Balance générale</option>
             <option value="AUXILIAIRE">Balance auxiliaire</option>
           </select>
-        </div>
+        </FormField>
         {mode === "AUXILIAIRE" && (
-          <div>
-            <label className="mb-1 block text-sm text-text-secondary">
-              Préfixe compte tiers (ex: 40, 401)
-            </label>
-            <input
-              type="text"
-              value={filtreAux}
-              onChange={(e) => setFiltreAux(e.target.value)}
-              className="w-40 rounded-md border border-border-subtle bg-bg-card px-3 py-2 text-text-primary"
-            />
-          </div>
+          <FormField
+            label="Préfixe compte tiers (ex: 40, 401)"
+            value={filtreAux}
+            onChange={(e) => setFiltreAux(e.target.value)}
+          />
         )}
-        <div>
-          <label className="mb-1 block text-sm text-text-secondary">Du</label>
-          <input
-            type="date"
-            value={dateDebut}
-            onChange={(e) => setDateDebut(e.target.value)}
-            className="rounded-md border border-border-subtle bg-bg-card px-3 py-2 text-text-primary"
-          />
-        </div>
-        <div>
-          <label className="mb-1 block text-sm text-text-secondary">Au</label>
-          <input
-            type="date"
-            value={dateFin}
-            onChange={(e) => setDateFin(e.target.value)}
-            className="rounded-md border border-border-subtle bg-bg-card px-3 py-2 text-text-primary"
-          />
-        </div>
+        <FormField
+          label="Du"
+          type="date"
+          value={dateDebut}
+          onChange={(e) => setDateDebut(e.target.value)}
+        />
+        <FormField
+          label="Au"
+          type="date"
+          value={dateFin}
+          onChange={(e) => setDateFin(e.target.value)}
+        />
       </div>
 
       <div className="overflow-x-auto rounded-xl border border-border-subtle">
         <table className="min-w-full text-sm">
-          <thead className="bg-bg-card text-text-secondary">
-            <tr>
-              <th className="px-3 py-2 text-left">N°Compte</th>
-              <th className="px-3 py-2 text-left">Intitulé de compte</th>
-              <th className="px-3 py-2 text-right">Solde d&apos;ouverture</th>
-              <th className="px-3 py-2 text-right">Débit</th>
-              <th className="px-3 py-2 text-right">Crédit</th>
-              <th className="px-3 py-2 text-right">Solde débiteur</th>
-              <th className="px-3 py-2 text-right">Solde créditeur</th>
-            </tr>
-          </thead>
+          <MiniTableHeader
+            columns={["N°Compte", "Intitulé de compte", "Solde d'ouverture", "Débit", "Crédit", "Solde débiteur", "Solde créditeur"]}
+            align={["left", "left", "right", "right", "right", "right", "right"]}
+          />
           <tbody className="divide-y divide-border-subtle bg-bg-card/60">
             {loading && (
               <tr>

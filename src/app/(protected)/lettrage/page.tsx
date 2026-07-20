@@ -3,6 +3,9 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/lib/auth-context";
+import { FormField } from "@/components/ui/FormField";
+import { MiniTableHeader } from "@/components/ui/MiniTableHeader";
+import { PrimaryButton } from "@/components/ui/PrimaryButton";
 import type { JournalEntry } from "@/lib/types";
 
 // Reproduit LettrageAutomatique_JDEPENSE() du FIMS original (VBA) :
@@ -150,13 +153,9 @@ export default function LettragePage() {
       <h1 className="mb-6 text-2xl font-semibold text-text-primary">Lettrage</h1>
 
       <div className="mb-6 flex flex-wrap items-center gap-3 rounded-xl border border-border-subtle bg-bg-card p-4">
-        <button
-          onClick={runLettrage}
-          disabled={running || loading}
-          className="rounded-md bg-accent-teal px-4 py-2 text-sm font-medium text-on-accent-light hover:opacity-90 disabled:opacity-60"
-        >
+        <PrimaryButton onClick={runLettrage} disabled={running || loading}>
           {running ? "..." : "Lancer le lettrage automatique"}
-        </button>
+        </PrimaryButton>
         <button
           onClick={runDelettrage}
           disabled={running || loading}
@@ -175,27 +174,21 @@ export default function LettragePage() {
         </p>
       )}
 
-      <input
-        type="text"
-        value={compte}
-        onChange={(e) => setCompte(e.target.value)}
-        placeholder="Filtrer par compte..."
-        className="mb-4 w-full max-w-sm rounded-md border border-border-subtle bg-bg-card px-3 py-2 text-text-primary"
-      />
+      <div className="mb-4 max-w-sm">
+        <FormField
+          label="Filtrer par compte"
+          value={compte}
+          onChange={(e) => setCompte(e.target.value)}
+          placeholder="Ex: 401"
+        />
+      </div>
 
       <div className="overflow-x-auto rounded-xl border border-border-subtle">
         <table className="min-w-full text-sm">
-          <thead className="bg-bg-card text-text-secondary">
-            <tr>
-              <th className="px-3 py-2 text-left">Pièce</th>
-              <th className="px-3 py-2 text-left">Date</th>
-              <th className="px-3 py-2 text-left">Compte</th>
-              <th className="px-3 py-2 text-left">Libellé</th>
-              <th className="px-3 py-2 text-right">Débit</th>
-              <th className="px-3 py-2 text-right">Crédit</th>
-              <th className="px-3 py-2 text-left">Lettrage</th>
-            </tr>
-          </thead>
+          <MiniTableHeader
+            columns={["Pièce", "Date", "Compte", "Libellé", "Débit", "Crédit", "Lettrage"]}
+            align={["left", "left", "left", "left", "right", "right", "left"]}
+          />
           <tbody className="divide-y divide-border-subtle bg-bg-card/60">
             {loading && (
               <tr>

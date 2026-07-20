@@ -3,6 +3,9 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/lib/auth-context";
+import { FormField, fieldControlClass } from "@/components/ui/FormField";
+import { MiniTableHeader } from "@/components/ui/MiniTableHeader";
+import { PrimaryButton } from "@/components/ui/PrimaryButton";
 import type { ChartOfAccount, Personnel, Zone } from "@/lib/types";
 
 const emptyForm = {
@@ -192,62 +195,38 @@ export default function PersonnelPage() {
           {editingId ? `Modifier #${editingId}` : "Ajouter un membre du personnel"}
         </p>
         <div className="mb-4 grid grid-cols-1 gap-4 sm:grid-cols-3">
-          <div>
-            <label className="mb-1 block text-sm text-text-secondary">
-              Matricule *
-            </label>
-            <input
-              type="text"
-              required
-              value={form.matricule}
-              onChange={(e) => setForm({ ...form, matricule: e.target.value })}
-              className="w-full rounded-md border border-border-subtle bg-bg-card px-3 py-2 text-text-primary"
-            />
-          </div>
+          <FormField
+            label="Matricule"
+            required
+            value={form.matricule}
+            onChange={(e) => setForm({ ...form, matricule: e.target.value })}
+          />
           <div className="sm:col-span-2">
-            <label className="mb-1 block text-sm text-text-secondary">
-              Nom complet *
-            </label>
-            <input
-              type="text"
+            <FormField
+              label="Nom complet"
               required
               value={form.prenom_nom}
               onChange={(e) => setForm({ ...form, prenom_nom: e.target.value })}
-              className="w-full rounded-md border border-border-subtle bg-bg-card px-3 py-2 text-text-primary"
             />
           </div>
+          <FormField
+            label="Poste"
+            value={form.poste}
+            onChange={(e) => setForm({ ...form, poste: e.target.value })}
+          />
+          <FormField
+            label="B-S-Line (ligne budgétaire)"
+            value={form.b_s_line}
+            onChange={(e) => setForm({ ...form, b_s_line: e.target.value })}
+          />
           <div>
-            <label className="mb-1 block text-sm text-text-secondary">Poste</label>
-            <input
-              type="text"
-              value={form.poste}
-              onChange={(e) => setForm({ ...form, poste: e.target.value })}
-              className="w-full rounded-md border border-border-subtle bg-bg-card px-3 py-2 text-text-primary"
-            />
-          </div>
-          <div>
-            <label className="mb-1 block text-sm text-text-secondary">
-              B-S-Line (ligne budgétaire)
-            </label>
-            <input
-              type="text"
-              value={form.b_s_line}
-              onChange={(e) => setForm({ ...form, b_s_line: e.target.value })}
-              className="w-full rounded-md border border-border-subtle bg-bg-card px-3 py-2 text-text-primary"
-            />
-          </div>
-          <div>
-            <label className="mb-1 block text-sm text-text-secondary">
-              Compte classe 4
-            </label>
-            <input
+            <FormField
+              label="Compte classe 4"
               list="comptes-list"
-              type="text"
               value={form.compte_classe_4}
               onChange={(e) =>
                 setForm({ ...form, compte_classe_4: e.target.value })
               }
-              className="w-full rounded-md border border-border-subtle bg-bg-card px-3 py-2 text-text-primary"
             />
             <datalist id="comptes-list">
               {comptes.map((c) => (
@@ -257,12 +236,11 @@ export default function PersonnelPage() {
               ))}
             </datalist>
           </div>
-          <div>
-            <label className="mb-1 block text-sm text-text-secondary">Zone</label>
+          <FormField label="Zone">
             <select
               value={form.zone_id}
               onChange={(e) => setForm({ ...form, zone_id: e.target.value })}
-              className="w-full rounded-md border border-border-subtle bg-bg-card px-3 py-2 text-text-primary"
+              className={fieldControlClass}
             >
               <option value="">—</option>
               {zones.map((z) => (
@@ -271,117 +249,68 @@ export default function PersonnelPage() {
                 </option>
               ))}
             </select>
-          </div>
-          <div>
-            <label className="mb-1 block text-sm text-text-secondary">
-              Salaire brut *
-            </label>
-            <input
-              type="number"
-              step="0.01"
-              required
-              value={form.salaire_brut}
-              onChange={(e) => setForm({ ...form, salaire_brut: e.target.value })}
-              className="w-full rounded-md border border-border-subtle bg-bg-card px-3 py-2 text-text-primary"
-            />
-          </div>
-          <div>
-            <label className="mb-1 block text-sm text-text-secondary">
-              INPS ouvrière
-            </label>
-            <input
-              type="number"
-              step="0.01"
-              value={form.inps_ouvriere}
-              onChange={(e) =>
-                setForm({ ...form, inps_ouvriere: e.target.value })
-              }
-              className="w-full rounded-md border border-border-subtle bg-bg-card px-3 py-2 text-text-primary"
-            />
-          </div>
-          <div>
-            <label className="mb-1 block text-sm text-text-secondary">ITS</label>
-            <input
-              type="number"
-              step="0.01"
-              value={form.its}
-              onChange={(e) => setForm({ ...form, its: e.target.value })}
-              className="w-full rounded-md border border-border-subtle bg-bg-card px-3 py-2 text-text-primary"
-            />
-          </div>
-          <div>
-            <label className="mb-1 block text-sm text-text-secondary">
-              INPS patronale
-            </label>
-            <input
-              type="number"
-              step="0.01"
-              value={form.inps_patronale}
-              onChange={(e) =>
-                setForm({ ...form, inps_patronale: e.target.value })
-              }
-              className="w-full rounded-md border border-border-subtle bg-bg-card px-3 py-2 text-text-primary"
-            />
-          </div>
-          <div>
-            <label className="mb-1 block text-sm text-text-secondary">
-              TL patronale
-            </label>
-            <input
-              type="number"
-              step="0.01"
-              value={form.tl_patronale}
-              onChange={(e) =>
-                setForm({ ...form, tl_patronale: e.target.value })
-              }
-              className="w-full rounded-md border border-border-subtle bg-bg-card px-3 py-2 text-text-primary"
-            />
-          </div>
-          <div>
-            <label className="mb-1 block text-sm text-text-secondary">
-              Salaire net (calculé)
-            </label>
-            <input
-              type="text"
-              disabled
-              value={salaireNetPreview.toLocaleString("fr-FR")}
-              className="w-full rounded-md border border-border-subtle bg-bg-card px-3 py-2 text-text-secondary"
-            />
-          </div>
-          <div>
-            <label className="mb-1 block text-sm text-text-secondary">
-              Date début
-            </label>
-            <input
-              type="date"
-              value={form.date_debut}
-              onChange={(e) => setForm({ ...form, date_debut: e.target.value })}
-              className="w-full rounded-md border border-border-subtle bg-bg-card px-3 py-2 text-text-primary"
-            />
-          </div>
-          <div>
-            <label className="mb-1 block text-sm text-text-secondary">
-              Date fin
-            </label>
-            <input
-              type="date"
-              value={form.date_fin}
-              onChange={(e) => setForm({ ...form, date_fin: e.target.value })}
-              className="w-full rounded-md border border-border-subtle bg-bg-card px-3 py-2 text-text-primary"
-            />
-          </div>
+          </FormField>
+          <FormField
+            label="Salaire brut"
+            required
+            type="number"
+            step="0.01"
+            value={form.salaire_brut}
+            onChange={(e) => setForm({ ...form, salaire_brut: e.target.value })}
+          />
+          <FormField
+            label="INPS ouvrière"
+            type="number"
+            step="0.01"
+            value={form.inps_ouvriere}
+            onChange={(e) => setForm({ ...form, inps_ouvriere: e.target.value })}
+          />
+          <FormField
+            label="ITS"
+            type="number"
+            step="0.01"
+            value={form.its}
+            onChange={(e) => setForm({ ...form, its: e.target.value })}
+          />
+          <FormField
+            label="INPS patronale"
+            type="number"
+            step="0.01"
+            value={form.inps_patronale}
+            onChange={(e) => setForm({ ...form, inps_patronale: e.target.value })}
+          />
+          <FormField
+            label="TL patronale"
+            type="number"
+            step="0.01"
+            value={form.tl_patronale}
+            onChange={(e) => setForm({ ...form, tl_patronale: e.target.value })}
+          />
+          <FormField
+            label="Salaire net (calculé)"
+            disabled
+            value={salaireNetPreview.toLocaleString("fr-FR")}
+          />
+          <FormField
+            label="Date début"
+            type="date"
+            value={form.date_debut}
+            onChange={(e) => setForm({ ...form, date_debut: e.target.value })}
+          />
+          <FormField
+            label="Date fin"
+            type="date"
+            value={form.date_fin}
+            onChange={(e) => setForm({ ...form, date_fin: e.target.value })}
+          />
         </div>
 
         {error && <p className="mb-3 text-sm text-accent-red">{error}</p>}
 
         <div className="flex gap-3">
-          <button
-            type="submit"
-            disabled={saving}
-            className="rounded-md bg-accent-teal px-5 py-2 font-medium text-on-accent-light hover:opacity-90 disabled:opacity-60"
-          >
+          <PrimaryButton type="submit" disabled={saving}>
             {saving ? "Enregistrement..." : editingId ? "Mettre à jour" : "Ajouter"}
-          </button>
+          </PrimaryButton>
           {editingId && (
             <button
               type="button"
@@ -394,26 +323,21 @@ export default function PersonnelPage() {
         </div>
       </form>
 
-      <input
-        type="text"
-        value={filter}
-        onChange={(e) => setFilter(e.target.value)}
-        placeholder="Filtrer par nom ou matricule..."
-        className="mb-4 w-full max-w-sm rounded-md border border-border-subtle bg-bg-card px-3 py-2 text-text-primary"
-      />
+      <div className="mb-4 max-w-sm">
+        <FormField
+          label="Filtrer"
+          value={filter}
+          onChange={(e) => setFilter(e.target.value)}
+          placeholder="Nom ou matricule..."
+        />
+      </div>
 
       <div className="overflow-x-auto rounded-xl border border-border-subtle">
         <table className="min-w-full text-sm">
-          <thead className="bg-bg-card text-text-secondary">
-            <tr>
-              <th className="px-3 py-2 text-left">Matricule</th>
-              <th className="px-3 py-2 text-left">Nom</th>
-              <th className="px-3 py-2 text-left">Poste</th>
-              <th className="px-3 py-2 text-right">Salaire net</th>
-              <th className="px-3 py-2 text-left">Statut</th>
-              <th className="px-3 py-2 text-right">Action</th>
-            </tr>
-          </thead>
+          <MiniTableHeader
+            columns={["Matricule", "Nom", "Poste", "Salaire net", "Statut", "Action"]}
+            align={["left", "left", "left", "right", "left", "right"]}
+          />
           <tbody className="divide-y divide-border-subtle bg-bg-card/60">
             {loading && (
               <tr>

@@ -6,6 +6,7 @@ import { useAuth } from "@/lib/auth-context";
 import { ActionCard } from "@/components/ui/ActionCard";
 import { StatCard } from "@/components/ui/StatCard";
 import { Pill } from "@/components/ui/Pill";
+import { MiniTableHeader } from "@/components/ui/MiniTableHeader";
 import type { JournalEntry } from "@/lib/types";
 import {
   Cloud,
@@ -205,16 +206,10 @@ export default function DashboardPage() {
       {searchResults !== null && (
         <div className="relative mb-8 overflow-x-auto rounded-xl border border-border-subtle">
           <table className="min-w-full text-sm">
-            <thead className="bg-bg-card text-text-secondary">
-              <tr>
-                <th className="px-3 py-2 text-left">N° Écriture</th>
-                <th className="px-3 py-2 text-left">Pièce</th>
-                <th className="px-3 py-2 text-left">Date</th>
-                <th className="px-3 py-2 text-left">Libellé</th>
-                <th className="px-3 py-2 text-right">Débit</th>
-                <th className="px-3 py-2 text-right">Crédit</th>
-              </tr>
-            </thead>
+            <MiniTableHeader
+              columns={["N° Écriture", "Pièce", "Date", "Libellé", "Débit", "Crédit"]}
+              align={["left", "left", "left", "left", "right", "right"]}
+            />
             <tbody className="divide-y divide-border-subtle bg-bg-card/60">
               {searching && (
                 <tr>

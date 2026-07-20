@@ -3,6 +3,9 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/lib/auth-context";
+import { FormField, fieldControlClass } from "@/components/ui/FormField";
+import { MiniTableHeader } from "@/components/ui/MiniTableHeader";
+import { PrimaryButton } from "@/components/ui/PrimaryButton";
 import type { PeriodClosure } from "@/lib/types";
 
 const CAN_CLOTURER_ROLES = ["ADMIN_N1", "RAF"];
@@ -152,41 +155,30 @@ export default function CloturePage() {
             Clôturer une période
           </p>
           <div className="mb-4 grid grid-cols-2 gap-4">
-            <div>
-              <label className="mb-1 block text-sm text-text-secondary">Type</label>
+            <FormField label="Type">
               <select
                 value={type}
                 onChange={(e) =>
                   changeType(e.target.value as "MENSUELLE" | "ANNUELLE")
                 }
-                className="w-full rounded-md border border-border-subtle bg-bg-card px-3 py-2 text-text-primary"
+                className={fieldControlClass}
               >
                 <option value="MENSUELLE">Mensuelle</option>
                 <option value="ANNUELLE">Annuelle</option>
               </select>
-            </div>
-            <div>
-              <label className="mb-1 block text-sm text-text-secondary">
-                {type === "MENSUELLE" ? "Mois (MM/AAAA)" : "Année (AAAA)"}
-              </label>
-              <input
-                type="text"
-                value={periode}
-                onChange={(e) => setPeriode(e.target.value)}
-                className="w-full rounded-md border border-border-subtle bg-bg-card px-3 py-2 text-text-primary"
-              />
-            </div>
+            </FormField>
+            <FormField
+              label={type === "MENSUELLE" ? "Mois (MM/AAAA)" : "Année (AAAA)"}
+              value={periode}
+              onChange={(e) => setPeriode(e.target.value)}
+            />
           </div>
 
           {error && <p className="mb-3 text-sm text-accent-red">{error}</p>}
 
-          <button
-            type="submit"
-            disabled={saving}
-            className="rounded-md bg-accent-teal px-5 py-2 font-medium text-on-accent-light hover:opacity-90 disabled:opacity-60"
-          >
+          <PrimaryButton type="submit" disabled={saving}>
             {saving ? "Clôture..." : "Clôturer"}
-          </button>
+          </PrimaryButton>
         </form>
       ) : (
         <p className="mb-6 text-sm text-text-secondary">
@@ -197,17 +189,10 @@ export default function CloturePage() {
 
       <div className="overflow-x-auto rounded-xl border border-border-subtle">
         <table className="min-w-full text-sm">
-          <thead className="bg-bg-card text-text-secondary">
-            <tr>
-              <th className="px-3 py-2 text-left">Type</th>
-              <th className="px-3 py-2 text-left">Période</th>
-              <th className="px-3 py-2 text-left">Statut</th>
-              <th className="px-3 py-2 text-left">Clôturé par</th>
-              <th className="px-3 py-2 text-left">Date clôture</th>
-              <th className="px-3 py-2 text-left">Motif réouverture</th>
-              <th className="px-3 py-2 text-right">Action</th>
-            </tr>
-          </thead>
+          <MiniTableHeader
+            columns={["Type", "Période", "Statut", "Clôturé par", "Date clôture", "Motif réouverture", "Action"]}
+            align={["left", "left", "left", "left", "left", "left", "right"]}
+          />
           <tbody className="divide-y divide-border-subtle bg-bg-card/60">
             {loading && (
               <tr>
@@ -267,27 +252,21 @@ export default function CloturePage() {
             <p className="mb-4 font-medium text-text-primary">
               Rouvrir la période #{reopeningId}
             </p>
-            <label className="mb-1 block text-sm text-text-secondary">
-              Motif de la réouverture *
-            </label>
-            <input
-              type="text"
-              autoFocus
-              value={motif}
-              onChange={(e) => setMotif(e.target.value)}
-              className="mb-3 w-full rounded-md border border-border-subtle bg-bg-card px-3 py-2 text-text-primary"
-            />
+            <div className="mb-3">
+              <FormField
+                label="Motif de la réouverture"
+                required
+                value={motif}
+                onChange={(e) => setMotif(e.target.value)}
+              />
+            </div>
             {reopenError && (
               <p className="mb-3 text-sm text-accent-red">{reopenError}</p>
             )}
             <div className="flex gap-3">
-              <button
-                onClick={confirmReopen}
-                disabled={reopening}
-                className="rounded-md bg-accent-teal px-4 py-2 font-medium text-on-accent-light hover:opacity-90 disabled:opacity-60"
-              >
+              <PrimaryButton onClick={confirmReopen} disabled={reopening}>
                 {reopening ? "..." : "Confirmer"}
-              </button>
+              </PrimaryButton>
               <button
                 onClick={() => setReopeningId(null)}
                 className="rounded-md border border-border-subtle px-4 py-2 text-text-secondary hover:bg-bg-card"

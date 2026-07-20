@@ -4,6 +4,9 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/lib/auth-context";
+import { FormField, fieldControlClass } from "@/components/ui/FormField";
+import { MiniTableHeader } from "@/components/ui/MiniTableHeader";
+import { PrimaryButton } from "@/components/ui/PrimaryButton";
 import type { BudgetLineStaging, Rubrique } from "@/lib/types";
 
 const emptyForm = {
@@ -231,56 +234,35 @@ export default function BudgetStagingPage() {
           {editingId ? `Modifier la proposition #${editingId}` : "Proposer une ligne budgétaire"}
         </p>
         <div className="mb-4 grid grid-cols-1 gap-4 sm:grid-cols-3">
-          <div>
-            <label className="mb-1 block text-sm text-text-secondary">Code *</label>
-            <input
-              type="text"
-              required
-              value={form.code_1}
-              onChange={(e) => setForm({ ...form, code_1: e.target.value })}
-              className="w-full rounded-md border border-border-subtle bg-bg-card px-3 py-2 text-text-primary"
-            />
-          </div>
-          <div>
-            <label className="mb-1 block text-sm text-text-secondary">
-              Ligne budgétaire
-            </label>
-            <input
-              type="text"
-              value={form.budget_line}
-              onChange={(e) => setForm({ ...form, budget_line: e.target.value })}
-              className="w-full rounded-md border border-border-subtle bg-bg-card px-3 py-2 text-text-primary"
-            />
-          </div>
-          <div>
-            <label className="mb-1 block text-sm text-text-secondary">
-              Code interne
-            </label>
-            <input
-              type="text"
-              value={form.our_line_code}
-              onChange={(e) => setForm({ ...form, our_line_code: e.target.value })}
-              className="w-full rounded-md border border-border-subtle bg-bg-card px-3 py-2 text-text-primary"
-            />
-          </div>
+          <FormField
+            label="Code"
+            required
+            value={form.code_1}
+            onChange={(e) => setForm({ ...form, code_1: e.target.value })}
+          />
+          <FormField
+            label="Ligne budgétaire"
+            value={form.budget_line}
+            onChange={(e) => setForm({ ...form, budget_line: e.target.value })}
+          />
+          <FormField
+            label="Code interne"
+            value={form.our_line_code}
+            onChange={(e) => setForm({ ...form, our_line_code: e.target.value })}
+          />
           <div className="sm:col-span-3">
-            <label className="mb-1 block text-sm text-text-secondary">
-              Description *
-            </label>
-            <input
-              type="text"
+            <FormField
+              label="Description"
               required
               value={form.description}
               onChange={(e) => setForm({ ...form, description: e.target.value })}
-              className="w-full rounded-md border border-border-subtle bg-bg-card px-3 py-2 text-text-primary"
             />
           </div>
-          <div>
-            <label className="mb-1 block text-sm text-text-secondary">Rubrique</label>
+          <FormField label="Rubrique">
             <select
               value={form.rubrique}
               onChange={(e) => setForm({ ...form, rubrique: e.target.value })}
-              className="w-full rounded-md border border-border-subtle bg-bg-card px-3 py-2 text-text-primary"
+              className={fieldControlClass}
             >
               <option value="">—</option>
               {rubriques.map((r) => (
@@ -289,87 +271,55 @@ export default function BudgetStagingPage() {
                 </option>
               ))}
             </select>
-          </div>
-          <div>
-            <label className="mb-1 block text-sm text-text-secondary">Unité</label>
-            <input
-              type="text"
-              value={form.unit}
-              onChange={(e) => setForm({ ...form, unit: e.target.value })}
-              className="w-full rounded-md border border-border-subtle bg-bg-card px-3 py-2 text-text-primary"
-            />
-          </div>
-          <div>
-            <label className="mb-1 block text-sm text-text-secondary">Quantité</label>
-            <input
-              type="number"
-              step="0.01"
-              value={form.quantity}
-              onChange={(e) => setForm({ ...form, quantity: e.target.value })}
-              className="w-full rounded-md border border-border-subtle bg-bg-card px-3 py-2 text-text-primary"
-            />
-          </div>
-          <div>
-            <label className="mb-1 block text-sm text-text-secondary">Fréquence</label>
-            <input
-              type="number"
-              step="0.01"
-              value={form.frequence}
-              onChange={(e) => setForm({ ...form, frequence: e.target.value })}
-              className="w-full rounded-md border border-border-subtle bg-bg-card px-3 py-2 text-text-primary"
-            />
-          </div>
-          <div>
-            <label className="mb-1 block text-sm text-text-secondary">
-              % pris en charge (T-PEC)
-            </label>
-            <input
-              type="text"
-              value={form.t_pec}
-              onChange={(e) => setForm({ ...form, t_pec: e.target.value })}
-              className="w-full rounded-md border border-border-subtle bg-bg-card px-3 py-2 text-text-primary"
-            />
-          </div>
-          <div>
-            <label className="mb-1 block text-sm text-text-secondary">Devise</label>
-            <input
-              type="text"
-              value={form.devise}
-              onChange={(e) => setForm({ ...form, devise: e.target.value })}
-              className="w-full rounded-md border border-border-subtle bg-bg-card px-3 py-2 text-text-primary"
-            />
-          </div>
-          <div>
-            <label className="mb-1 block text-sm text-text-secondary">
-              Coût unitaire (devise)
-            </label>
-            <input
-              type="number"
-              step="0.01"
-              value={form.unit_cost_devise}
-              onChange={(e) => setForm({ ...form, unit_cost_devise: e.target.value })}
-              className="w-full rounded-md border border-border-subtle bg-bg-card px-3 py-2 text-text-primary"
-            />
-          </div>
-          <div>
-            <label className="mb-1 block text-sm text-text-secondary">
-              Taux de conversion
-            </label>
-            <input
-              type="number"
-              step="0.0001"
-              value={form.taux_conversion}
-              onChange={(e) => setForm({ ...form, taux_conversion: e.target.value })}
-              className="w-full rounded-md border border-border-subtle bg-bg-card px-3 py-2 text-text-primary"
-            />
-          </div>
+          </FormField>
+          <FormField
+            label="Unité"
+            value={form.unit}
+            onChange={(e) => setForm({ ...form, unit: e.target.value })}
+          />
+          <FormField
+            label="Quantité"
+            type="number"
+            step="0.01"
+            value={form.quantity}
+            onChange={(e) => setForm({ ...form, quantity: e.target.value })}
+          />
+          <FormField
+            label="Fréquence"
+            type="number"
+            step="0.01"
+            value={form.frequence}
+            onChange={(e) => setForm({ ...form, frequence: e.target.value })}
+          />
+          <FormField
+            label="% pris en charge (T-PEC)"
+            value={form.t_pec}
+            onChange={(e) => setForm({ ...form, t_pec: e.target.value })}
+          />
+          <FormField
+            label="Devise"
+            value={form.devise}
+            onChange={(e) => setForm({ ...form, devise: e.target.value })}
+          />
+          <FormField
+            label="Coût unitaire (devise)"
+            type="number"
+            step="0.01"
+            value={form.unit_cost_devise}
+            onChange={(e) => setForm({ ...form, unit_cost_devise: e.target.value })}
+          />
+          <FormField
+            label="Taux de conversion"
+            type="number"
+            step="0.0001"
+            value={form.taux_conversion}
+            onChange={(e) => setForm({ ...form, taux_conversion: e.target.value })}
+          />
           <div className="sm:col-span-3">
-            <label className="mb-1 block text-sm text-text-secondary">Note</label>
-            <input
-              type="text"
+            <FormField
+              label="Note"
               value={form.note}
               onChange={(e) => setForm({ ...form, note: e.target.value })}
-              className="w-full rounded-md border border-border-subtle bg-bg-card px-3 py-2 text-text-primary"
             />
           </div>
         </div>
@@ -377,13 +327,9 @@ export default function BudgetStagingPage() {
         {error && <p className="mb-3 text-sm text-accent-red">{error}</p>}
 
         <div className="flex gap-3">
-          <button
-            type="submit"
-            disabled={saving}
-            className="rounded-md bg-accent-teal px-5 py-2 font-medium text-on-accent-light hover:opacity-90 disabled:opacity-60"
-          >
+          <PrimaryButton type="submit" disabled={saving}>
             {saving ? "Enregistrement..." : editingId ? "Mettre à jour" : "Proposer"}
-          </button>
+          </PrimaryButton>
           {editingId && (
             <button
               type="button"
@@ -405,16 +351,10 @@ export default function BudgetStagingPage() {
 
       <div className="overflow-x-auto rounded-xl border border-border-subtle">
         <table className="min-w-full text-sm">
-          <thead className="bg-bg-card text-text-secondary">
-            <tr>
-              <th className="px-3 py-2 text-left">Code</th>
-              <th className="px-3 py-2 text-left">Description</th>
-              <th className="px-3 py-2 text-left">Rubrique</th>
-              <th className="px-3 py-2 text-right">Qté</th>
-              <th className="px-3 py-2 text-left">Statut</th>
-              <th className="px-3 py-2 text-right">Action</th>
-            </tr>
-          </thead>
+          <MiniTableHeader
+            columns={["Code", "Description", "Rubrique", "Qté", "Statut", "Action"]}
+            align={["left", "left", "left", "right", "left", "right"]}
+          />
           <tbody className="divide-y divide-border-subtle bg-bg-card/60">
             {loading && (
               <tr>
@@ -479,17 +419,16 @@ export default function BudgetStagingPage() {
             <p className="mb-4 font-medium text-text-primary">
               Valider la proposition #{validatingId}
             </p>
-            <label className="mb-1 block text-sm text-text-secondary">
-              Coût unitaire (FCFA) *
-            </label>
-            <input
-              type="number"
-              step="0.01"
-              autoFocus
-              value={unitCostInput}
-              onChange={(e) => setUnitCostInput(e.target.value)}
-              className="mb-3 w-full rounded-md border border-border-subtle bg-bg-card px-3 py-2 text-text-primary"
-            />
+            <div className="mb-3">
+              <FormField
+                label="Coût unitaire (FCFA)"
+                required
+                type="number"
+                step="0.01"
+                value={unitCostInput}
+                onChange={(e) => setUnitCostInput(e.target.value)}
+              />
+            </div>
             <p className="mb-3 text-xs text-text-secondary">
               Le coût total sera calculé automatiquement (quantité × fréquence ×
               coût unitaire), et la ligne sera ajoutée au budget officiel du
@@ -499,16 +438,15 @@ export default function BudgetStagingPage() {
               <p className="mb-3 text-sm text-accent-red">{validateError}</p>
             )}
             <div className="flex gap-3">
-              <button
+              <PrimaryButton
                 onClick={() => {
                   const row = rows.find((r) => r.id === validatingId);
                   if (row) confirmValidate(row);
                 }}
                 disabled={validating}
-                className="rounded-md bg-accent-teal px-4 py-2 font-medium text-on-accent-light hover:opacity-90 disabled:opacity-60"
               >
                 {validating ? "Validation..." : "Confirmer"}
-              </button>
+              </PrimaryButton>
               <button
                 onClick={() => setValidatingId(null)}
                 className="rounded-md border border-border-subtle px-4 py-2 text-text-secondary hover:bg-bg-card"

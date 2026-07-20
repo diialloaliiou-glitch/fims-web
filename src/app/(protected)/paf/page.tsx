@@ -3,6 +3,10 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/lib/auth-context";
+import { FormField } from "@/components/ui/FormField";
+import { MiniTableHeader } from "@/components/ui/MiniTableHeader";
+import { Pill } from "@/components/ui/Pill";
+import { PrimaryButton } from "@/components/ui/PrimaryButton";
 import type { BudgetLine, JournalEntry } from "@/lib/types";
 
 export default function FichePaiementPage() {
@@ -119,15 +123,12 @@ export default function FichePaiementPage() {
       </h1>
 
       <div className="mb-6 flex flex-wrap items-end gap-3 print:hidden">
-        <div>
-          <label className="mb-1 block text-sm text-text-secondary">
-            N° Écriture (ex: BQ-0019)
-          </label>
-          <input
+        <div className="w-56">
+          <FormField
+            label="N° Écriture (ex: BQ-0019)"
             list="nej-list"
             value={numEJ}
             onChange={(e) => setNumEJ(e.target.value)}
-            className="w-56 rounded-md border border-border-subtle bg-bg-card px-3 py-2 text-text-primary"
           />
           <datalist id="nej-list">
             {options.map((o) => (
@@ -135,20 +136,11 @@ export default function FichePaiementPage() {
             ))}
           </datalist>
         </div>
-        <button
-          onClick={() => chargerFiche(numEJ)}
-          disabled={loading}
-          className="rounded-md bg-accent-teal px-5 py-2 font-medium text-on-accent-light hover:opacity-90 disabled:opacity-60"
-        >
+        <PrimaryButton onClick={() => chargerFiche(numEJ)} disabled={loading}>
           {loading ? "Chargement..." : "Charger"}
-        </button>
+        </PrimaryButton>
         {lignes.length > 0 && !estPieceAnterieure && (
-          <button
-            onClick={() => window.print()}
-            className="rounded-md border border-border-subtle px-5 py-2 text-text-secondary hover:bg-bg-card"
-          >
-            Imprimer
-          </button>
+          <Pill onClick={() => window.print()}>Imprimer</Pill>
         )}
       </div>
 
@@ -239,15 +231,10 @@ export default function FichePaiementPage() {
           </div>
 
           <table className="mb-6 min-w-full text-sm">
-            <thead>
-              <tr className="border-b border-border-subtle text-left text-text-secondary print:border-black print:text-black">
-                <th className="py-1">Budget code</th>
-                <th className="py-1">Account No.</th>
-                <th className="py-1">Libellé</th>
-                <th className="py-1 text-right">Debit</th>
-                <th className="py-1 text-right">Credit</th>
-              </tr>
-            </thead>
+            <MiniTableHeader
+              columns={["Budget code", "Account No.", "Libellé", "Debit", "Credit"]}
+              align={["left", "left", "left", "right", "right"]}
+            />
             <tbody>
               {lignes.map((l) => (
                 <tr key={l.id} className="border-b border-border-subtle print:border-gray-300">

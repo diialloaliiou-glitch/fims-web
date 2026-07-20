@@ -5,6 +5,10 @@ import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/lib/auth-context";
 import { exporterCsv } from "@/lib/export-csv";
+import { FormField } from "@/components/ui/FormField";
+import { MiniTableHeader } from "@/components/ui/MiniTableHeader";
+import { Pill } from "@/components/ui/Pill";
+import { StatCard } from "@/components/ui/StatCard";
 import type { BudgetLine, JournalEntry, Zone } from "@/lib/types";
 
 function firstOfMonthIso() {
@@ -123,7 +127,7 @@ export default function ReportingPage() {
           <Link href="/budget" className="text-sm text-accent-blue hover:underline">
             Voir le Financial Report →
           </Link>
-          <button
+          <Pill
             onClick={() =>
               exporterCsv(
                 "Reporting",
@@ -155,73 +159,42 @@ export default function ReportingPage() {
                 ])
               )
             }
-            className="rounded-md border border-border-subtle px-4 py-2 text-sm text-text-secondary hover:bg-bg-card"
           >
             Export Excel
-          </button>
-          <button
-            onClick={() => window.print()}
-            className="rounded-md border border-border-subtle px-4 py-2 text-sm text-text-secondary hover:bg-bg-card"
-          >
-            Export PDF
-          </button>
-          <button
-            onClick={() => window.print()}
-            className="rounded-md bg-accent-blue-solid px-4 py-2 text-sm text-on-accent-dark hover:opacity-90"
-          >
+          </Pill>
+          <Pill onClick={() => window.print()}>Export PDF</Pill>
+          <Pill solid onClick={() => window.print()}>
             Imprimer
-          </button>
+          </Pill>
         </div>
       </div>
 
       <div className="mb-6 flex flex-wrap items-end gap-4 rounded-xl border border-border-subtle bg-bg-card p-4 print:hidden">
-        <div>
-          <label className="mb-1 block text-sm text-text-secondary">
-            Date de début
-          </label>
-          <input
-            type="date"
-            value={dateDebut}
-            onChange={(e) => setDateDebut(e.target.value)}
-            className="rounded-md border border-border-subtle bg-bg-card px-3 py-2 text-text-primary"
-          />
-        </div>
-        <div>
-          <label className="mb-1 block text-sm text-text-secondary">
-            Date de fin
-          </label>
-          <input
-            type="date"
-            value={dateFin}
-            onChange={(e) => setDateFin(e.target.value)}
-            className="rounded-md border border-border-subtle bg-bg-card px-3 py-2 text-text-primary"
-          />
-        </div>
-        <div className="rounded-md border border-border-subtle bg-bg-card px-4 py-2">
-          <p className="text-xs text-text-secondary">Total dépenses</p>
-          <p className="text-lg font-bold text-accent-amber">
-            {totalDepenses.toLocaleString("fr-FR")}
-          </p>
-        </div>
+        <FormField
+          label="Date de début"
+          type="date"
+          value={dateDebut}
+          onChange={(e) => setDateDebut(e.target.value)}
+        />
+        <FormField
+          label="Date de fin"
+          type="date"
+          value={dateFin}
+          onChange={(e) => setDateFin(e.target.value)}
+        />
+        <StatCard
+          label="Total dépenses"
+          value={totalDepenses.toLocaleString("fr-FR")}
+          valueColor="amber"
+        />
       </div>
 
       <div className="overflow-x-auto rounded-xl border border-border-subtle">
         <table className="min-w-full text-sm">
-          <thead className="bg-bg-card text-text-secondary">
-            <tr>
-              <th className="px-3 py-2 text-left">Date</th>
-              <th className="px-3 py-2 text-left">Part_Code</th>
-              <th className="px-3 py-2 text-left">Part_C_Code</th>
-              <th className="px-3 py-2 text-left">Our Line Code</th>
-              <th className="px-3 py-2 text-left">Journal</th>
-              <th className="px-3 py-2 text-left">N°Compte</th>
-              <th className="px-3 py-2 text-left">Libellé</th>
-              <th className="px-3 py-2 text-left">N°CHQ/OV</th>
-              <th className="px-3 py-2 text-left">Zone</th>
-              <th className="px-3 py-2 text-right">Montant</th>
-              <th className="px-3 py-2 text-left">N°Pièce</th>
-            </tr>
-          </thead>
+          <MiniTableHeader
+            columns={["Date", "Part_Code", "Part_C_Code", "Our Line Code", "Journal", "N°Compte", "Libellé", "N°CHQ/OV", "Zone", "Montant", "N°Pièce"]}
+            align={["left", "left", "left", "left", "left", "left", "left", "left", "left", "right", "left"]}
+          />
           <tbody className="divide-y divide-border-subtle bg-bg-card/60">
             {loading && (
               <tr>

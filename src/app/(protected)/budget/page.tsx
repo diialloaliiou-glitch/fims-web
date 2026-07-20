@@ -5,6 +5,10 @@ import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/lib/auth-context";
 import { exporterCsv } from "@/lib/export-csv";
+import { FormField } from "@/components/ui/FormField";
+import { MiniTableHeader } from "@/components/ui/MiniTableHeader";
+import { Pill } from "@/components/ui/Pill";
+import { StatCard } from "@/components/ui/StatCard";
 import type { BudgetLine, Donor, JournalEntry } from "@/lib/types";
 
 function todayIso() {
@@ -149,7 +153,7 @@ export default function FinancialReportPage() {
           <Link href="/budget/staging" className="text-sm text-accent-blue hover:underline">
             Gérer les propositions budgétaires →
           </Link>
-          <button
+          <Pill
             onClick={() =>
               exporterCsv(
                 "FinancialReport",
@@ -183,22 +187,13 @@ export default function FinancialReportPage() {
                 ])
               )
             }
-            className="rounded-md border border-border-subtle px-4 py-2 text-sm text-text-secondary hover:bg-bg-card"
           >
             Export Excel
-          </button>
-          <button
-            onClick={() => window.print()}
-            className="rounded-md border border-border-subtle px-4 py-2 text-sm text-text-secondary hover:bg-bg-card"
-          >
-            Export PDF
-          </button>
-          <button
-            onClick={() => window.print()}
-            className="rounded-md bg-accent-blue-solid px-4 py-2 text-sm text-on-accent-dark hover:opacity-90"
-          >
+          </Pill>
+          <Pill onClick={() => window.print()}>Export PDF</Pill>
+          <Pill solid onClick={() => window.print()}>
             Imprimer
-          </button>
+          </Pill>
         </div>
       </div>
 
@@ -212,63 +207,44 @@ export default function FinancialReportPage() {
         <p className="text-sm text-text-secondary">
           Project Code : <span className="font-medium">{project?.code_projet}</span>
         </p>
-        <div>
-          <label className="mb-1 block text-sm text-text-secondary">Period From</label>
-          <input
-            type="date"
-            value={periodeDebut}
-            onChange={(e) => setPeriodeDebut(e.target.value)}
-            className="w-full rounded-md border border-border-subtle bg-bg-card px-3 py-2 text-text-primary"
-          />
-        </div>
-        <div>
-          <label className="mb-1 block text-sm text-text-secondary">Period To</label>
-          <input
-            type="date"
-            value={periodeFin}
-            onChange={(e) => setPeriodeFin(e.target.value)}
-            className="w-full rounded-md border border-border-subtle bg-bg-card px-3 py-2 text-text-primary"
-          />
-        </div>
-        <div>
-          <label className="mb-1 block text-sm text-text-secondary">
-            Exchange Rate (FCFA → USD)
-          </label>
-          <input
-            type="number"
-            step="0.01"
-            value={tauxChange}
-            onChange={(e) => setTauxChange(e.target.value)}
-            className="w-full rounded-md border border-border-subtle bg-bg-card px-3 py-2 text-text-primary"
-          />
-        </div>
+        <FormField
+          label="Period From"
+          type="date"
+          value={periodeDebut}
+          onChange={(e) => setPeriodeDebut(e.target.value)}
+        />
+        <FormField
+          label="Period To"
+          type="date"
+          value={periodeFin}
+          onChange={(e) => setPeriodeFin(e.target.value)}
+        />
+        <FormField
+          label="Exchange Rate (FCFA → USD)"
+          type="number"
+          step="0.01"
+          value={tauxChange}
+          onChange={(e) => setTauxChange(e.target.value)}
+        />
       </div>
 
       <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-4">
-        <div className="rounded-xl border border-border-subtle bg-bg-card p-4">
-          <p className="text-xs text-text-secondary">Budget</p>
-          <p className="mt-1 text-xl font-bold text-text-primary">
-            {Math.round(totalBudget).toLocaleString("fr-FR")}
-          </p>
-        </div>
-        <div className="rounded-xl border border-border-subtle bg-bg-card p-4">
-          <p className="text-xs text-text-secondary">Prior + Period Exp.</p>
-          <p className="mt-1 text-xl font-bold text-accent-amber">
-            {Math.round(totalPrior + totalPeriod).toLocaleString("fr-FR")}
-          </p>
-        </div>
-        <div className="rounded-xl border border-border-subtle bg-bg-card p-4">
-          <p className="text-xs text-text-secondary">Variance</p>
-          <p className="mt-1 text-xl font-bold text-accent-teal">
-            {Math.round(totalBudget - totalPrior - totalPeriod).toLocaleString("fr-FR")}
-          </p>
-        </div>
-        <div className="rounded-xl border border-border-subtle bg-bg-card p-4">
-          <p className="text-xs text-text-secondary">GLOBAL BURN RATE</p>
-          <p className="mt-1 text-xl font-bold text-accent-blue">
-            {(globalBurnRate * 100).toFixed(1)}%
-          </p>
-        </div>
+        <StatCard label="Budget" value={Math.round(totalBudget).toLocaleString("fr-FR")} />
+        <StatCard
+          label="Prior + Period Exp."
+          value={Math.round(totalPrior + totalPeriod).toLocaleString("fr-FR")}
+          valueColor="amber"
+        />
+        <StatCard
+          label="Variance"
+          value={Math.round(totalBudget - totalPrior - totalPeriod).toLocaleString("fr-FR")}
+          valueColor="teal"
+        />
+        <StatCard
+          label="GLOBAL BURN RATE"
+          value={`${(globalBurnRate * 100).toFixed(1)}%`}
+          valueColor="blue"
+        />
       </div>
 
       <p className="mb-3 text-xs text-text-secondary">
@@ -280,22 +256,10 @@ export default function FinancialReportPage() {
 
       <div className="overflow-x-auto rounded-xl border border-border-subtle">
         <table className="min-w-full text-sm">
-          <thead className="bg-bg-card text-text-secondary">
-            <tr>
-              <th className="px-3 py-2 text-left">Code</th>
-              <th className="px-3 py-2 text-left">Description</th>
-              <th className="px-3 py-2 text-left">Unit</th>
-              <th className="px-3 py-2 text-right">Qty</th>
-              <th className="px-3 py-2 text-right">Freq.</th>
-              <th className="px-3 py-2 text-right">% TO PROJECT</th>
-              <th className="px-3 py-2 text-right">Budget</th>
-              <th className="px-3 py-2 text-right">Prior Exp.</th>
-              <th className="px-3 py-2 text-right">Period Exp.</th>
-              <th className="px-3 py-2 text-right">Period Exp. (USD)</th>
-              <th className="px-3 py-2 text-right">Variance</th>
-              <th className="px-3 py-2 text-right">Burn Rate</th>
-            </tr>
-          </thead>
+          <MiniTableHeader
+            columns={["Code", "Description", "Unit", "Qty", "Freq.", "% TO PROJECT", "Budget", "Prior Exp.", "Period Exp.", "Period Exp. (USD)", "Variance", "Burn Rate"]}
+            align={["left", "left", "left", "right", "right", "right", "right", "right", "right", "right", "right", "right"]}
+          />
           <tbody className="divide-y divide-border-subtle bg-bg-card/60">
             {loading && (
               <tr>

@@ -3,8 +3,10 @@
 import { useEffect } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
+import { House, Moon, Sun } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 import { useTheme } from "@/lib/theme-context";
+import { Pill } from "@/components/ui/Pill";
 
 export default function ProtectedLayout({
   children,
@@ -53,14 +55,7 @@ export default function ProtectedLayout({
               className="flex h-8 w-8 items-center justify-center rounded-full bg-bg-card text-text-secondary hover:opacity-80"
               aria-label="Retour au dashboard"
             >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 24 24"
-                fill="currentColor"
-                className="h-5 w-5"
-              >
-                <path d="M12 12c2.7 0 8 1.34 8 4v2H4v-2c0-2.66 5.3-4 8-4zm0-2a4 4 0 1 1 0-8 4 4 0 0 1 0 8z" />
-              </svg>
+              <House className="h-4 w-4" strokeWidth={1.75} />
             </Link>
             <div className="rounded-full bg-bg-card px-4 py-1.5 text-sm text-text-secondary">
               Bienvenue, {profile?.nom_utilisateur} | Rôle : {profile?.role} |
@@ -100,29 +95,12 @@ export default function ProtectedLayout({
               className="flex h-8 w-8 items-center justify-center rounded-full border border-border-subtle text-text-secondary hover:bg-bg-card"
             >
               {theme === "dark" ? (
-                <svg viewBox="0 0 24 24" fill="currentColor" className="h-4 w-4">
-                  <path d="M12 3a9 9 0 1 0 9 9c0-.46-.04-.92-.1-1.36a5.4 5.4 0 0 1-7.54-7.54c-.44-.06-.9-.1-1.36-.1Z" />
-                </svg>
+                <Moon className="h-4 w-4" strokeWidth={1.75} />
               ) : (
-                <svg
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth={2}
-                  strokeLinecap="round"
-                  className="h-4 w-4"
-                >
-                  <circle cx="12" cy="12" r="4" />
-                  <path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4" />
-                </svg>
+                <Sun className="h-4 w-4" strokeWidth={1.75} />
               )}
             </button>
-            <button
-              onClick={() => signOut()}
-              className="rounded-full border border-border-subtle px-4 py-1.5 text-sm text-text-secondary hover:bg-bg-card"
-            >
-              ✕ Déconnexion
-            </button>
+            <Pill onClick={() => signOut()}>Déconnexion</Pill>
           </div>
         </div>
       </header>

@@ -3,6 +3,8 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
+import { FormField } from "@/components/ui/FormField";
+import { PrimaryButton } from "@/components/ui/PrimaryButton";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -48,30 +50,22 @@ export default function LoginPage() {
           className="rounded-xl border border-border-subtle bg-bg-card p-6 shadow-lg"
         >
           <div className="mb-4">
-            <label className="mb-1 block text-sm text-text-secondary">
-              Email
-            </label>
-            <input
-              type="email"
+            <FormField
+              label="Email"
               required
+              type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full rounded-md border border-border-subtle bg-bg-card px-3 py-2 text-text-primary outline-none focus:border-accent-teal"
-              autoComplete="email"
             />
           </div>
 
           <div className="mb-4">
-            <label className="mb-1 block text-sm text-text-secondary">
-              Mot de passe
-            </label>
-            <input
-              type="password"
+            <FormField
+              label="Mot de passe"
               required
+              type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full rounded-md border border-border-subtle bg-bg-card px-3 py-2 text-text-primary outline-none focus:border-accent-teal"
-              autoComplete="current-password"
             />
           </div>
 
@@ -79,13 +73,9 @@ export default function LoginPage() {
             <p className="mb-4 text-sm text-accent-red">{error}</p>
           )}
 
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full rounded-md bg-accent-teal py-2 font-medium text-on-accent-light transition-colors hover:opacity-90 disabled:opacity-60"
-          >
+          <PrimaryButton type="submit" disabled={loading} className="w-full">
             {loading ? "Connexion..." : "Se connecter"}
-          </button>
+          </PrimaryButton>
         </form>
       </div>
     </div>
