@@ -206,4 +206,6 @@ export type JournalEntry = {
   created_at: string;
   zone_id: number | null;
   tag_projet_local: string | null;
+  modifie_par: string | null;
+  modifie_le: string | null;
 };

@@ -22,6 +22,7 @@ import {
   Scale,
   BarChart3,
   Settings,
+  FileSpreadsheet,
 } from "lucide-react";
 
 export default function DashboardPage() {
@@ -113,6 +114,7 @@ export default function DashboardPage() {
     { key: "saisie", icon: PenLine, label: "Saisie", href: "/saisie", color: "teal" as const },
     { key: "paf", icon: Feather, label: "PAF", href: "/paf", color: "teal" as const },
     { key: "glivre", icon: BookOpen, label: "G-Livre", href: "/grand-livre", color: "blue" as const },
+    { key: "jdepense", icon: FileSpreadsheet, label: "JDEPENSE", href: "/jdepense", color: "blue" as const },
     { key: "erb", icon: Landmark, label: "ERB", href: "/erb", color: "blue" as const },
     { key: "jaux", icon: BookCopy, label: "J-Auxiliaire", href: "/journal-auxiliaire", color: "blue" as const },
     { key: "balance", icon: Scale, label: "Balance", href: "/balance", color: "blue" as const },
