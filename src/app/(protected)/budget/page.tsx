@@ -139,7 +139,7 @@ export default function FinancialReportPage() {
   return (
     <div>
       <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
-        <h1 className="text-2xl font-semibold text-fg-primary">
+        <h1 className="text-2xl font-semibold text-text-primary">
           Financial Report
         </h1>
         <div className="flex gap-4 print:hidden">
@@ -183,55 +183,55 @@ export default function FinancialReportPage() {
                 ])
               )
             }
-            className="rounded-md border border-border-default px-4 py-2 text-sm text-fg-secondary hover:bg-surface-2"
+            className="rounded-md border border-border-subtle px-4 py-2 text-sm text-text-secondary hover:bg-bg-card"
           >
             Export Excel
           </button>
           <button
             onClick={() => window.print()}
-            className="rounded-md border border-border-default px-4 py-2 text-sm text-fg-secondary hover:bg-surface-2"
+            className="rounded-md border border-border-subtle px-4 py-2 text-sm text-text-secondary hover:bg-bg-card"
           >
             Export PDF
           </button>
           <button
             onClick={() => window.print()}
-            className="rounded-md bg-accent-blue px-4 py-2 text-sm text-on-accent hover:opacity-90"
+            className="rounded-md bg-accent-blue-solid px-4 py-2 text-sm text-on-accent-dark hover:opacity-90"
           >
             Imprimer
           </button>
         </div>
       </div>
 
-      <div className="mb-6 grid grid-cols-1 gap-4 rounded-xl border border-border-default bg-surface-1 p-4 sm:grid-cols-3">
-        <p className="text-sm text-fg-secondary">
+      <div className="mb-6 grid grid-cols-1 gap-4 rounded-xl border border-border-subtle bg-bg-card p-4 sm:grid-cols-3">
+        <p className="text-sm text-text-secondary">
           Project Name : <span className="font-medium">{project?.nom_projet}</span>
         </p>
-        <p className="text-sm text-fg-secondary">
+        <p className="text-sm text-text-secondary">
           Partner Name : <span className="font-medium">{donor?.nom ?? "—"}</span>
         </p>
-        <p className="text-sm text-fg-secondary">
+        <p className="text-sm text-text-secondary">
           Project Code : <span className="font-medium">{project?.code_projet}</span>
         </p>
         <div>
-          <label className="mb-1 block text-sm text-fg-secondary">Period From</label>
+          <label className="mb-1 block text-sm text-text-secondary">Period From</label>
           <input
             type="date"
             value={periodeDebut}
             onChange={(e) => setPeriodeDebut(e.target.value)}
-            className="w-full rounded-md border border-border-default bg-surface-2 px-3 py-2 text-fg-primary"
+            className="w-full rounded-md border border-border-subtle bg-bg-card px-3 py-2 text-text-primary"
           />
         </div>
         <div>
-          <label className="mb-1 block text-sm text-fg-secondary">Period To</label>
+          <label className="mb-1 block text-sm text-text-secondary">Period To</label>
           <input
             type="date"
             value={periodeFin}
             onChange={(e) => setPeriodeFin(e.target.value)}
-            className="w-full rounded-md border border-border-default bg-surface-2 px-3 py-2 text-fg-primary"
+            className="w-full rounded-md border border-border-subtle bg-bg-card px-3 py-2 text-text-primary"
           />
         </div>
         <div>
-          <label className="mb-1 block text-sm text-fg-secondary">
+          <label className="mb-1 block text-sm text-text-secondary">
             Exchange Rate (FCFA → USD)
           </label>
           <input
@@ -239,48 +239,48 @@ export default function FinancialReportPage() {
             step="0.01"
             value={tauxChange}
             onChange={(e) => setTauxChange(e.target.value)}
-            className="w-full rounded-md border border-border-default bg-surface-2 px-3 py-2 text-fg-primary"
+            className="w-full rounded-md border border-border-subtle bg-bg-card px-3 py-2 text-text-primary"
           />
         </div>
       </div>
 
       <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-4">
-        <div className="rounded-xl border border-border-default bg-surface-1 p-4">
-          <p className="text-xs text-fg-muted">Budget</p>
-          <p className="mt-1 text-xl font-bold text-fg-primary">
+        <div className="rounded-xl border border-border-subtle bg-bg-card p-4">
+          <p className="text-xs text-text-secondary">Budget</p>
+          <p className="mt-1 text-xl font-bold text-text-primary">
             {Math.round(totalBudget).toLocaleString("fr-FR")}
           </p>
         </div>
-        <div className="rounded-xl border border-border-default bg-surface-1 p-4">
-          <p className="text-xs text-fg-muted">Prior + Period Exp.</p>
-          <p className="mt-1 text-xl font-bold text-warning">
+        <div className="rounded-xl border border-border-subtle bg-bg-card p-4">
+          <p className="text-xs text-text-secondary">Prior + Period Exp.</p>
+          <p className="mt-1 text-xl font-bold text-accent-amber">
             {Math.round(totalPrior + totalPeriod).toLocaleString("fr-FR")}
           </p>
         </div>
-        <div className="rounded-xl border border-border-default bg-surface-1 p-4">
-          <p className="text-xs text-fg-muted">Variance</p>
-          <p className="mt-1 text-xl font-bold text-accent-green">
+        <div className="rounded-xl border border-border-subtle bg-bg-card p-4">
+          <p className="text-xs text-text-secondary">Variance</p>
+          <p className="mt-1 text-xl font-bold text-accent-teal">
             {Math.round(totalBudget - totalPrior - totalPeriod).toLocaleString("fr-FR")}
           </p>
         </div>
-        <div className="rounded-xl border border-border-default bg-surface-1 p-4">
-          <p className="text-xs text-fg-muted">GLOBAL BURN RATE</p>
+        <div className="rounded-xl border border-border-subtle bg-bg-card p-4">
+          <p className="text-xs text-text-secondary">GLOBAL BURN RATE</p>
           <p className="mt-1 text-xl font-bold text-accent-blue">
             {(globalBurnRate * 100).toFixed(1)}%
           </p>
         </div>
       </div>
 
-      <p className="mb-3 text-xs text-fg-muted">
+      <p className="mb-3 text-xs text-text-secondary">
         Report Currency : FCFA · Exchange Currency : USD. "Prior Exp." = dépenses
         depuis le début du projet ({dateDebutProjet}) jusqu&apos;à la veille de
         "Period From". Même méthodologie que Reporting (b_s_line = our_line_code,
         hors comptes 5xxxxx/411xxx, débit uniquement).
       </p>
 
-      <div className="overflow-x-auto rounded-xl border border-border-default">
+      <div className="overflow-x-auto rounded-xl border border-border-subtle">
         <table className="min-w-full text-sm">
-          <thead className="bg-surface-2 text-fg-secondary">
+          <thead className="bg-bg-card text-text-secondary">
             <tr>
               <th className="px-3 py-2 text-left">Code</th>
               <th className="px-3 py-2 text-left">Description</th>
@@ -296,20 +296,20 @@ export default function FinancialReportPage() {
               <th className="px-3 py-2 text-right">Burn Rate</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-border-default bg-surface-1/60">
+          <tbody className="divide-y divide-border-subtle bg-bg-card/60">
             {loading && (
               <tr>
-                <td colSpan={12} className="px-3 py-4 text-center text-fg-muted">
+                <td colSpan={12} className="px-3 py-4 text-center text-text-secondary">
                   Chargement...
                 </td>
               </tr>
             )}
             {!loading &&
               rows.map((r) => (
-                <tr key={r.id} className="text-fg-primary">
+                <tr key={r.id} className="text-text-primary">
                   <td className="px-3 py-2">{r.our_line_code}</td>
                   <td className="px-3 py-2">{r.description}</td>
-                  <td className="px-3 py-2 text-fg-muted">{r.unit}</td>
+                  <td className="px-3 py-2 text-text-secondary">{r.unit}</td>
                   <td className="px-3 py-2 text-right">{r.quantity ?? ""}</td>
                   <td className="px-3 py-2 text-right">{r.frequence ?? ""}</td>
                   <td className="px-3 py-2 text-right">{r.t_pec}</td>
@@ -332,7 +332,7 @@ export default function FinancialReportPage() {
                   </td>
                   <td
                     className={`px-3 py-2 text-right font-medium ${
-                      r.burnRate > 1 ? "text-danger" : "text-fg-secondary"
+                      r.burnRate > 1 ? "text-accent-red" : "text-text-secondary"
                     }`}
                   >
                     {(r.burnRate * 100).toFixed(0)}%
@@ -341,7 +341,7 @@ export default function FinancialReportPage() {
               ))}
           </tbody>
           {rows.length > 0 && (
-            <tfoot className="bg-surface-2 font-semibold text-fg-primary">
+            <tfoot className="bg-bg-card font-semibold text-text-primary">
               <tr>
                 <td className="px-3 py-2" colSpan={6}>
                   TOTAL

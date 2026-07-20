@@ -61,7 +61,7 @@ export default function GrandLivrePage() {
   return (
     <div>
       <div className="mb-6 flex items-center justify-between">
-        <h1 className="text-2xl font-semibold text-fg-primary">Grand Livre</h1>
+        <h1 className="text-2xl font-semibold text-text-primary">Grand Livre</h1>
         <div className="flex gap-2 print:hidden">
           <button
             onClick={() => {
@@ -84,32 +84,32 @@ export default function GrandLivrePage() {
                 })
               );
             }}
-            className="rounded-md border border-border-default px-4 py-2 text-sm text-fg-secondary hover:bg-surface-2"
+            className="rounded-md border border-border-subtle px-4 py-2 text-sm text-text-secondary hover:bg-bg-card"
           >
             Export Excel
           </button>
           <button
             onClick={() => window.print()}
-            className="rounded-md border border-border-default px-4 py-2 text-sm text-fg-secondary hover:bg-surface-2"
+            className="rounded-md border border-border-subtle px-4 py-2 text-sm text-text-secondary hover:bg-bg-card"
           >
             Export PDF
           </button>
           <button
             onClick={() => window.print()}
-            className="rounded-md bg-accent-blue px-4 py-2 text-sm text-on-accent hover:opacity-90"
+            className="rounded-md bg-accent-blue-solid px-4 py-2 text-sm text-on-accent-dark hover:opacity-90"
           >
             Imprimer
           </button>
         </div>
       </div>
 
-      <div className="mb-6 flex flex-wrap gap-4 rounded-xl border border-border-default bg-surface-1 p-4 print:hidden">
+      <div className="mb-6 flex flex-wrap gap-4 rounded-xl border border-border-subtle bg-bg-card p-4 print:hidden">
         <div>
-          <label className="mb-1 block text-sm text-fg-secondary">Compte</label>
+          <label className="mb-1 block text-sm text-text-secondary">Compte</label>
           <select
             value={compte}
             onChange={(e) => setCompte(e.target.value)}
-            className="rounded-md border border-border-default bg-surface-2 px-3 py-2 text-fg-primary"
+            className="rounded-md border border-border-subtle bg-bg-card px-3 py-2 text-text-primary"
           >
             <option value="">Tous les comptes</option>
             {accounts.map((a) => (
@@ -120,28 +120,28 @@ export default function GrandLivrePage() {
           </select>
         </div>
         <div>
-          <label className="mb-1 block text-sm text-fg-secondary">Du</label>
+          <label className="mb-1 block text-sm text-text-secondary">Du</label>
           <input
             type="date"
             value={dateDebut}
             onChange={(e) => setDateDebut(e.target.value)}
-            className="rounded-md border border-border-default bg-surface-2 px-3 py-2 text-fg-primary"
+            className="rounded-md border border-border-subtle bg-bg-card px-3 py-2 text-text-primary"
           />
         </div>
         <div>
-          <label className="mb-1 block text-sm text-fg-secondary">Au</label>
+          <label className="mb-1 block text-sm text-text-secondary">Au</label>
           <input
             type="date"
             value={dateFin}
             onChange={(e) => setDateFin(e.target.value)}
-            className="rounded-md border border-border-default bg-surface-2 px-3 py-2 text-fg-primary"
+            className="rounded-md border border-border-subtle bg-bg-card px-3 py-2 text-text-primary"
           />
         </div>
       </div>
 
-      <div className="overflow-x-auto rounded-xl border border-border-default">
+      <div className="overflow-x-auto rounded-xl border border-border-subtle">
         <table className="min-w-full text-sm">
-          <thead className="bg-surface-2 text-fg-secondary">
+          <thead className="bg-bg-card text-text-secondary">
             <tr>
               <th className="px-3 py-2 text-left">Date</th>
               <th className="px-3 py-2 text-left">Pièce</th>
@@ -153,17 +153,17 @@ export default function GrandLivrePage() {
               <th className="px-3 py-2 text-right">Solde cumulé</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-border-default bg-surface-1/60">
+          <tbody className="divide-y divide-border-subtle bg-bg-card/60">
             {loading && (
               <tr>
-                <td colSpan={8} className="px-3 py-4 text-center text-fg-muted">
+                <td colSpan={8} className="px-3 py-4 text-center text-text-secondary">
                   Chargement...
                 </td>
               </tr>
             )}
             {!loading && entries.length === 0 && (
               <tr>
-                <td colSpan={8} className="px-3 py-4 text-center text-fg-muted">
+                <td colSpan={8} className="px-3 py-4 text-center text-text-secondary">
                   Aucune écriture sur cette période.
                 </td>
               </tr>
@@ -171,7 +171,7 @@ export default function GrandLivrePage() {
             {entries.map((e) => {
               running += e.montant_debit - e.montant_credit;
               return (
-                <tr key={e.id} className="text-fg-primary">
+                <tr key={e.id} className="text-text-primary">
                   <td className="px-3 py-2">
                     {new Date(e.date_operation).toLocaleDateString("fr-FR")}
                   </td>

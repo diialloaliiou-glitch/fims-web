@@ -118,7 +118,7 @@ export default function ReportingPage() {
   return (
     <div>
       <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
-        <h1 className="text-2xl font-semibold text-fg-primary">Reporting</h1>
+        <h1 className="text-2xl font-semibold text-text-primary">Reporting</h1>
         <div className="flex items-center gap-4 print:hidden">
           <Link href="/budget" className="text-sm text-accent-blue hover:underline">
             Voir le Financial Report →
@@ -155,59 +155,59 @@ export default function ReportingPage() {
                 ])
               )
             }
-            className="rounded-md border border-border-default px-4 py-2 text-sm text-fg-secondary hover:bg-surface-2"
+            className="rounded-md border border-border-subtle px-4 py-2 text-sm text-text-secondary hover:bg-bg-card"
           >
             Export Excel
           </button>
           <button
             onClick={() => window.print()}
-            className="rounded-md border border-border-default px-4 py-2 text-sm text-fg-secondary hover:bg-surface-2"
+            className="rounded-md border border-border-subtle px-4 py-2 text-sm text-text-secondary hover:bg-bg-card"
           >
             Export PDF
           </button>
           <button
             onClick={() => window.print()}
-            className="rounded-md bg-accent-blue px-4 py-2 text-sm text-on-accent hover:opacity-90"
+            className="rounded-md bg-accent-blue-solid px-4 py-2 text-sm text-on-accent-dark hover:opacity-90"
           >
             Imprimer
           </button>
         </div>
       </div>
 
-      <div className="mb-6 flex flex-wrap items-end gap-4 rounded-xl border border-border-default bg-surface-1 p-4 print:hidden">
+      <div className="mb-6 flex flex-wrap items-end gap-4 rounded-xl border border-border-subtle bg-bg-card p-4 print:hidden">
         <div>
-          <label className="mb-1 block text-sm text-fg-secondary">
+          <label className="mb-1 block text-sm text-text-secondary">
             Date de début
           </label>
           <input
             type="date"
             value={dateDebut}
             onChange={(e) => setDateDebut(e.target.value)}
-            className="rounded-md border border-border-default bg-surface-2 px-3 py-2 text-fg-primary"
+            className="rounded-md border border-border-subtle bg-bg-card px-3 py-2 text-text-primary"
           />
         </div>
         <div>
-          <label className="mb-1 block text-sm text-fg-secondary">
+          <label className="mb-1 block text-sm text-text-secondary">
             Date de fin
           </label>
           <input
             type="date"
             value={dateFin}
             onChange={(e) => setDateFin(e.target.value)}
-            className="rounded-md border border-border-default bg-surface-2 px-3 py-2 text-fg-primary"
+            className="rounded-md border border-border-subtle bg-bg-card px-3 py-2 text-text-primary"
           />
         </div>
-        <div className="rounded-md border border-border-default bg-surface-2 px-4 py-2">
-          <p className="text-xs text-fg-muted">Total dépenses</p>
-          <p className="text-lg font-bold text-warning">
+        <div className="rounded-md border border-border-subtle bg-bg-card px-4 py-2">
+          <p className="text-xs text-text-secondary">Total dépenses</p>
+          <p className="text-lg font-bold text-accent-amber">
             {totalDepenses.toLocaleString("fr-FR")}
           </p>
         </div>
       </div>
 
-      <div className="overflow-x-auto rounded-xl border border-border-default">
+      <div className="overflow-x-auto rounded-xl border border-border-subtle">
         <table className="min-w-full text-sm">
-          <thead className="bg-surface-2 text-fg-secondary">
+          <thead className="bg-bg-card text-text-secondary">
             <tr>
               <th className="px-3 py-2 text-left">Date</th>
               <th className="px-3 py-2 text-left">Part_Code</th>
@@ -222,23 +222,23 @@ export default function ReportingPage() {
               <th className="px-3 py-2 text-left">N°Pièce</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-border-default bg-surface-1/60">
+          <tbody className="divide-y divide-border-subtle bg-bg-card/60">
             {loading && (
               <tr>
-                <td colSpan={11} className="px-3 py-4 text-center text-fg-muted">
+                <td colSpan={11} className="px-3 py-4 text-center text-text-secondary">
                   Chargement...
                 </td>
               </tr>
             )}
             {!loading && rows.length === 0 && (
               <tr>
-                <td colSpan={11} className="px-3 py-4 text-center text-fg-muted">
+                <td colSpan={11} className="px-3 py-4 text-center text-text-secondary">
                   Aucune dépense sur cette période.
                 </td>
               </tr>
             )}
             {rows.map((r, idx) => (
-              <tr key={idx} className="text-fg-primary">
+              <tr key={idx} className="text-text-primary">
                 <td className="px-3 py-2">
                   {new Date(r.date).toLocaleDateString("fr-FR")}
                 </td>
@@ -258,7 +258,7 @@ export default function ReportingPage() {
             ))}
           </tbody>
           {rows.length > 0 && (
-            <tfoot className="bg-surface-2 font-semibold text-fg-primary">
+            <tfoot className="bg-bg-card font-semibold text-text-primary">
               <tr>
                 <td className="px-3 py-2" colSpan={9}>
                   TOTAL

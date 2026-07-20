@@ -86,48 +86,48 @@ function Colonne({
 
   return (
     <div>
-      <p className="mb-3 font-semibold text-fg-primary">{titre}</p>
+      <p className="mb-3 font-semibold text-text-primary">{titre}</p>
 
       <form
         onSubmit={handleSubmit}
-        className="mb-4 rounded-xl border border-border-default bg-surface-1 p-4"
+        className="mb-4 rounded-xl border border-border-subtle bg-bg-card p-4"
       >
         <div className="mb-3 grid grid-cols-2 gap-3">
           <div>
-            <label className="mb-1 block text-xs text-fg-muted">Date</label>
+            <label className="mb-1 block text-xs text-text-secondary">Date</label>
             <input
               type="date"
               value={form.date_operation}
               onChange={(e) =>
                 setForm({ ...form, date_operation: e.target.value })
               }
-              className="w-full rounded-md border border-border-default bg-surface-2 px-2 py-1.5 text-sm text-fg-primary"
+              className="w-full rounded-md border border-border-subtle bg-bg-card px-2 py-1.5 text-sm text-text-primary"
             />
           </div>
           <div>
-            <label className="mb-1 block text-xs text-fg-muted">
+            <label className="mb-1 block text-xs text-text-secondary">
               Référence
             </label>
             <input
               type="text"
               value={form.reference}
               onChange={(e) => setForm({ ...form, reference: e.target.value })}
-              className="w-full rounded-md border border-border-default bg-surface-2 px-2 py-1.5 text-sm text-fg-primary"
+              className="w-full rounded-md border border-border-subtle bg-bg-card px-2 py-1.5 text-sm text-text-primary"
             />
           </div>
           <div className="col-span-2">
-            <label className="mb-1 block text-xs text-fg-muted">
+            <label className="mb-1 block text-xs text-text-secondary">
               Opération *
             </label>
             <input
               type="text"
               value={form.operation}
               onChange={(e) => setForm({ ...form, operation: e.target.value })}
-              className="w-full rounded-md border border-border-default bg-surface-2 px-2 py-1.5 text-sm text-fg-primary"
+              className="w-full rounded-md border border-border-subtle bg-bg-card px-2 py-1.5 text-sm text-text-primary"
             />
           </div>
           <div>
-            <label className="mb-1 block text-xs text-fg-muted">
+            <label className="mb-1 block text-xs text-text-secondary">
               Montant *
             </label>
             <input
@@ -135,36 +135,36 @@ function Colonne({
               step="0.01"
               value={form.montant}
               onChange={(e) => setForm({ ...form, montant: e.target.value })}
-              className="w-full rounded-md border border-border-default bg-surface-2 px-2 py-1.5 text-sm text-fg-primary"
+              className="w-full rounded-md border border-border-subtle bg-bg-card px-2 py-1.5 text-sm text-text-primary"
             />
           </div>
           <div>
-            <label className="mb-1 block text-xs text-fg-muted">Sens</label>
+            <label className="mb-1 block text-xs text-text-secondary">Sens</label>
             <select
               value={form.sens}
               onChange={(e) =>
                 setForm({ ...form, sens: e.target.value as "debit" | "credit" })
               }
-              className="w-full rounded-md border border-border-default bg-surface-2 px-2 py-1.5 text-sm text-fg-primary"
+              className="w-full rounded-md border border-border-subtle bg-bg-card px-2 py-1.5 text-sm text-text-primary"
             >
               <option value="debit">Débit</option>
               <option value="credit">Crédit</option>
             </select>
           </div>
         </div>
-        {error && <p className="mb-2 text-xs text-danger">{error}</p>}
+        {error && <p className="mb-2 text-xs text-accent-red">{error}</p>}
         <button
           type="submit"
           disabled={saving}
-          className="rounded-md bg-accent-green px-4 py-1.5 text-sm font-medium text-on-accent hover:opacity-90 disabled:opacity-60"
+          className="rounded-md bg-accent-teal px-4 py-1.5 text-sm font-medium text-on-accent-light hover:opacity-90 disabled:opacity-60"
         >
           {saving ? "..." : "+ Ajouter"}
         </button>
       </form>
 
-      <div className="overflow-x-auto rounded-xl border border-border-default">
+      <div className="overflow-x-auto rounded-xl border border-border-subtle">
         <table className="min-w-full text-sm">
-          <thead className="bg-surface-2 text-fg-secondary">
+          <thead className="bg-bg-card text-text-secondary">
             <tr>
               <th className="px-2 py-2 text-left">Date</th>
               <th className="px-2 py-2 text-left">Référence</th>
@@ -175,12 +175,12 @@ function Colonne({
               <th className="px-2 py-2 text-right">Solde</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-border-default bg-surface-1/60">
+          <tbody className="divide-y divide-border-subtle bg-bg-card/60">
             {sorted.length === 0 && (
               <tr>
                 <td
                   colSpan={showPointe ? 7 : 6}
-                  className="px-2 py-3 text-center text-fg-muted"
+                  className="px-2 py-3 text-center text-text-secondary"
                 >
                   Aucune ligne.
                 </td>
@@ -189,7 +189,7 @@ function Colonne({
             {sorted.map((l) => {
               solde += l.montant_debit - l.montant_credit;
               return (
-                <tr key={l.id} className="text-fg-primary">
+                <tr key={l.id} className="text-text-primary">
                   <td className="px-2 py-1.5">
                     {l.date_operation
                       ? new Date(l.date_operation).toLocaleDateString("fr-FR")
@@ -222,7 +222,7 @@ function Colonne({
             })}
           </tbody>
           {sorted.length > 0 && (
-            <tfoot className="bg-surface-2 font-semibold text-fg-primary">
+            <tfoot className="bg-bg-card font-semibold text-text-primary">
               <tr>
                 <td className="px-2 py-1.5" colSpan={showPointe ? 5 : 4}>
                   SOLDE
@@ -273,10 +273,10 @@ export default function ErbPage() {
 
   return (
     <div>
-      <h1 className="mb-2 text-2xl font-semibold text-fg-primary">
+      <h1 className="mb-2 text-2xl font-semibold text-text-primary">
         État de Rapprochement Bancaire (ERB)
       </h1>
-      <p className="mb-6 text-sm text-fg-muted">
+      <p className="mb-6 text-sm text-text-secondary">
         Saisie manuelle des deux côtés — les lignes "CHEZ MOI" (tes livres) ne
         sont pas générées automatiquement depuis le journal, comme dans le
         classeur d&apos;origine.
@@ -285,8 +285,8 @@ export default function ErbPage() {
       <div
         className={`mb-6 rounded-xl border p-4 text-sm ${
           ecart === 0
-            ? "border-accent-green bg-accent-green-bg text-accent-green-fg"
-            : "border-warning bg-warning-bg text-warning"
+            ? "border-accent-teal bg-bg-card-teal text-accent-teal"
+            : "border-accent-amber bg-accent-amber/10 text-accent-amber"
         }`}
       >
         Écart entre les deux soldes :{" "}
@@ -295,7 +295,7 @@ export default function ErbPage() {
       </div>
 
       {loading ? (
-        <p className="text-fg-muted">Chargement...</p>
+        <p className="text-text-secondary">Chargement...</p>
       ) : (
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
           <Colonne

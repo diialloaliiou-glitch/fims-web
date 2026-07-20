@@ -33,7 +33,7 @@ export default function ProtectedLayout({
 
   if (loading) {
     return (
-      <div className="flex flex-1 items-center justify-center text-fg-muted">
+      <div className="flex flex-1 items-center justify-center text-text-secondary">
         Chargement...
       </div>
     );
@@ -45,12 +45,12 @@ export default function ProtectedLayout({
 
   return (
     <div className="flex min-h-full flex-col">
-      <header className="border-b border-border-default bg-surface-1/80 px-4 py-2 print:hidden">
+      <header className="border-b border-border-subtle bg-bg-card/80 px-4 py-2 print:hidden">
         <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-3">
             <Link
               href="/"
-              className="flex h-8 w-8 items-center justify-center rounded-full bg-surface-2 text-fg-muted hover:opacity-80"
+              className="flex h-8 w-8 items-center justify-center rounded-full bg-bg-card text-text-secondary hover:opacity-80"
               aria-label="Retour au dashboard"
             >
               <svg
@@ -62,7 +62,7 @@ export default function ProtectedLayout({
                 <path d="M12 12c2.7 0 8 1.34 8 4v2H4v-2c0-2.66 5.3-4 8-4zm0-2a4 4 0 1 1 0-8 4 4 0 0 1 0 8z" />
               </svg>
             </Link>
-            <div className="rounded-full bg-surface-2 px-4 py-1.5 text-sm text-fg-secondary">
+            <div className="rounded-full bg-bg-card px-4 py-1.5 text-sm text-text-secondary">
               Bienvenue, {profile?.nom_utilisateur} | Rôle : {profile?.role} |
               {" "}Base : {organization?.nom}
             </div>
@@ -72,7 +72,7 @@ export default function ProtectedLayout({
               <select
                 value={project?.id ?? ""}
                 onChange={(e) => setActiveProjectId(e.target.value)}
-                className="rounded-full border border-border-default bg-surface-2 px-3 py-1.5 text-sm text-fg-primary"
+                className="rounded-full border border-border-subtle bg-bg-card px-3 py-1.5 text-sm text-text-primary"
               >
                 {projects.map((p) => (
                   <option key={p.id} value={p.id}>
@@ -82,14 +82,14 @@ export default function ProtectedLayout({
               </select>
             )}
             {projects.length === 1 && (
-              <span className="hidden text-sm text-fg-muted sm:inline">
+              <span className="hidden text-sm text-text-secondary sm:inline">
                 Projet : {project?.code_projet}
               </span>
             )}
             {pathname !== "/" && (
               <Link
                 href="/"
-                className="text-sm text-fg-muted hover:text-accent-green"
+                className="text-sm text-text-secondary hover:text-accent-teal"
               >
                 ← Dashboard
               </Link>
@@ -97,7 +97,7 @@ export default function ProtectedLayout({
             <button
               onClick={toggleTheme}
               aria-label="Changer de thème"
-              className="flex h-8 w-8 items-center justify-center rounded-full border border-border-default text-fg-secondary hover:bg-surface-2"
+              className="flex h-8 w-8 items-center justify-center rounded-full border border-border-subtle text-text-secondary hover:bg-bg-card"
             >
               {theme === "dark" ? (
                 <svg viewBox="0 0 24 24" fill="currentColor" className="h-4 w-4">
@@ -119,7 +119,7 @@ export default function ProtectedLayout({
             </button>
             <button
               onClick={() => signOut()}
-              className="rounded-full border border-border-default px-4 py-1.5 text-sm text-fg-secondary hover:bg-surface-2"
+              className="rounded-full border border-border-subtle px-4 py-1.5 text-sm text-text-secondary hover:bg-bg-card"
             >
               ✕ Déconnexion
             </button>

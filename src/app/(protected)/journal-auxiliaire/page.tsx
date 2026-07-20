@@ -66,7 +66,7 @@ export default function JournalAuxiliairePage() {
   return (
     <div>
       <div className="mb-6 flex items-center justify-between">
-        <h1 className="text-2xl font-semibold text-fg-primary">
+        <h1 className="text-2xl font-semibold text-text-primary">
           Journal Auxiliaire
         </h1>
         <div className="flex gap-2 print:hidden">
@@ -89,32 +89,32 @@ export default function JournalAuxiliairePage() {
                 ])
               )
             }
-            className="rounded-md border border-border-default px-4 py-2 text-sm text-fg-secondary hover:bg-surface-2"
+            className="rounded-md border border-border-subtle px-4 py-2 text-sm text-text-secondary hover:bg-bg-card"
           >
             Export Excel
           </button>
           <button
             onClick={() => window.print()}
-            className="rounded-md border border-border-default px-4 py-2 text-sm text-fg-secondary hover:bg-surface-2"
+            className="rounded-md border border-border-subtle px-4 py-2 text-sm text-text-secondary hover:bg-bg-card"
           >
             Export PDF
           </button>
           <button
             onClick={() => window.print()}
-            className="rounded-md bg-accent-blue px-4 py-2 text-sm text-on-accent hover:opacity-90"
+            className="rounded-md bg-accent-blue-solid px-4 py-2 text-sm text-on-accent-dark hover:opacity-90"
           >
             Imprimer
           </button>
         </div>
       </div>
 
-      <div className="mb-6 flex flex-wrap gap-4 rounded-xl border border-border-default bg-surface-1 p-4 print:hidden">
+      <div className="mb-6 flex flex-wrap gap-4 rounded-xl border border-border-subtle bg-bg-card p-4 print:hidden">
         <div>
-          <label className="mb-1 block text-sm text-fg-secondary">Journal</label>
+          <label className="mb-1 block text-sm text-text-secondary">Journal</label>
           <select
             value={journal}
             onChange={(e) => setJournal(e.target.value)}
-            className="min-w-[160px] rounded-md border border-border-default bg-surface-2 px-3 py-2 text-fg-primary"
+            className="min-w-[160px] rounded-md border border-border-subtle bg-bg-card px-3 py-2 text-text-primary"
           >
             <option value="*">Tous les journaux (*)</option>
             {journaux.map((j) => (
@@ -125,28 +125,28 @@ export default function JournalAuxiliairePage() {
           </select>
         </div>
         <div>
-          <label className="mb-1 block text-sm text-fg-secondary">Du</label>
+          <label className="mb-1 block text-sm text-text-secondary">Du</label>
           <input
             type="date"
             value={dateDebut}
             onChange={(e) => setDateDebut(e.target.value)}
-            className="rounded-md border border-border-default bg-surface-2 px-3 py-2 text-fg-primary"
+            className="rounded-md border border-border-subtle bg-bg-card px-3 py-2 text-text-primary"
           />
         </div>
         <div>
-          <label className="mb-1 block text-sm text-fg-secondary">Au</label>
+          <label className="mb-1 block text-sm text-text-secondary">Au</label>
           <input
             type="date"
             value={dateFin}
             onChange={(e) => setDateFin(e.target.value)}
-            className="rounded-md border border-border-default bg-surface-2 px-3 py-2 text-fg-primary"
+            className="rounded-md border border-border-subtle bg-bg-card px-3 py-2 text-text-primary"
           />
         </div>
       </div>
 
-      <div className="overflow-x-auto rounded-xl border border-border-default">
+      <div className="overflow-x-auto rounded-xl border border-border-subtle">
         <table className="min-w-full text-sm">
-          <thead className="bg-surface-2 text-fg-secondary">
+          <thead className="bg-bg-card text-text-secondary">
             <tr>
               <th className="px-3 py-2 text-left">N°E-J</th>
               <th className="px-3 py-2 text-left">B-S-Line</th>
@@ -160,23 +160,23 @@ export default function JournalAuxiliairePage() {
               <th className="px-3 py-2 text-left">N°Pièce</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-border-default bg-surface-1/60">
+          <tbody className="divide-y divide-border-subtle bg-bg-card/60">
             {loading && (
               <tr>
-                <td colSpan={10} className="px-3 py-4 text-center text-fg-muted">
+                <td colSpan={10} className="px-3 py-4 text-center text-text-secondary">
                   Chargement...
                 </td>
               </tr>
             )}
             {!loading && entries.length === 0 && (
               <tr>
-                <td colSpan={10} className="px-3 py-4 text-center text-fg-muted">
+                <td colSpan={10} className="px-3 py-4 text-center text-text-secondary">
                   Aucune écriture sur cette période.
                 </td>
               </tr>
             )}
             {entries.map((e) => (
-              <tr key={e.id} className="text-fg-primary">
+              <tr key={e.id} className="text-text-primary">
                 <td className="px-3 py-2">{e.n_ecriture_journal}</td>
                 <td className="px-3 py-2">{e.b_s_line}</td>
                 <td className="px-3 py-2">{e.n_cheque_ov}</td>
@@ -197,7 +197,7 @@ export default function JournalAuxiliairePage() {
             ))}
           </tbody>
           {entries.length > 0 && (
-            <tfoot className="bg-surface-2 font-semibold text-fg-primary">
+            <tfoot className="bg-bg-card font-semibold text-text-primary">
               <tr>
                 <td className="px-3 py-2" colSpan={7}>
                   TOTAL

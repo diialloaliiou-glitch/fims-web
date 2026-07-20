@@ -1,10 +1,15 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/lib/auth-context";
 import { periodeCouranteFermee } from "@/lib/period-closure";
+import { FormField, fieldControlClass } from "@/components/ui/FormField";
+import { IconButton } from "@/components/ui/IconButton";
+import { PrimaryButton } from "@/components/ui/PrimaryButton";
+import { MiniTableHeader } from "@/components/ui/MiniTableHeader";
+import { Pill } from "@/components/ui/Pill";
+import { Cloud } from "lucide-react";
 import type { ChartOfAccount, ThirdParty, Zone } from "@/lib/types";
 
 const JOURNAUX = ["AC", "BQ", "OD", "SA"];
@@ -266,90 +271,50 @@ export default function SaisiePage() {
   return (
     <div className="flex gap-6">
       <div className="hidden w-32 shrink-0 flex-col gap-3 sm:flex">
-        <Link
-          href="/lettrage"
-          className="rounded-full bg-surface-2 px-4 py-2 text-center text-sm text-fg-secondary hover:bg-surface-1"
-        >
-          Lettrage
-        </Link>
-        <Link
-          href="/lettrage"
-          className="rounded-full bg-surface-2 px-4 py-2 text-center text-sm text-fg-secondary hover:bg-surface-1"
-        >
-          Délettrage
-        </Link>
+        <Pill href="/lettrage">Lettrage</Pill>
+        <Pill href="/lettrage">Délettrage</Pill>
       </div>
 
       <div className="flex-1">
         <div className="mb-6 flex items-center justify-between gap-3">
-          <p className="text-sm text-fg-muted">
+          <p className="text-sm text-text-secondary">
             <span className="hidden sm:inline">DATE COMPTABLE : </span>
             {new Date().toLocaleString("fr-FR")}
           </p>
-          <p className="text-center text-sm font-medium text-fg-secondary">
+          <p className="text-center text-sm font-medium text-text-secondary">
             Financial Information Management System
           </p>
-          <button
-            onClick={() => afficherNotice("Journal intermédiaire : fonctionnalité à venir.")}
-            className="rounded-full bg-surface-2 px-4 py-1.5 text-sm text-fg-secondary hover:bg-surface-1"
-          >
+          <Pill onClick={() => afficherNotice("Journal intermédiaire : fonctionnalité à venir.")}>
             Accéder au journal intermédiaire
-          </button>
+          </Pill>
         </div>
 
-        <div className="mb-6 flex flex-col items-center gap-2 rounded-xl border border-border-default bg-surface-2 py-4">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth={1.6}
-            className="h-8 w-8 text-accent-green"
-          >
-            <path d="M7 18a4 4 0 0 1-1-7.87A5.5 5.5 0 0 1 16.9 8.1 4.5 4.5 0 0 1 17 18Z" />
-            <path d="M12 12v5m0-5-2 2m2-2 2 2" />
-          </svg>
-          <p className="text-xs text-fg-muted">N° JOURNAL</p>
-          <p className="text-lg font-bold text-accent-green">{nEcritureJournal || "—"}</p>
+        <div className="mb-6 flex flex-col items-center gap-2 rounded-xl border border-border-subtle bg-bg-card py-4">
+          <Cloud className="h-8 w-8 text-accent-teal" strokeWidth={1.6} />
+          <p className="text-xs text-text-secondary">N° JOURNAL</p>
+          <p className="text-lg font-bold text-accent-teal">{nEcritureJournal || "—"}</p>
         </div>
 
         {notice && (
-          <p className="mb-4 rounded-md bg-surface-2 px-4 py-2 text-sm text-warning">
+          <p className="mb-4 rounded-md bg-bg-card px-4 py-2 text-sm text-accent-amber">
             {notice}
           </p>
         )}
 
         <div className="mb-4 grid grid-cols-1 gap-4 sm:grid-cols-5">
-          <div>
-            <label className="mb-1 block text-xs font-semibold text-fg-secondary">
-              DATE DE LA PIÈCE*
-            </label>
-            <input
-              type="date"
-              value={dateOperation}
-              onChange={(e) => setDateOperation(e.target.value)}
-              className="w-full rounded-md border border-border-default bg-surface-2 px-3 py-2 text-fg-primary"
-            />
-          </div>
-          <div>
-            <label className="mb-1 block text-xs font-semibold text-fg-secondary">
-              N°PIÈCE
-            </label>
-            <input
-              type="text"
-              value={nPiece}
-              onChange={(e) => setNPiece(e.target.value)}
-              className="w-full rounded-md border border-border-default bg-surface-2 px-3 py-2 text-fg-primary"
-            />
-          </div>
-          <div>
-            <label className="mb-1 block text-xs font-semibold text-fg-secondary">
-              TYPE D&apos;OPÉRATION *
-            </label>
+          <FormField
+            label="Date de la pièce"
+            required
+            type="date"
+            value={dateOperation}
+            onChange={(e) => setDateOperation(e.target.value)}
+          />
+          <FormField label="N°Pièce" value={nPiece} onChange={(e) => setNPiece(e.target.value)} />
+          <FormField label="Type d'opération" required>
             <select
               value={typeOperation}
               onChange={(e) => setTypeOperation(e.target.value)}
-              className="w-full rounded-md border border-border-default bg-surface-2 px-3 py-2 text-fg-primary"
+              className={fieldControlClass}
             >
               {TYPES_OPERATION.map((t) => (
                 <option key={t} value={t}>
@@ -357,15 +322,12 @@ export default function SaisiePage() {
                 </option>
               ))}
             </select>
-          </div>
-          <div>
-            <label className="mb-1 block text-xs font-semibold text-fg-secondary">
-              JOURNAL *
-            </label>
+          </FormField>
+          <FormField label="Journal" required>
             <select
               value={journal}
               onChange={(e) => setJournal(e.target.value)}
-              className="w-full rounded-md border border-border-default bg-surface-2 px-3 py-2 text-fg-primary"
+              className={fieldControlClass}
             >
               {JOURNAUX.map((j) => (
                 <option key={j} value={j}>
@@ -373,29 +335,16 @@ export default function SaisiePage() {
                 </option>
               ))}
             </select>
-          </div>
-          <div>
-            <label className="mb-1 block text-xs font-semibold text-fg-secondary">
-              B-S-LINE
-            </label>
-            <input
-              type="text"
-              value={bSLine}
-              onChange={(e) => setBSLine(e.target.value)}
-              className="w-full rounded-md border border-border-default bg-surface-2 px-3 py-2 text-fg-primary"
-            />
-          </div>
+          </FormField>
+          <FormField label="B-S-Line" value={bSLine} onChange={(e) => setBSLine(e.target.value)} />
         </div>
 
         <div className="mb-4 grid grid-cols-1 gap-4 sm:grid-cols-5">
-          <div>
-            <label className="mb-1 block text-xs font-semibold text-fg-secondary">
-              ZONE *
-            </label>
+          <FormField label="Zone" required>
             <select
               value={zoneId}
               onChange={(e) => setZoneId(e.target.value)}
-              className="w-full rounded-md border border-border-default bg-surface-2 px-3 py-2 text-fg-primary"
+              className={fieldControlClass}
             >
               <option value="">—</option>
               {zones.map((z) => (
@@ -404,35 +353,29 @@ export default function SaisiePage() {
                 </option>
               ))}
             </select>
-          </div>
-          <div>
-            <label className="mb-1 block text-xs font-semibold text-fg-secondary">
-              TIERS *
-            </label>
+          </FormField>
+          <FormField label="Tiers" required>
             <input
               list="tiers-list"
               type="text"
               value={tiers}
               onChange={(e) => setTiers(e.target.value)}
-              className="w-full rounded-md border border-border-default bg-surface-2 px-3 py-2 text-fg-primary"
+              className={fieldControlClass}
             />
             <datalist id="tiers-list">
               {thirdParties.map((t) => (
                 <option key={t.id} value={t.nom_tiers} />
               ))}
             </datalist>
-          </div>
-          <div>
-            <label className="mb-1 block text-xs font-semibold text-fg-secondary">
-              N° COMPTE *
-            </label>
+          </FormField>
+          <FormField label="N° Compte" required>
             <input
               list="comptes-list"
               type="text"
               value={compte}
               onChange={(e) => setCompte(e.target.value)}
               placeholder="Rechercher un compte..."
-              className="w-full rounded-md border border-border-default bg-surface-2 px-3 py-2 text-fg-primary"
+              className={fieldControlClass}
             />
             <datalist id="comptes-list">
               {accounts.map((a) => (
@@ -441,13 +384,10 @@ export default function SaisiePage() {
                 </option>
               ))}
             </datalist>
-          </div>
-          <div>
-            <label className="mb-1 block text-xs font-semibold text-fg-secondary">
-              SENS *
-            </label>
+          </FormField>
+          <FormField label="Sens" required>
             <div className="flex h-[42px] items-center gap-4">
-              <label className="flex items-center gap-1.5 text-sm text-fg-primary">
+              <label className="flex items-center gap-1.5 text-sm text-text-primary">
                 <input
                   type="radio"
                   checked={sens === "debit"}
@@ -455,7 +395,7 @@ export default function SaisiePage() {
                 />
                 Débit
               </label>
-              <label className="flex items-center gap-1.5 text-sm text-fg-primary">
+              <label className="flex items-center gap-1.5 text-sm text-text-primary">
                 <input
                   type="radio"
                   checked={sens === "credit"}
@@ -464,119 +404,63 @@ export default function SaisiePage() {
                 Crédit
               </label>
             </div>
-          </div>
+          </FormField>
         </div>
 
         <div className="mb-4 grid grid-cols-1 gap-4 sm:grid-cols-5">
-          <div>
-            <label className="mb-1 block text-xs font-semibold text-fg-secondary">
-              RÉF. FACT/D... *
-            </label>
-            <input
-              type="text"
-              value={refFactD}
-              onChange={(e) => setRefFactD(e.target.value)}
-              className="w-full rounded-md border border-border-default bg-surface-2 px-3 py-2 text-fg-primary"
-            />
-          </div>
+          <FormField label="Réf. Fact/D..." required value={refFactD} onChange={(e) => setRefFactD(e.target.value)} />
           <div className="sm:col-span-2">
-            <label className="mb-1 block text-xs font-semibold text-fg-secondary">
-              LIBELLE *
-            </label>
-            <input
-              type="text"
-              value={libelle}
-              onChange={(e) => setLibelle(e.target.value)}
-              className="w-full rounded-md border border-border-default bg-surface-2 px-3 py-2 text-fg-primary"
-            />
+            <FormField label="Libellé" required value={libelle} onChange={(e) => setLibelle(e.target.value)} />
           </div>
-          <div>
-            <label className="mb-1 block text-xs font-semibold text-fg-secondary">
-              MONTANT *
-            </label>
+          <FormField label="Montant" required>
             <input
               type="number"
               step="0.01"
               value={montant}
               onChange={(e) => setMontant(e.target.value)}
-              className="w-full rounded-md border border-border-default bg-accent-green-bg px-3 py-2 text-fg-primary"
+              className={`${fieldControlClass} bg-bg-card-teal`}
             />
-          </div>
+          </FormField>
           <div className="flex items-end gap-2">
-            <button
-              onClick={ajouterLigne}
-              aria-label="Ajouter la ligne"
-              className="flex h-[42px] w-[42px] items-center justify-center rounded-md bg-accent-green text-on-accent hover:opacity-90"
-            >
-              ✓
-            </button>
-            <button
-              onClick={annulerLigne}
-              aria-label="Annuler la ligne"
-              className="flex h-[42px] w-[42px] items-center justify-center rounded-md bg-danger-bg text-danger hover:opacity-90"
-            >
-              ✕
-            </button>
+            <IconButton variant="confirm" ariaLabel="Ajouter la ligne" onClick={ajouterLigne} rounded="md" />
+            <IconButton variant="cancel" ariaLabel="Annuler la ligne" onClick={annulerLigne} rounded="md" />
           </div>
         </div>
 
-        {error && <p className="mb-3 text-sm text-danger">{error}</p>}
-        {success && <p className="mb-3 text-sm text-accent-green">{success}</p>}
+        {error && <p className="mb-3 text-sm text-accent-red">{error}</p>}
+        {success && <p className="mb-3 text-sm text-accent-teal">{success}</p>}
 
         <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-3 sm:items-end">
-          <div>
-            <label className="mb-1 block text-xs font-semibold text-fg-secondary">
-              N°/CHQ/OV *
-            </label>
-            <input
-              type="text"
-              value={nChequeOv}
-              onChange={(e) => setNChequeOv(e.target.value)}
-              className="w-full rounded-md border border-border-default bg-surface-2 px-3 py-2 text-fg-primary"
-            />
-          </div>
-          <button
-            onClick={genererLeReglement}
-            className="rounded-full border border-border-default bg-surface-2 px-4 py-2 text-sm text-fg-secondary hover:bg-surface-1"
-          >
+          <FormField label="N°/Chq/OV" required value={nChequeOv} onChange={(e) => setNChequeOv(e.target.value)} />
+          <Pill icon={undefined} onClick={genererLeReglement}>
             ✨ Générer Le Règlement
-          </button>
+          </Pill>
           <div className="flex items-center justify-end gap-3">
-            <p className="text-xs text-warning">
+            <p className="text-xs text-accent-amber">
               Cliquez ici pour Enregistrer votre transaction !
             </p>
-            <button
-              onClick={handleValider}
-              disabled={submitting}
-              className="rounded-md bg-accent-blue px-6 py-2 font-medium text-on-accent hover:opacity-90 disabled:opacity-60"
-            >
+            <PrimaryButton onClick={handleValider} disabled={submitting}>
               {submitting ? "..." : "Validez"}
-            </button>
+            </PrimaryButton>
           </div>
         </div>
 
-        <div className="overflow-x-auto rounded-xl border border-border-default">
+        <div className="overflow-x-auto rounded-xl border border-border-subtle">
           <table className="min-w-full text-sm">
-            <thead className="bg-surface-2 text-fg-secondary">
-              <tr>
-                <th className="px-3 py-2 text-left">N° COMPTE - D</th>
-                <th className="px-3 py-2 text-left">N° COMPTE - C</th>
-                <th className="px-3 py-2 text-left">LIBELLE</th>
-                <th className="px-3 py-2 text-right">MONTANT - D</th>
-                <th className="px-3 py-2 text-right">MONTANT - C</th>
-                <th className="px-3 py-2" />
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-border-default bg-surface-1/60">
+            <MiniTableHeader
+              columns={["N° Compte - D", "N° Compte - C", "Libelle", "Montant - D", "Montant - C", ""]}
+              align={["left", "left", "left", "right", "right", "left"]}
+            />
+            <tbody className="divide-y divide-border-subtle bg-bg-card/60">
               {lignes.length === 0 && (
                 <tr>
-                  <td colSpan={6} className="px-3 py-4 text-center text-fg-muted">
+                  <td colSpan={6} className="px-3 py-4 text-center text-text-secondary">
                     Aucune ligne — utilise le bouton ✓ pour en ajouter.
                   </td>
                 </tr>
               )}
               {lignes.map((l) => (
-                <tr key={l.id} className="text-fg-primary">
+                <tr key={l.id} className="text-text-primary">
                   <td className="px-3 py-2">{l.sens === "debit" ? l.compte : ""}</td>
                   <td className="px-3 py-2">{l.sens === "credit" ? l.compte : ""}</td>
                   <td className="px-3 py-2">{l.libelle}</td>
@@ -589,7 +473,7 @@ export default function SaisiePage() {
                   <td className="px-3 py-2 text-right">
                     <button
                       onClick={() => supprimerLigne(l.id)}
-                      className="text-danger hover:underline"
+                      className="text-accent-red hover:underline"
                     >
                       retirer
                     </button>
@@ -598,7 +482,7 @@ export default function SaisiePage() {
               ))}
             </tbody>
             {lignes.length > 0 && (
-              <tfoot className="bg-surface-2 font-semibold text-fg-primary">
+              <tfoot className="bg-bg-card font-semibold text-text-primary">
                 <tr>
                   <td className="px-3 py-2" colSpan={3}>
                     TOTAUX

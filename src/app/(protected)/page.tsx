@@ -1,43 +1,27 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/lib/auth-context";
+import { ActionCard } from "@/components/ui/ActionCard";
+import { StatCard } from "@/components/ui/StatCard";
+import { Pill } from "@/components/ui/Pill";
 import type { JournalEntry } from "@/lib/types";
-
-function icon(path: string) {
-  return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={1.8}
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className="h-7 w-7"
-    >
-      <path d={path} />
-    </svg>
-  );
-}
-
-const ICONS = {
-  saisie: "M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z M15 5l4 4",
-  paf: "M20.24 12.24a6 6 0 0 0-8.49-8.49L5 10.5V19h8.5Z M16 8L2 22 M17.5 15L9 15",
-  glivre: "M4 5c2-1 5-1 8 0v14c-3-1-6-1-8 0Z M20 5c-2-1-5-1-8 0v14c3-1 6-1 8 0Z",
-  erb: "M3 21h18 M4 21V10l8-6 8 6v11 M7 21v-8 M12 21v-8 M17 21v-8",
-  jaux: "M4 20V5h4v15Z M10 20V7h4v13Z M16 20V4h4v16Z",
-  balance: "M12 3v18 M5 7h14 M5 7l-3 6a3 3 0 0 0 6 0Z M19 7l-3 6a3 3 0 0 0 6 0Z",
-  reporting: "M4 20V10 M10 20V4 M16 20v-7 M4 20h16",
-  parametre:
-    "M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z M19.4 13a7.4 7.4 0 0 0 0-2l2-1.5-2-3.5-2.4.8a7.6 7.6 0 0 0-1.7-1L15 3h-4l-.3 2.8a7.6 7.6 0 0 0-1.7 1l-2.4-.8-2 3.5L6.6 11a7.4 7.4 0 0 0 0 2l-2 1.5 2 3.5 2.4-.8a7.6 7.6 0 0 0 1.7 1L11 21h4l.3-2.8a7.6 7.6 0 0 0 1.7-1l2.4.8 2-3.5Z",
-  wallet: "M3 7a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2Z M16 12h3 M3 9h18",
-  search: "M11 4a7 7 0 1 0 0 14 7 7 0 0 0 0-14Z M20 20l-4.3-4.3",
-  clockbars: "M9 21H3v-4h6Zm6 0h-6V9h6Zm6 0h-6V3h6Z",
-  database: "M4 6c0-1.7 3.6-3 8-3s8 1.3 8 3-3.6 3-8 3-8-1.3-8-3Z M4 6v6c0 1.7 3.6 3 8 3s8-1.3 8-3V6 M4 12v6c0 1.7 3.6 3 8 3s8-1.3 8-3v-6",
-};
+import {
+  Cloud,
+  Wallet,
+  Search,
+  Clock,
+  Database,
+  PenLine,
+  Feather,
+  BookOpen,
+  Landmark,
+  BookCopy,
+  Scale,
+  BarChart3,
+  Settings,
+} from "lucide-react";
 
 export default function DashboardPage() {
   const { project } = useAuth();
@@ -125,68 +109,62 @@ export default function DashboardPage() {
   }
 
   const tiles = [
-    { key: "saisie", label: "Saisie", href: "/saisie", tone: "accent" as const },
-    { key: "paf", label: "PAF", href: "/paf", tone: "accent" as const },
-    { key: "glivre", label: "G-Livre", href: "/grand-livre", tone: "info" as const },
-    { key: "erb", label: "ERB", href: "/erb", tone: "info" as const },
-    { key: "jaux", label: "J-Auxiliaire", href: "/journal-auxiliaire", tone: "info" as const },
-    { key: "balance", label: "Balance", href: "/balance", tone: "info" as const },
-    { key: "reporting", label: "Reporting", href: "/reporting", tone: "info" as const },
-    { key: "parametre", label: "Paramètre", href: "/parametres", tone: "muted" as const },
+    { key: "saisie", icon: PenLine, label: "Saisie", href: "/saisie", color: "teal" as const },
+    { key: "paf", icon: Feather, label: "PAF", href: "/paf", color: "teal" as const },
+    { key: "glivre", icon: BookOpen, label: "G-Livre", href: "/grand-livre", color: "blue" as const },
+    { key: "erb", icon: Landmark, label: "ERB", href: "/erb", color: "blue" as const },
+    { key: "jaux", icon: BookCopy, label: "J-Auxiliaire", href: "/journal-auxiliaire", color: "blue" as const },
+    { key: "balance", icon: Scale, label: "Balance", href: "/balance", color: "blue" as const },
+    { key: "reporting", icon: BarChart3, label: "Reporting", href: "/reporting", color: "blue" as const },
+    { key: "parametre", icon: Settings, label: "Paramètre", href: "/parametres", color: "muted" as const },
   ];
-
-  const toneClasses = {
-    accent: "border-accent-green bg-accent-green-bg text-accent-green-fg hover:bg-accent-green-bg",
-    info: "border-border-default bg-surface-2 text-accent-blue hover:border-accent-green hover:bg-surface-2",
-    muted: "border-border-default bg-surface-2/60 text-fg-muted hover:bg-surface-2",
-  };
 
   return (
     <div className="relative overflow-hidden">
       <div
         aria-hidden
-        className="pointer-events-none absolute -bottom-32 -right-32 h-96 w-96 rounded-full bg-surface-2"
+        className="pointer-events-none absolute -bottom-32 -right-32 h-96 w-96 rounded-full bg-bg-card"
       />
 
       <div className="relative mb-8 flex flex-col items-center gap-4 px-4 py-8 text-center">
-        <div className="absolute right-0 top-0 flex items-center gap-3">
-          <div className="rounded-xl border border-border-default bg-surface-2 px-4 py-2 text-left">
-            <p className="text-xs text-fg-muted">Solde disponible</p>
-            <p className="text-lg font-bold text-accent-green">
-              {soldeTresorerie === null
+        <div className="absolute right-0 top-0">
+          <StatCard
+            label="Solde disponible"
+            value={
+              soldeTresorerie === null
                 ? "..."
-                : Math.round(soldeTresorerie).toLocaleString("fr-FR")}
-            </p>
-          </div>
+                : Math.round(soldeTresorerie).toLocaleString("fr-FR")
+            }
+            valueColor="teal"
+            icon={Wallet}
+          />
         </div>
 
         <div className="absolute right-0 top-24 flex flex-col gap-3">
-          <div className="rounded-xl border border-border-default bg-surface-2 px-4 py-2 text-left">
-            <p className="text-xs text-fg-muted">Dernière opération</p>
-            <p className="text-lg font-bold text-accent-blue">
-              {lastEntry?.n_ecriture_journal ?? "—"}
-            </p>
-          </div>
-          <div className="rounded-xl border border-border-default bg-surface-2 px-4 py-2 text-left">
-            <p className="text-xs text-fg-muted">Écritures ce mois</p>
-            <p className="text-lg font-bold text-warning">
-              {entriesThisMonth === null ? "..." : entriesThisMonth}
-            </p>
-          </div>
+          <StatCard
+            label="Dernière opération"
+            value={lastEntry?.n_ecriture_journal ?? "—"}
+            valueColor="blue"
+          />
+          <StatCard
+            label="Écritures ce mois"
+            value={entriesThisMonth === null ? "..." : entriesThisMonth}
+            valueColor="amber"
+          />
         </div>
 
-        <span className="text-accent-green">{icon(ICONS.wallet)}</span>
-        <p className="font-display text-xl font-bold tracking-wide text-fg-primary">
+        <Cloud className="h-10 w-10 text-accent-teal" strokeWidth={1.5} />
+        <p className="font-display text-xl font-bold tracking-wide text-text-primary">
           FIMS
         </p>
-        <p className="-mt-3 text-xs text-fg-muted">
+        <p className="-mt-3 text-xs text-text-secondary">
           Financial Information Management System
         </p>
 
-        <h1 className="font-display mt-4 rounded-lg border border-border-default px-6 py-2 text-3xl font-light tracking-tight text-fg-primary">
+        <h1 className="font-display mt-4 rounded-lg border border-border-subtle px-6 py-2 text-3xl font-light tracking-tight text-text-primary">
           [ BIENVENUE ]
         </h1>
-        <p className="text-sm text-fg-muted">
+        <p className="text-sm text-text-secondary">
           {project?.nom_projet}
           {project ? ` (${project.code_projet})` : ""}
         </p>
@@ -197,45 +175,37 @@ export default function DashboardPage() {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="BQ-0015"
-            className="w-full rounded-full border border-border-default bg-surface-2 px-4 py-2 text-sm text-fg-primary outline-none focus:border-accent-green"
+            className="w-full rounded-full border border-border-subtle bg-bg-card px-4 py-2 text-sm text-text-primary outline-none focus:border-accent-teal"
           />
           <button
             type="submit"
             aria-label="Rechercher"
-            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-accent-blue text-white hover:opacity-90"
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-accent-blue-solid text-on-accent-dark hover:opacity-90"
           >
-            {icon(ICONS.search)}
+            <Search className="h-4 w-4" strokeWidth={2} />
           </button>
         </form>
 
         <div className="flex flex-wrap justify-center gap-3 pt-1">
-          <Link
-            href="/budget"
-            className="flex items-center gap-2 rounded-full border border-border-default px-4 py-1.5 text-sm text-fg-secondary hover:bg-surface-2"
-          >
-            <span className="h-4 w-4">{icon(ICONS.clockbars)}</span>
+          <Pill icon={Clock} href="/budget">
             Voir le suivi budgétaire
-          </Link>
-          <button
-            onClick={() => comingSoon("Accès base de données")}
-            className="flex items-center gap-2 rounded-full border border-border-default px-4 py-1.5 text-sm text-fg-secondary hover:bg-surface-2"
-          >
-            <span className="h-4 w-4">{icon(ICONS.database)}</span>
+          </Pill>
+          <Pill icon={Database} onClick={() => comingSoon("Accès base de données")}>
             Accéder à la base de données
-          </button>
+          </Pill>
         </div>
 
         {notice && (
-          <p className="rounded-md bg-surface-2 px-4 py-2 text-sm text-warning">
+          <p className="rounded-md bg-bg-card px-4 py-2 text-sm text-accent-amber">
             {notice}
           </p>
         )}
       </div>
 
       {searchResults !== null && (
-        <div className="relative mb-8 overflow-x-auto rounded-xl border border-border-default">
+        <div className="relative mb-8 overflow-x-auto rounded-xl border border-border-subtle">
           <table className="min-w-full text-sm">
-            <thead className="bg-surface-2 text-fg-secondary">
+            <thead className="bg-bg-card text-text-secondary">
               <tr>
                 <th className="px-3 py-2 text-left">N° Écriture</th>
                 <th className="px-3 py-2 text-left">Pièce</th>
@@ -245,23 +215,23 @@ export default function DashboardPage() {
                 <th className="px-3 py-2 text-right">Crédit</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-border-default bg-surface-1/60">
+            <tbody className="divide-y divide-border-subtle bg-bg-card/60">
               {searching && (
                 <tr>
-                  <td colSpan={6} className="px-3 py-4 text-center text-fg-muted">
+                  <td colSpan={6} className="px-3 py-4 text-center text-text-secondary">
                     Recherche...
                   </td>
                 </tr>
               )}
               {!searching && searchResults.length === 0 && (
                 <tr>
-                  <td colSpan={6} className="px-3 py-4 text-center text-fg-muted">
+                  <td colSpan={6} className="px-3 py-4 text-center text-text-secondary">
                     Aucun résultat pour &quot;{search}&quot;.
                   </td>
                 </tr>
               )}
               {searchResults.map((e) => (
-                <tr key={e.id} className="text-fg-primary">
+                <tr key={e.id} className="text-text-primary">
                   <td className="px-3 py-2">{e.n_ecriture_journal}</td>
                   <td className="px-3 py-2">{e.n_piece}</td>
                   <td className="px-3 py-2">
@@ -281,30 +251,16 @@ export default function DashboardPage() {
         </div>
       )}
 
-      <div className="relative grid grid-cols-2 gap-4 sm:grid-cols-4">
-        {tiles.map((t) => {
-          const content = (
-            <>
-              <span>{icon(ICONS[t.key as keyof typeof ICONS])}</span>
-              <p className="mt-2 font-semibold">{t.label}</p>
-            </>
-          );
-          const className = `flex flex-col items-center justify-center gap-1 rounded-2xl border p-6 text-center transition-colors ${toneClasses[t.tone]}`;
-
-          return t.href ? (
-            <Link key={t.key} href={t.href} className={className}>
-              {content}
-            </Link>
-          ) : (
-            <button
-              key={t.key}
-              onClick={() => comingSoon(t.label)}
-              className={className}
-            >
-              {content}
-            </button>
-          );
-        })}
+      <div className="relative grid grid-cols-2 gap-5 sm:grid-cols-4">
+        {tiles.map((t) => (
+          <ActionCard
+            key={t.key}
+            icon={t.icon}
+            color={t.color}
+            label={t.label}
+            href={t.href}
+          />
+        ))}
       </div>
     </div>
   );

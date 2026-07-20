@@ -1,97 +1,85 @@
 @import "tailwindcss";
 
 :root {
-  --background: #0a1730;
-  --foreground: #e8edf4;
+  --bg-base: #0a1220;
+  --bg-card: #101b2e;
+  --bg-card-teal: #0e2b26;
+  --bg-card-muted: #1e2228;
+  --border-subtle: #223454;
 
-  --surface-1: #101e3d;
-  --surface-2: #12294f;
-  --surface-3: #0f3a34;
-  --border-default: #223056;
+  --accent-teal: #34e0b0;
+  --accent-blue: #5b9bf5;
+  --accent-blue-solid: #2e6fe0;
+  --accent-amber: #f0a93b;
+  --accent-red: #e5484d;
 
-  --fg-primary: #ffffff;
-  --fg-secondary: #a7aec2;
-  --fg-muted: #6b7594;
+  --text-primary: #e9edf4;
+  --text-secondary: #8a94a8;
 
-  --accent-green: #4ea72e;
-  --accent-green-bg: #10331a;
-  --accent-green-fg: #7be05a;
-  --accent-blue: #0f9ed5;
-  --accent-blue-bg: #0c2a3a;
-  --warning: #f2c265;
-  --warning-bg: #3a2f10;
-  --danger: #ff6b6b;
-  --danger-bg: #3a1414;
-  --on-accent: #ffffff;
+  --on-accent-light: #0a1220;
+  --on-accent-dark: #e9edf4;
 }
 
 [data-theme="light"] {
-  --background: #ffffff;
-  --foreground: #212529;
+  --bg-base: #ffffff;
+  --bg-card: #f1f4f9;
+  --bg-card-teal: #e3f9f1;
+  --bg-card-muted: #e9eaec;
+  --border-subtle: #d8dee8;
 
-  --surface-1: #f8f9fa;
-  --surface-2: #e9ecef;
-  --surface-3: #eaf8e5;
-  --border-default: #dee2e6;
+  --accent-teal: #0f9d74;
+  --accent-blue: #2e6fe0;
+  --accent-blue-solid: #2258b8;
+  --accent-amber: #b9720a;
+  --accent-red: #c21f26;
 
-  --fg-primary: #212529;
-  --fg-secondary: #495057;
-  --fg-muted: #6c757d;
+  --text-primary: #16202e;
+  --text-secondary: #5b6472;
 
-  --accent-green: #196b24;
-  --accent-green-bg: #eaf8e5;
-  --accent-green-fg: #196b24;
-  --accent-blue: #0070c0;
-  --accent-blue-bg: #e6f2fb;
-  --warning: #e97132;
-  --warning-bg: #fdf0e5;
-  --danger: #c00000;
-  --danger-bg: #fbe9e9;
+  --on-accent-light: #ffffff;
+  --on-accent-dark: #ffffff;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --color-surface-1: var(--surface-1);
-  --color-surface-2: var(--surface-2);
-  --color-surface-3: var(--surface-3);
-  --color-border-default: var(--border-default);
-  --color-fg-primary: var(--fg-primary);
-  --color-fg-secondary: var(--fg-secondary);
-  --color-fg-muted: var(--fg-muted);
-  --color-accent-green: var(--accent-green);
-  --color-accent-green-bg: var(--accent-green-bg);
-  --color-accent-green-fg: var(--accent-green-fg);
+  --color-bg-base: var(--bg-base);
+  --color-bg-card: var(--bg-card);
+  --color-bg-card-teal: var(--bg-card-teal);
+  --color-bg-card-muted: var(--bg-card-muted);
+  --color-border-subtle: var(--border-subtle);
+
+  --color-accent-teal: var(--accent-teal);
   --color-accent-blue: var(--accent-blue);
-  --color-accent-blue-bg: var(--accent-blue-bg);
-  --color-warning: var(--warning);
-  --color-warning-bg: var(--warning-bg);
-  --color-danger: var(--danger);
-  --color-danger-bg: var(--danger-bg);
-  --color-on-accent: var(--on-accent);
+  --color-accent-blue-solid: var(--accent-blue-solid);
+  --color-accent-amber: var(--accent-amber);
+  --color-accent-red: var(--accent-red);
+
+  --color-text-primary: var(--text-primary);
+  --color-text-secondary: var(--text-secondary);
+
+  --color-on-accent-light: var(--on-accent-light);
+  --color-on-accent-dark: var(--on-accent-dark);
+
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
   --font-display: var(--font-montserrat);
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
+  background: var(--bg-base);
+  color: var(--text-primary);
 }
 
 @media print {
   :root,
   [data-theme="light"],
   [data-theme="dark"] {
-    --background: #ffffff;
-    --foreground: #000000;
-    --surface-1: #ffffff;
-    --surface-2: #f8f9fa;
-    --surface-3: #eaf8e5;
-    --border-default: #000000;
-    --fg-primary: #000000;
-    --fg-secondary: #333333;
-    --fg-muted: #6c757d;
+    --bg-base: #ffffff;
+    --bg-card: #ffffff;
+    --bg-card-teal: #ffffff;
+    --bg-card-muted: #f8f9fa;
+    --border-subtle: #000000;
+    --text-primary: #000000;
+    --text-secondary: #333333;
   }
 
   .print\:hidden {

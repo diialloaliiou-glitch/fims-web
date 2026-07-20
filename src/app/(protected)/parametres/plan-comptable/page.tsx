@@ -123,20 +123,20 @@ export default function PlanComptablePage() {
 
   return (
     <div>
-      <h1 className="mb-6 text-2xl font-semibold text-fg-primary">
+      <h1 className="mb-6 text-2xl font-semibold text-text-primary">
         Plan comptable
       </h1>
 
       <form
         onSubmit={handleSubmit}
-        className="mb-6 max-w-3xl rounded-xl border border-border-default bg-surface-1 p-6"
+        className="mb-6 max-w-3xl rounded-xl border border-border-subtle bg-bg-card p-6"
       >
-        <p className="mb-4 text-sm font-medium text-fg-secondary">
+        <p className="mb-4 text-sm font-medium text-text-secondary">
           {editingId ? `Modifier le compte #${editingId}` : "Ajouter un compte"}
         </p>
         <div className="mb-4 grid grid-cols-1 gap-4 sm:grid-cols-3">
           <div>
-            <label className="mb-1 block text-sm text-fg-secondary">
+            <label className="mb-1 block text-sm text-text-secondary">
               Compte (classe) *
             </label>
             <input
@@ -144,22 +144,22 @@ export default function PlanComptablePage() {
               required
               value={form.compte}
               onChange={(e) => setForm({ ...form, compte: e.target.value })}
-              className="w-full rounded-md border border-border-default bg-surface-2 px-3 py-2 text-fg-primary"
+              className="w-full rounded-md border border-border-subtle bg-bg-card px-3 py-2 text-text-primary"
             />
           </div>
           <div>
-            <label className="mb-1 block text-sm text-fg-secondary">
+            <label className="mb-1 block text-sm text-text-secondary">
               Sous-compte
             </label>
             <input
               type="text"
               value={form.sous_compte}
               onChange={(e) => setForm({ ...form, sous_compte: e.target.value })}
-              className="w-full rounded-md border border-border-default bg-surface-2 px-3 py-2 text-fg-primary"
+              className="w-full rounded-md border border-border-subtle bg-bg-card px-3 py-2 text-text-primary"
             />
           </div>
           <div>
-            <label className="mb-1 block text-sm text-fg-secondary">
+            <label className="mb-1 block text-sm text-text-secondary">
               N° compte complet *
             </label>
             <input
@@ -167,11 +167,11 @@ export default function PlanComptablePage() {
               required
               value={form.ccompte}
               onChange={(e) => setForm({ ...form, ccompte: e.target.value })}
-              className="w-full rounded-md border border-border-default bg-surface-2 px-3 py-2 text-fg-primary"
+              className="w-full rounded-md border border-border-subtle bg-bg-card px-3 py-2 text-text-primary"
             />
           </div>
           <div className="sm:col-span-2">
-            <label className="mb-1 block text-sm text-fg-secondary">
+            <label className="mb-1 block text-sm text-text-secondary">
               Libellé *
             </label>
             <input
@@ -179,17 +179,17 @@ export default function PlanComptablePage() {
               required
               value={form.libelle}
               onChange={(e) => setForm({ ...form, libelle: e.target.value })}
-              className="w-full rounded-md border border-border-default bg-surface-2 px-3 py-2 text-fg-primary"
+              className="w-full rounded-md border border-border-subtle bg-bg-card px-3 py-2 text-text-primary"
             />
           </div>
           <div>
-            <label className="mb-1 block text-sm text-fg-secondary">
+            <label className="mb-1 block text-sm text-text-secondary">
               Type de compte
             </label>
             <select
               value={form.type_compte}
               onChange={(e) => setForm({ ...form, type_compte: e.target.value })}
-              className="w-full rounded-md border border-border-default bg-surface-2 px-3 py-2 text-fg-primary"
+              className="w-full rounded-md border border-border-subtle bg-bg-card px-3 py-2 text-text-primary"
             >
               <option value="">—</option>
               {TYPES_COMPTE.map((t) => (
@@ -200,7 +200,7 @@ export default function PlanComptablePage() {
             </select>
           </div>
           <div className="flex items-end pb-2">
-            <label className="flex items-center gap-2 text-sm text-fg-secondary">
+            <label className="flex items-center gap-2 text-sm text-text-secondary">
               <input
                 type="checkbox"
                 checked={form.compte_tiers}
@@ -213,13 +213,13 @@ export default function PlanComptablePage() {
           </div>
         </div>
 
-        {error && <p className="mb-3 text-sm text-danger">{error}</p>}
+        {error && <p className="mb-3 text-sm text-accent-red">{error}</p>}
 
         <div className="flex gap-3">
           <button
             type="submit"
             disabled={saving}
-            className="rounded-md bg-accent-green px-5 py-2 font-medium text-on-accent hover:opacity-90 disabled:opacity-60"
+            className="rounded-md bg-accent-teal px-5 py-2 font-medium text-on-accent-light hover:opacity-90 disabled:opacity-60"
           >
             {saving ? "Enregistrement..." : editingId ? "Mettre à jour" : "Ajouter"}
           </button>
@@ -227,7 +227,7 @@ export default function PlanComptablePage() {
             <button
               type="button"
               onClick={startCreate}
-              className="rounded-md border border-border-default px-5 py-2 text-fg-secondary hover:bg-surface-2"
+              className="rounded-md border border-border-subtle px-5 py-2 text-text-secondary hover:bg-bg-card"
             >
               Annuler
             </button>
@@ -240,12 +240,12 @@ export default function PlanComptablePage() {
         value={filter}
         onChange={(e) => setFilter(e.target.value)}
         placeholder="Filtrer par compte ou libellé..."
-        className="mb-4 w-full max-w-sm rounded-md border border-border-default bg-surface-2 px-3 py-2 text-fg-primary"
+        className="mb-4 w-full max-w-sm rounded-md border border-border-subtle bg-bg-card px-3 py-2 text-text-primary"
       />
 
-      <div className="overflow-x-auto rounded-xl border border-border-default">
+      <div className="overflow-x-auto rounded-xl border border-border-subtle">
         <table className="min-w-full text-sm">
-          <thead className="bg-surface-2 text-fg-secondary">
+          <thead className="bg-bg-card text-text-secondary">
             <tr>
               <th className="px-3 py-2 text-left">N° compte</th>
               <th className="px-3 py-2 text-left">Libellé</th>
@@ -254,20 +254,20 @@ export default function PlanComptablePage() {
               <th className="px-3 py-2 text-right">Action</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-border-default bg-surface-1/60">
+          <tbody className="divide-y divide-border-subtle bg-bg-card/60">
             {loading && (
               <tr>
-                <td colSpan={5} className="px-3 py-4 text-center text-fg-muted">
+                <td colSpan={5} className="px-3 py-4 text-center text-text-secondary">
                   Chargement...
                 </td>
               </tr>
             )}
             {!loading &&
               filtered.map((a) => (
-                <tr key={a.id} className="text-fg-primary">
+                <tr key={a.id} className="text-text-primary">
                   <td className="px-3 py-2">{a.ccompte}</td>
                   <td className="px-3 py-2">{a.libelle}</td>
-                  <td className="px-3 py-2 text-fg-muted">{a.type_compte}</td>
+                  <td className="px-3 py-2 text-text-secondary">{a.type_compte}</td>
                   <td className="px-3 py-2 text-center">
                     {a.compte_tiers ? "✓" : ""}
                   </td>
