@@ -7,15 +7,8 @@ import { FormField } from "@/components/ui/FormField";
 import { MiniTableHeader } from "@/components/ui/MiniTableHeader";
 import { Pill } from "@/components/ui/Pill";
 import { PrimaryButton } from "@/components/ui/PrimaryButton";
+import { PREFIXE_COMPTE_BANQUE_PROJET } from "@/lib/solde-banque";
 import type { BudgetLine, JournalEntry } from "@/lib/types";
-
-// Reproduit CalculerSoldeBanqueProjet() du FIMS VBA d'origine (mod_FichePaiement) :
-// solde de TOUS les mouvements TRESORERIE dont le compte (D ou C) commence
-// par "5211" (le compte banque du PROJET, ex: 521100 "Banque projet
-// BAMAKO" — distinct de 521200 "compte principal groupe" ou 522xxx
-// "banques régionales"), sur TOUTE la période (pas de filtre de date/pièce :
-// c'est le solde réel actuel, indépendant de la pièce consultée).
-const PREFIXE_COMPTE_BANQUE_PROJET = "5211";
 
 export default function FichePaiementPage() {
   const { profile, project, organization } = useAuth();
