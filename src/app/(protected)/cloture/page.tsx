@@ -6,9 +6,8 @@ import { useAuth } from "@/lib/auth-context";
 import { FormField, fieldControlClass } from "@/components/ui/FormField";
 import { MiniTableHeader } from "@/components/ui/MiniTableHeader";
 import { PrimaryButton } from "@/components/ui/PrimaryButton";
+import { hasRole } from "@/lib/roles";
 import type { PeriodClosure } from "@/lib/types";
-
-const CAN_CLOTURER_ROLES = ["ADMIN_N1", "RAF"];
 
 function moisCourantDefaut() {
   const now = new Date();
@@ -34,7 +33,7 @@ export default function CloturePage() {
   const [reopenError, setReopenError] = useState<string | null>(null);
   const [reopening, setReopening] = useState(false);
 
-  const canCloturer = profile ? CAN_CLOTURER_ROLES.includes(profile.role) : false;
+  const canCloturer = hasRole(profile?.role, ["ADMIN_SITE", "RAF"]);
 
   async function loadClosures() {
     if (!project) return;
@@ -183,7 +182,7 @@ export default function CloturePage() {
       ) : (
         <p className="mb-6 text-sm text-text-secondary">
           Ton rôle ({profile?.role}) ne permet pas de clôturer ou rouvrir une
-          période — seuls ADMIN_N1 et RAF le peuvent.
+          période — seuls ADMIN_SITE et RAF (ou ADMIN_N1) le peuvent.
         </p>
       )}
 

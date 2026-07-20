@@ -6,6 +6,7 @@ import { supabase } from "./supabase";
 import type { Profile, Project, Organization } from "./types";
 
 const ACTIVE_PROJECT_KEY = "fims_active_project_id";
+const PROJECT_CHOSEN_THIS_SESSION_KEY = "fims_project_chosen_this_session";
 
 type AuthState = {
   session: Session | null;
@@ -14,6 +15,7 @@ type AuthState = {
   project: Project | null;
   organization: Organization | null;
   loading: boolean;
+  accountDisabled: boolean;
   signOut: () => Promise<void>;
   setActiveProjectId: (projectId: string) => void;
 };
@@ -25,6 +27,7 @@ const AuthContext = createContext<AuthState>({
   project: null,
   organization: null,
   loading: true,
+  accountDisabled: false,
   signOut: async () => {},
   setActiveProjectId: () => {},
 });
@@ -36,14 +39,33 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [project, setProject] = useState<Project | null>(null);
   const [organization, setOrganization] = useState<Organization | null>(null);
   const [loading, setLoading] = useState(true);
+  const [accountDisabled, setAccountDisabled] = useState(false);
 
   function chooseActiveProject(list: Project[]) {
-    const savedId =
-      typeof window !== "undefined"
-        ? window.localStorage.getItem(ACTIVE_PROJECT_KEY)
-        : null;
+    if (list.length === 1) {
+      setProject(list[0]);
+      window.sessionStorage.setItem(PROJECT_CHOSEN_THIS_SESSION_KEY, "true");
+      return;
+    }
+
+    if (list.length === 0) {
+      setProject(null);
+      return;
+    }
+
+    const chosenThisSession =
+      window.sessionStorage.getItem(PROJECT_CHOSEN_THIS_SESSION_KEY) === "true";
+
+    if (!chosenThisSession) {
+      // Plusieurs projets autorisés : on force un choix explicite via
+      // /choisir-projet plutôt que d'en présélectionner un silencieusement.
+      setProject(null);
+      return;
+    }
+
+    const savedId = window.localStorage.getItem(ACTIVE_PROJECT_KEY);
     const saved = list.find((p) => p.id === savedId);
-    setProject(saved ?? list[0] ?? null);
+    setProject(saved ?? list[0]);
   }
 
   async function loadProfileAndProjects(userId: string) {
@@ -55,6 +77,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     if (!profileData) return;
 
+    if (!profileData.actif) {
+      setAccountDisabled(true);
+      setProfile(null);
+      setProjects([]);
+      setProject(null);
+      return;
+    }
+
+    setAccountDisabled(false);
     setProfile(profileData as Profile);
 
     const [{ data: links }, { data: orgData }] = await Promise.all([
@@ -110,6 +141,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setProjects([]);
         setProject(null);
         setOrganization(null);
+        setAccountDisabled(false);
       }
     });
 
@@ -118,6 +150,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   async function signOut() {
     await supabase.auth.signOut();
+    window.sessionStorage.removeItem(PROJECT_CHOSEN_THIS_SESSION_KEY);
+    window.localStorage.removeItem(ACTIVE_PROJECT_KEY);
+    setAccountDisabled(false);
   }
 
   function setActiveProjectId(projectId: string) {
@@ -125,6 +160,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (!found) return;
     setProject(found);
     window.localStorage.setItem(ACTIVE_PROJECT_KEY, projectId);
+    window.sessionStorage.setItem(PROJECT_CHOSEN_THIS_SESSION_KEY, "true");
   }
 
   return (
@@ -136,6 +172,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         project,
         organization,
         loading,
+        accountDisabled,
         signOut,
         setActiveProjectId,
       }}

@@ -3,6 +3,7 @@ export type Profile = {
   organization_id: string;
   nom_utilisateur: string;
   role: string;
+  actif: boolean;
   created_at: string;
 };
 

@@ -33,6 +33,12 @@ export default function ProtectedLayout({
     }
   }, [loading, session, router]);
 
+  useEffect(() => {
+    if (!loading && session && !project) {
+      router.push("/choisir-projet");
+    }
+  }, [loading, session, project, router]);
+
   if (loading) {
     return (
       <div className="flex flex-1 items-center justify-center text-text-secondary">
@@ -41,7 +47,7 @@ export default function ProtectedLayout({
     );
   }
 
-  if (!session) {
+  if (!session || !project) {
     return null;
   }
 

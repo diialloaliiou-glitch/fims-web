@@ -1,13 +1,23 @@
 "use client";
 
-import { BookText, Users, UserSquare2 } from "lucide-react";
+import { BookText, Users, UserSquare2, UserCog, FolderKanban } from "lucide-react";
 import { ActionCard } from "@/components/ui/ActionCard";
+import { useAuth } from "@/lib/auth-context";
+import { hasRole } from "@/lib/roles";
 
 export default function ParametresPage() {
+  const { profile } = useAuth();
+
   const cards = [
     { href: "/parametres/plan-comptable", label: "Plan comptable", icon: BookText, color: "teal" as const },
     { href: "/parametres/tiers", label: "Tiers", icon: Users, color: "blue" as const },
     { href: "/parametres/personnel", label: "Fiche Personnel", icon: UserSquare2, color: "muted" as const },
+    ...(hasRole(profile?.role, ["ADMIN_N1", "ADMIN_SITE"])
+      ? [{ href: "/administration/utilisateurs", label: "Utilisateurs", icon: UserCog, color: "teal" as const }]
+      : []),
+    ...(hasRole(profile?.role, ["ADMIN_N1", "ADMIN_SITE", "RAF"])
+      ? [{ href: "/administration/projets", label: "Projets", icon: FolderKanban, color: "blue" as const }]
+      : []),
   ];
 
   return (

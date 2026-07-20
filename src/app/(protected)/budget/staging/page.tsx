@@ -7,6 +7,7 @@ import { useAuth } from "@/lib/auth-context";
 import { FormField, fieldControlClass } from "@/components/ui/FormField";
 import { MiniTableHeader } from "@/components/ui/MiniTableHeader";
 import { PrimaryButton } from "@/components/ui/PrimaryButton";
+import { hasRole } from "@/lib/roles";
 import type { BudgetLineStaging, Rubrique } from "@/lib/types";
 
 const emptyForm = {
@@ -25,8 +26,6 @@ const emptyForm = {
   note: "",
 };
 
-const CAN_VALIDATE_ROLES = ["ADMIN_N1", "RAF"];
-
 export default function BudgetStagingPage() {
   const { profile, project } = useAuth();
   const [rows, setRows] = useState<BudgetLineStaging[]>([]);
@@ -42,7 +41,7 @@ export default function BudgetStagingPage() {
   const [validateError, setValidateError] = useState<string | null>(null);
   const [validating, setValidating] = useState(false);
 
-  const canValidate = profile ? CAN_VALIDATE_ROLES.includes(profile.role) : false;
+  const canValidate = hasRole(profile?.role, ["ADMIN_SITE", "RAF"]);
 
   async function loadRows() {
     if (!project) return;
@@ -345,7 +344,7 @@ export default function BudgetStagingPage() {
       {!canValidate && (
         <p className="mb-4 text-sm text-text-secondary">
           Ton rôle ({profile?.role}) permet de proposer des lignes, mais seul un
-          ADMIN_N1 ou un RAF peut les valider et les transférer au budget officiel.
+          ADMIN_SITE, RAF (ou ADMIN_N1) peut les valider et les transférer au budget officiel.
         </p>
       )}
 
