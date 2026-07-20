@@ -9,6 +9,7 @@ import { FormField } from "@/components/ui/FormField";
 import { MiniTableHeader } from "@/components/ui/MiniTableHeader";
 import { Pill } from "@/components/ui/Pill";
 import { StatCard } from "@/components/ui/StatCard";
+import { scopeToProjectSpending } from "@/lib/project-scope";
 import type { BudgetLine, JournalEntry, Zone } from "@/lib/types";
 
 function firstOfMonthIso() {
@@ -83,12 +84,14 @@ export default function ReportingPage() {
     setLoading(true);
 
     Promise.all([
-      supabase
-        .from("journal_entries")
-        .select("*")
-        .eq("project_id", project.id)
-        .gte("date_operation", dateDebut)
-        .lte("date_operation", dateFin),
+      scopeToProjectSpending(
+        supabase
+          .from("journal_entries")
+          .select("*")
+          .gte("date_operation", dateDebut)
+          .lte("date_operation", dateFin),
+        project
+      ),
       supabase.from("budget_lines").select("*").eq("project_id", project.id),
       supabase
         .from("zones")

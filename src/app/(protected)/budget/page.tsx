@@ -9,6 +9,7 @@ import { FormField } from "@/components/ui/FormField";
 import { MiniTableHeader } from "@/components/ui/MiniTableHeader";
 import { Pill } from "@/components/ui/Pill";
 import { StatCard } from "@/components/ui/StatCard";
+import { scopeToProjectSpending } from "@/lib/project-scope";
 import type { BudgetLine, Donor, JournalEntry } from "@/lib/types";
 
 function todayIso() {
@@ -80,10 +81,12 @@ export default function FinancialReportPage() {
         .eq("project_id", project.id)
         .neq("our_line_code", "52B")
         .order("code_1"),
-      supabase
-        .from("journal_entries")
-        .select("b_s_line, compte_debit, montant_debit, date_heure_saisie")
-        .eq("project_id", project.id),
+      scopeToProjectSpending(
+        supabase
+          .from("journal_entries")
+          .select("b_s_line, compte_debit, montant_debit, date_heure_saisie"),
+        project
+      ),
     ]).then(([linesRes, entriesRes]) => {
       setLines((linesRes.data as BudgetLine[]) ?? []);
       setEntries((entriesRes.data as JournalEntry[]) ?? []);
