@@ -9,6 +9,14 @@ import { Pill } from "@/components/ui/Pill";
 import { PrimaryButton } from "@/components/ui/PrimaryButton";
 import type { BudgetLine, JournalEntry } from "@/lib/types";
 
+// Reproduit CalculerSoldeBanqueProjet() du FIMS VBA d'origine (mod_FichePaiement) :
+// solde de TOUS les mouvements TRESORERIE dont le compte (D ou C) commence
+// par "5211" (le compte banque du PROJET, ex: 521100 "Banque projet
+// BAMAKO" — distinct de 521200 "compte principal groupe" ou 522xxx
+// "banques régionales"), sur TOUTE la période (pas de filtre de date/pièce :
+// c'est le solde réel actuel, indépendant de la pièce consultée).
+const PREFIXE_COMPTE_BANQUE_PROJET = "5211";
+
 export default function FichePaiementPage() {
   const { profile, project, organization } = useAuth();
 
@@ -16,7 +24,7 @@ export default function FichePaiementPage() {
   const [numEJ, setNumEJ] = useState("");
   const [lignes, setLignes] = useState<JournalEntry[]>([]);
   const [budgetGlobal, setBudgetGlobal] = useState(0);
-  const [soldeBanque, setSoldeBanque] = useState<number | null>(null);
+  const [soldeActuel, setSoldeActuel] = useState<number | null>(null);
   const [dernierNEJCompte, setDernierNEJCompte] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -42,7 +50,7 @@ export default function FichePaiementPage() {
   async function chargerFiche(nej: string) {
     setError(null);
     setLignes([]);
-    setSoldeBanque(null);
+    setSoldeActuel(null);
     setDernierNEJCompte(null);
     if (!project || !nej.trim()) return;
 
@@ -66,11 +74,6 @@ export default function FichePaiementPage() {
 
     setLignes(rows);
 
-    const compteBanque =
-      rows
-        .map((r) => r.compte_debit ?? r.compte_credit ?? "")
-        .find((c) => c.startsWith("5")) ?? null;
-
     const { data: budgetLinesData } = await supabase
       .from("budget_lines")
       .select("*")
@@ -81,38 +84,44 @@ export default function FichePaiementPage() {
     );
     setBudgetGlobal(total);
 
-    if (compteBanque) {
-      const { data: allTreso } = await supabase
-        .from("journal_entries")
-        .select("compte_debit, compte_credit, montant_debit, montant_credit, n_ecriture_journal, date_heure_saisie")
-        .eq("project_id", project.id)
-        .eq("type_operation", "TRESORERIE");
+    const { data: allTreso } = await supabase
+      .from("journal_entries")
+      .select("compte_debit, compte_credit, montant_debit, montant_credit, n_ecriture_journal, date_heure_saisie")
+      .eq("project_id", project.id)
+      .eq("type_operation", "TRESORERIE");
 
-      let solde = 0;
-      let dernier: { nej: string; date: string } | null = null;
+    let solde = 0;
+    let dernier: { nej: string; date: string } | null = null;
 
-      (allTreso ?? []).forEach((e) => {
-        if (e.compte_debit === compteBanque) solde += e.montant_debit;
-        if (e.compte_credit === compteBanque) solde -= e.montant_credit;
+    (allTreso ?? []).forEach((e) => {
+      const surCompteD = (e.compte_debit ?? "").startsWith(PREFIXE_COMPTE_BANQUE_PROJET);
+      const surCompteC = (e.compte_credit ?? "").startsWith(PREFIXE_COMPTE_BANQUE_PROJET);
+      if (surCompteD) solde += e.montant_debit;
+      if (surCompteC) solde -= e.montant_credit;
 
-        if (e.compte_debit === compteBanque || e.compte_credit === compteBanque) {
-          if (!dernier || e.date_heure_saisie > dernier.date) {
-            dernier = { nej: e.n_ecriture_journal ?? "", date: e.date_heure_saisie };
-          }
+      if (surCompteD || surCompteC) {
+        if (!dernier || e.date_heure_saisie >= dernier.date) {
+          dernier = { nej: e.n_ecriture_journal ?? "", date: e.date_heure_saisie };
         }
-      });
-
-      setSoldeBanque(solde);
-      if (dernier && (dernier as { nej: string }).nej.toUpperCase() !== nej.trim().toUpperCase()) {
-        setDernierNEJCompte((dernier as { nej: string }).nej);
       }
+    });
+
+    setSoldeActuel(solde);
+    if (dernier && (dernier as { nej: string }).nej.toUpperCase() !== nej.trim().toUpperCase()) {
+      setDernierNEJCompte((dernier as { nej: string }).nej);
     }
 
     setLoading(false);
   }
 
-  const montantDemande = lignes.reduce((sum, l) => sum + l.montant_debit, 0);
-  const soldeRestant = soldeBanque !== null ? soldeBanque - montantDemande : null;
+  // "This request" = SUM(Credit) des lignes de la pièce, comme H18 =
+  // SUM(FICHEPAIE[Credit]) dans Excel (le mouvement côté banque).
+  const montantDemande = lignes.reduce((sum, l) => sum + l.montant_credit, 0);
+  // "Currently available" = H14+H40 (solde actuel + cette demande, pour
+  // reconstituer le solde AVANT cette demande) ; "RESTING balance" = H14
+  // (le solde actuel réel, après cette demande).
+  const soldeDisponible = soldeActuel !== null ? soldeActuel + montantDemande : null;
+  const soldeRestant = soldeActuel;
   const premiere = lignes[0];
   const estPieceAnterieure = dernierNEJCompte !== null;
 
@@ -146,133 +155,125 @@ export default function FichePaiementPage() {
 
       {error && <p className="mb-4 text-sm text-accent-red print:hidden">{error}</p>}
 
-      {estPieceAnterieure && (
-        <div className="mb-4 rounded-md border border-accent-red bg-accent-red/10 px-4 py-3 text-sm text-accent-red">
-          Pièce antérieure — le solde ne peut pas être calculé de façon fiable.
-          Une opération plus récente existe sur ce compte : {dernierNEJCompte}.
-          Impression indisponible.
-        </div>
-      )}
-
       {premiere && (
         <div className="rounded-xl border border-border-subtle bg-bg-card p-6 print:border-black print:bg-white print:text-black">
-          <div className="mb-6 flex items-start justify-between">
-            <div>
-              <p className="text-sm text-text-secondary print:text-black">
-                Item No.
-              </p>
-              <p className="text-lg font-bold text-accent-teal print:text-black">
-                {numEJ}
-              </p>
-            </div>
-            <div className="text-right">
-              <p className="text-xl font-bold text-text-primary print:text-black">
-                PAYMENT AUTHORIZATION FORM
-              </p>
-            </div>
+          <div className="mb-4 flex items-start justify-between">
+            <p className="text-xl font-bold text-text-primary print:text-black">
+              PAYMENT AUTHORIZATION FORM
+            </p>
           </div>
 
           <div className="mb-6 grid grid-cols-2 gap-4 text-sm">
             <p>
-              <span className="text-text-secondary">N°/Chq/OV/Bcs : </span>
-              {premiere.n_cheque_ov}
+              <span className="text-text-secondary">Item No. : </span>
+              <span className="font-bold text-accent-teal print:text-black">{numEJ}</span>
             </p>
             <p>
               <span className="text-text-secondary">Date : </span>
               {new Date(premiere.date_operation).toLocaleDateString("fr-FR")}
             </p>
             <p>
-              <span className="text-text-secondary">Beneficiary : </span>
-              {premiere.tiers}
+              <span className="text-text-secondary">N°chq/ov/bcs : </span>
+              {premiere.n_cheque_ov}
             </p>
             <p>
               <span className="text-text-secondary">Project ID : </span>
               {project?.code_projet}
             </p>
-            <p>
+            <p className="col-span-2">
+              <span className="text-text-secondary">Beneficiary : </span>
+              {premiere.tiers}
+            </p>
+            <p className="col-span-2">
               <span className="text-text-secondary">Organization : </span>
               {organization?.nom}
             </p>
-            <p>
-              <span className="text-text-secondary">Seized by : </span>
-              {premiere.utilisateur}
-            </p>
           </div>
 
-          <div className="mb-6 grid grid-cols-2 gap-4 rounded-lg border border-border-subtle p-4 text-sm print:border-black">
-            <p>
-              Approved Budget :{" "}
-              <span className="font-semibold">
-                {Math.round(budgetGlobal).toLocaleString("fr-FR")}
-              </span>
-            </p>
-            <p>
-              Currently available :{" "}
-              <span className="font-semibold">
-                {soldeBanque !== null
-                  ? Math.round(soldeBanque).toLocaleString("fr-FR")
-                  : "—"}
-              </span>
-            </p>
-            <p>
-              This request :{" "}
-              <span className="font-semibold">
-                {Math.round(montantDemande).toLocaleString("fr-FR")}
-              </span>
-            </p>
-            <p>
-              RESTING balance :{" "}
-              <span className="font-semibold">
-                {soldeRestant !== null
-                  ? Math.round(soldeRestant).toLocaleString("fr-FR")
-                  : "—"}
-              </span>
-            </p>
-          </div>
+          {estPieceAnterieure ? (
+            <div className="mb-6 rounded-md border border-accent-red bg-accent-red/10 px-4 py-3 text-sm font-semibold text-accent-red">
+              PIÈCE ANTÉRIEURE — solde non calculable. Une opération plus
+              récente existe sur ce compte ({dernierNEJCompte}). Impression
+              non disponible pour {numEJ}.
+            </div>
+          ) : (
+            <>
+              <div className="mb-6 grid grid-cols-2 gap-4 rounded-lg border border-border-subtle p-4 text-sm print:border-black">
+                <p>
+                  Approved Budget :{" "}
+                  <span className="font-semibold">
+                    {Math.round(budgetGlobal).toLocaleString("fr-FR")}
+                  </span>
+                </p>
+                <p>
+                  Currently available :{" "}
+                  <span className="font-semibold">
+                    {soldeDisponible !== null
+                      ? Math.round(soldeDisponible).toLocaleString("fr-FR")
+                      : "—"}
+                  </span>
+                </p>
+                <p>
+                  This request :{" "}
+                  <span className="font-semibold">
+                    {Math.round(montantDemande).toLocaleString("fr-FR")}
+                  </span>
+                </p>
+                <p>
+                  RESTING balance :{" "}
+                  <span className="font-semibold">
+                    {soldeRestant !== null
+                      ? Math.round(soldeRestant).toLocaleString("fr-FR")
+                      : "—"}
+                  </span>
+                </p>
+              </div>
 
-          <table className="mb-6 min-w-full text-sm">
-            <MiniTableHeader
-              columns={["Budget code", "Account No.", "Libellé", "Debit", "Credit"]}
-              align={["left", "left", "left", "right", "right"]}
-            />
-            <tbody>
-              {lignes.map((l) => (
-                <tr key={l.id} className="border-b border-border-subtle print:border-gray-300">
-                  <td className="py-1">{l.b_s_line}</td>
-                  <td className="py-1">
-                    {l.montant_debit > 0 ? l.compte_debit : l.compte_credit}
-                  </td>
-                  <td className="py-1">{l.libelle}</td>
-                  <td className="py-1 text-right">
-                    {l.montant_debit ? l.montant_debit.toLocaleString("fr-FR") : ""}
-                  </td>
-                  <td className="py-1 text-right">
-                    {l.montant_credit ? l.montant_credit.toLocaleString("fr-FR") : ""}
-                  </td>
-                </tr>
-              ))}
-              <tr className="font-semibold">
-                <td className="py-1" colSpan={3}>
-                  TOTALS
-                </td>
-                <td className="py-1 text-right">
-                  {lignes
-                    .reduce((s, l) => s + l.montant_debit, 0)
-                    .toLocaleString("fr-FR")}
-                </td>
-                <td className="py-1 text-right">
-                  {lignes
-                    .reduce((s, l) => s + l.montant_credit, 0)
-                    .toLocaleString("fr-FR")}
-                </td>
-              </tr>
-            </tbody>
-          </table>
+              <table className="mb-6 min-w-full text-sm">
+                <MiniTableHeader
+                  columns={["Budget code", "Account No.", "Libellé", "Debit", "Credit"]}
+                  align={["left", "left", "left", "right", "right"]}
+                />
+                <tbody>
+                  {lignes.map((l) => (
+                    <tr key={l.id} className="border-b border-border-subtle print:border-gray-300">
+                      <td className="py-1">{l.b_s_line}</td>
+                      <td className="py-1">
+                        {l.montant_debit > 0 ? l.compte_debit : l.compte_credit}
+                      </td>
+                      <td className="py-1">{l.libelle}</td>
+                      <td className="py-1 text-right">
+                        {l.montant_debit ? l.montant_debit.toLocaleString("fr-FR") : ""}
+                      </td>
+                      <td className="py-1 text-right">
+                        {l.montant_credit ? l.montant_credit.toLocaleString("fr-FR") : ""}
+                      </td>
+                    </tr>
+                  ))}
+                  <tr className="font-semibold">
+                    <td className="py-1" colSpan={3}>
+                      TOTALS
+                    </td>
+                    <td className="py-1 text-right">
+                      {lignes
+                        .reduce((s, l) => s + l.montant_debit, 0)
+                        .toLocaleString("fr-FR")}
+                    </td>
+                    <td className="py-1 text-right">
+                      {lignes
+                        .reduce((s, l) => s + l.montant_credit, 0)
+                        .toLocaleString("fr-FR")}
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </>
+          )}
 
           <div className="grid grid-cols-2 gap-8 text-sm">
             <div>
               <p className="mb-1 text-text-secondary print:text-black">
-                Prepared by : Administrative &amp; Financial Manager
+                Checked by : Administrative &amp; Financial Manager
               </p>
               <input
                 type="text"
@@ -282,6 +283,9 @@ export default function FichePaiementPage() {
                 className="w-full rounded-md border border-border-subtle bg-bg-card px-3 py-2 text-text-primary print:border-b print:border-black print:bg-transparent print:text-black"
               />
               <p className="mt-1 text-xs text-text-secondary print:text-black">Date :</p>
+              <p className="mt-1 text-xs text-text-secondary print:text-black">
+                By signing, you certify that the entries made are correct.
+              </p>
             </div>
             <div>
               <p className="mb-1 text-text-secondary print:text-black">
@@ -295,8 +299,15 @@ export default function FichePaiementPage() {
                 className="w-full rounded-md border border-border-subtle bg-bg-card px-3 py-2 text-text-primary print:border-b print:border-black print:bg-transparent print:text-black"
               />
               <p className="mt-1 text-xs text-text-secondary print:text-black">Date :</p>
+              <p className="mt-1 text-xs text-text-secondary print:text-black">
+                By signing, you authorise the expenditure for the project.
+              </p>
             </div>
           </div>
+
+          <p className="mt-6 text-xs text-text-secondary print:text-black">
+            Seized by : {premiere.utilisateur}
+          </p>
         </div>
       )}
     </div>
