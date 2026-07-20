@@ -44,12 +44,13 @@ export default function PersonnelPage() {
   const [filter, setFilter] = useState("");
 
   async function loadPersonnel() {
-    if (!profile) return;
+    if (!profile || !project) return;
     setLoading(true);
     const { data } = await supabase
       .from("personnel")
       .select("*")
       .eq("organization_id", profile.organization_id)
+      .eq("project_id", project.id)
       .order("matricule");
     setPersonnel((data as Personnel[]) ?? []);
     setLoading(false);
@@ -114,7 +115,7 @@ export default function PersonnelPage() {
       setError("Le salaire brut doit être supérieur à zéro.");
       return;
     }
-    if (!profile) return;
+    if (!profile || !project) return;
 
     setSaving(true);
 
@@ -146,6 +147,7 @@ export default function PersonnelPage() {
       : await supabase.from("personnel").insert({
           ...payload,
           organization_id: profile.organization_id,
+          project_id: project.id,
           statut: "Actif",
         });
 

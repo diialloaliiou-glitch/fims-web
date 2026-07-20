@@ -8,7 +8,9 @@ import { MiniTableHeader } from "@/components/ui/MiniTableHeader";
 import { PrimaryButton } from "@/components/ui/PrimaryButton";
 import type { ChartOfAccount, ThirdParty, Zone } from "@/lib/types";
 
-const TYPES_TIERS = ["Fournisseur", "Prestataire", "Bailleur", "Personnel", "Autre"];
+// Liste exacte de la validation de liste deroulante "Type" (colonne D de la
+// feuille SUIVI DES TIERS du fichier BASE Excel).
+const TYPES_TIERS = ["Client", "Fournisseur", "Prestataire", "Bailleur", "Employé", "Autre"];
 
 const emptyForm = {
   compte_classe_4: "",

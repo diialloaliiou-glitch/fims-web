@@ -8,21 +8,22 @@ import { MiniTableHeader } from "@/components/ui/MiniTableHeader";
 import { PrimaryButton } from "@/components/ui/PrimaryButton";
 import type { ChartOfAccount } from "@/lib/types";
 
+// Liste exacte de la validation de liste deroulante "TYPE COMPTE" (colonne O
+// de la feuille PLAN COMPTA du fichier BASE Excel).
 const TYPES_COMPTE = [
   "CAPITAUX",
   "IMMOBILISATION",
+  "STOCK",
   "TIERS",
   "BANQUE",
+  "CAISSE",
   "TRESORERIE",
   "CHARGE",
   "PRODUIT",
 ];
 
 const emptyForm = {
-  compte: "",
-  sous_compte: "",
   ccompte: "",
-  s_compte: "",
   libelle: "",
   type_compte: "",
   compte_tiers: false,
@@ -64,10 +65,7 @@ export default function PlanComptablePage() {
   function startEdit(a: ChartOfAccount) {
     setEditingId(a.id);
     setForm({
-      compte: a.compte,
-      sous_compte: a.sous_compte ?? "",
       ccompte: a.ccompte,
-      s_compte: a.s_compte ?? "",
       libelle: a.libelle,
       type_compte: a.type_compte ?? "",
       compte_tiers: a.compte_tiers ?? false,
@@ -79,20 +77,26 @@ export default function PlanComptablePage() {
     e.preventDefault();
     setError(null);
 
-    if (!form.compte.trim() || !form.ccompte.trim() || !form.libelle.trim()) {
-      setError("Compte, N° de compte complet et Libellé sont obligatoires.");
+    if (!form.ccompte.trim() || !form.libelle.trim()) {
+      setError("N° de compte complet et Libellé sont obligatoires.");
       return;
     }
     if (!project || !profile) return;
 
     setSaving(true);
 
+    const ccompte = form.ccompte.trim();
+    const libelle = form.libelle.trim();
+
+    // COMPTE, SOUS COMPTE et S-COMPTE sont des formules dans le fichier
+    // Excel (=LEFT(CCOMPTE,1), =LEFT(CCOMPTE,3), =CONCAT(CCOMPTE,".",LIBELLE))
+    // — jamais saisis a la main, on les derive donc ici a l'identique.
     const payload = {
-      compte: form.compte.trim(),
-      sous_compte: form.sous_compte.trim() || null,
-      ccompte: form.ccompte.trim(),
-      s_compte: form.s_compte.trim() || null,
-      libelle: form.libelle.trim(),
+      compte: ccompte.slice(0, 1),
+      sous_compte: ccompte.slice(0, 3),
+      ccompte,
+      s_compte: `${ccompte}.${libelle}`,
+      libelle,
       type_compte: form.type_compte || null,
       compte_tiers: form.compte_tiers,
     };
@@ -138,17 +142,6 @@ export default function PlanComptablePage() {
           {editingId ? `Modifier le compte #${editingId}` : "Ajouter un compte"}
         </p>
         <div className="mb-4 grid grid-cols-1 gap-4 sm:grid-cols-3">
-          <FormField
-            label="Compte (classe)"
-            required
-            value={form.compte}
-            onChange={(e) => setForm({ ...form, compte: e.target.value })}
-          />
-          <FormField
-            label="Sous-compte"
-            value={form.sous_compte}
-            onChange={(e) => setForm({ ...form, sous_compte: e.target.value })}
-          />
           <FormField
             label="N° compte complet"
             required
