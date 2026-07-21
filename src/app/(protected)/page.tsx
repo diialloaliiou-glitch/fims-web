@@ -7,9 +7,11 @@ import { useLanguage } from "@/lib/language-context";
 import { ActionCard } from "@/components/ui/ActionCard";
 import { StatCard } from "@/components/ui/StatCard";
 import { MiniTableHeader } from "@/components/ui/MiniTableHeader";
+import { TrendChart } from "@/components/ui/TrendChart";
 import { PREFIXE_COMPTE_BANQUE_PROJET } from "@/lib/solde-banque";
 import { scopeToProjectSpending } from "@/lib/project-scope";
 import type { BudgetLine, JournalEntry } from "@/lib/types";
+import Link from "next/link";
 import {
   Cloud,
   Wallet,
@@ -36,7 +38,6 @@ function formatPrenom(nomUtilisateur: string | undefined) {
 export default function DashboardPage() {
   const { profile, project } = useAuth();
   const { t } = useLanguage();
-  const [entryCount, setEntryCount] = useState<number | null>(null);
   const [lastEntry, setLastEntry] = useState<{
     n_ecriture_journal: string | null;
     date_operation: string;
@@ -45,6 +46,7 @@ export default function DashboardPage() {
   const [entriesThisMonth, setEntriesThisMonth] = useState<number | null>(null);
   const [tauxConsoBudgetaire, setTauxConsoBudgetaire] = useState<number | null>(null);
   const [tauxConsoAvance, setTauxConsoAvance] = useState<number | null>(null);
+  const [depensesParMois, setDepensesParMois] = useState<{ label: string; value: number }[]>([]);
 
   const [search, setSearch] = useState("");
   const [searchResults, setSearchResults] = useState<JournalEntry[] | null>(null);
@@ -53,12 +55,6 @@ export default function DashboardPage() {
 
   useEffect(() => {
     if (!project) return;
-
-    supabase
-      .from("journal_entries")
-      .select("id", { count: "exact", head: true })
-      .eq("project_id", project.id)
-      .then(({ count }) => setEntryCount(count ?? 0));
 
     supabase
       .from("journal_entries")
@@ -103,7 +99,7 @@ export default function DashboardPage() {
     Promise.all([
       supabase.from("budget_lines").select("total_cost").eq("project_id", project.id).neq("our_line_code", "52B"),
       scopeToProjectSpending(
-        supabase.from("journal_entries").select("b_s_line, montant_debit"),
+        supabase.from("journal_entries").select("b_s_line, montant_debit, date_operation"),
         project
       ),
       scopeToProjectSpending(
@@ -115,11 +111,11 @@ export default function DashboardPage() {
         (s, l) => s + (l.total_cost ?? 0),
         0
       );
-      const depenseTotale = (entriesRes.data ?? []).reduce(
-        (s: number, e: { b_s_line: string | null; montant_debit: number }) =>
-          e.b_s_line && e.b_s_line.toUpperCase() !== "52B" ? s + e.montant_debit : s,
-        0
-      );
+      const entries =
+        (entriesRes.data as { b_s_line: string | null; montant_debit: number; date_operation: string }[]) ??
+        [];
+      const depenses = entries.filter((e) => e.b_s_line && e.b_s_line.toUpperCase() !== "52B");
+      const depenseTotale = depenses.reduce((s, e) => s + e.montant_debit, 0);
       const cumulAvance = (avanceRes.data ?? []).reduce(
         (s: number, e: { montant_credit: number }) => s + e.montant_credit,
         0
@@ -127,6 +123,38 @@ export default function DashboardPage() {
 
       setTauxConsoBudgetaire(budgetTotal > 0 ? depenseTotale / budgetTotal : null);
       setTauxConsoAvance(cumulAvance > 0 ? depenseTotale / cumulAvance : null);
+
+      // Courbe de tendance : depenses reelles (hors 52B) groupees par mois
+      // calendaire, sur les 12 derniers mois ou depuis le debut du projet
+      // si celui-ci est plus recent.
+      const debutFenetre = new Date();
+      debutFenetre.setMonth(debutFenetre.getMonth() - 11);
+      debutFenetre.setDate(1);
+      if (project.date_debut_projet) {
+        const debutProjet = new Date(project.date_debut_projet);
+        if (debutProjet > debutFenetre) debutFenetre.setTime(debutProjet.getTime());
+      }
+      debutFenetre.setDate(1);
+
+      const mois: { idc: string; label: string }[] = [];
+      const cursor = new Date(debutFenetre);
+      const now = new Date();
+      while (cursor <= now) {
+        mois.push({
+          idc: `${cursor.getFullYear()}-${cursor.getMonth()}`,
+          label: cursor.toLocaleDateString("fr-FR", { month: "short", year: "2-digit" }),
+        });
+        cursor.setMonth(cursor.getMonth() + 1);
+      }
+
+      const parMois = new Map<string, number>();
+      depenses.forEach((e) => {
+        const d = new Date(e.date_operation);
+        const idc = `${d.getFullYear()}-${d.getMonth()}`;
+        parMois.set(idc, (parMois.get(idc) ?? 0) + e.montant_debit);
+      });
+
+      setDepensesParMois(mois.map((m) => ({ label: m.label, value: parMois.get(m.idc) ?? 0 })));
     });
   }, [project]);
 
@@ -152,17 +180,20 @@ export default function DashboardPage() {
     setSearching(false);
   }
 
-  const tiles = [
+  const tilesPrincipales = [
     { key: "saisie", icon: PenLine, label: t.dashboard.tileSaisie, href: "/saisie", color: "teal" as const },
     { key: "paf", icon: Feather, label: t.dashboard.tilePaf, href: "/fiche-paiement", color: "teal" as const },
-    { key: "glivre", icon: BookOpen, label: t.dashboard.tileGLivre, href: "/grand-livre", color: "blue" as const },
     { key: "jdepense", icon: FileSpreadsheet, label: t.dashboard.tileJdepense, href: "/jdepense", color: "blue" as const },
-    { key: "erb", icon: Landmark, label: t.dashboard.tileErb, href: "/erb", color: "blue" as const },
-    { key: "jaux", icon: BookCopy, label: t.dashboard.tileJAux, href: "/journal-auxiliaire", color: "blue" as const },
-    { key: "balance", icon: Scale, label: t.dashboard.tileBalance, href: "/balance", color: "blue" as const },
-    { key: "reporting", icon: BarChart3, label: t.dashboard.tileReporting, href: "/reporting", color: "blue" as const },
     { key: "budtracker", icon: TrendingUp, label: t.dashboard.tileBudTracker, href: "/bud-tracker", color: "blue" as const },
-    { key: "parametre", icon: Settings, label: t.dashboard.tileParametre, href: "/parametres", color: "muted" as const },
+    { key: "reporting", icon: BarChart3, label: t.dashboard.tileReporting, href: "/reporting", color: "blue" as const },
+    { key: "glivre", icon: BookOpen, label: t.dashboard.tileGLivre, href: "/grand-livre", color: "blue" as const },
+    { key: "balance", icon: Scale, label: t.dashboard.tileBalance, href: "/balance", color: "blue" as const },
+  ];
+
+  const tilesSecondaires = [
+    { key: "erb", icon: Landmark, label: t.dashboard.tileErb, href: "/erb" },
+    { key: "jaux", icon: BookCopy, label: t.dashboard.tileJAux, href: "/journal-auxiliaire" },
+    { key: "parametre", icon: Settings, label: t.dashboard.tileParametre, href: "/parametres" },
   ];
 
   return (
@@ -173,53 +204,6 @@ export default function DashboardPage() {
       />
 
       <div className="relative mb-8 flex flex-col items-center gap-4 px-4 py-8 text-center">
-        <div className="flex flex-wrap justify-center gap-3 lg:absolute lg:left-0 lg:top-0 lg:flex-col lg:justify-start">
-          <StatCard
-            label={t.dashboard.tauxConsoBudgetaire}
-            value={
-              tauxConsoBudgetaire === null
-                ? "..."
-                : `${(tauxConsoBudgetaire * 100).toFixed(1)}%`
-            }
-            valueColor="teal"
-            icon={Percent}
-          />
-          <StatCard
-            label={t.dashboard.tauxConsoAvance}
-            value={
-              tauxConsoAvance === null ? "..." : `${(tauxConsoAvance * 100).toFixed(1)}%`
-            }
-            valueColor="amber"
-            icon={Percent}
-          />
-        </div>
-
-        <div className="lg:absolute lg:right-0 lg:top-0">
-          <StatCard
-            label={t.dashboard.soldeDisponible}
-            value={
-              soldeTresorerie === null
-                ? "..."
-                : Math.round(soldeTresorerie).toLocaleString("fr-FR")
-            }
-            valueColor="teal"
-            icon={Wallet}
-          />
-        </div>
-
-        <div className="flex flex-wrap justify-center gap-3 lg:absolute lg:right-0 lg:top-24 lg:flex-col lg:justify-start">
-          <StatCard
-            label={t.dashboard.derniereOperation}
-            value={lastEntry?.n_ecriture_journal ?? "—"}
-            valueColor="blue"
-          />
-          <StatCard
-            label={t.dashboard.ecrituresCeMois}
-            value={entriesThisMonth === null ? "..." : entriesThisMonth}
-            valueColor="amber"
-          />
-        </div>
-
         <Cloud className="h-10 w-10 text-accent-teal" strokeWidth={1.5} />
         <p className="font-display text-xl font-bold tracking-wide text-text-primary">
           FIMS
@@ -258,6 +242,60 @@ export default function DashboardPage() {
             {notice}
           </p>
         )}
+      </div>
+
+      <div className="relative mb-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
+        <StatCard
+          size="lg"
+          label={t.dashboard.soldeDisponible}
+          value={
+            soldeTresorerie === null
+              ? "..."
+              : Math.round(soldeTresorerie).toLocaleString("fr-FR")
+          }
+          valueColor="teal"
+          icon={Wallet}
+        />
+        <StatCard
+          size="lg"
+          label={t.dashboard.derniereOperation}
+          value={lastEntry?.n_ecriture_journal ?? "—"}
+          valueColor="blue"
+        />
+        <StatCard
+          size="lg"
+          label={t.dashboard.ecrituresCeMois}
+          value={entriesThisMonth === null ? "..." : entriesThisMonth}
+          valueColor="amber"
+        />
+      </div>
+
+      <div className="relative mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <StatCard
+          label={t.dashboard.tauxConsoBudgetaire}
+          value={
+            tauxConsoBudgetaire === null
+              ? "..."
+              : `${(tauxConsoBudgetaire * 100).toFixed(1)}%`
+          }
+          valueColor="teal"
+          icon={Percent}
+        />
+        <StatCard
+          label={t.dashboard.tauxConsoAvance}
+          value={
+            tauxConsoAvance === null ? "..." : `${(tauxConsoAvance * 100).toFixed(1)}%`
+          }
+          valueColor="amber"
+          icon={Percent}
+        />
+      </div>
+
+      <div className="relative mb-8 rounded-2xl border border-border-subtle bg-bg-card p-5">
+        <p className="mb-3 text-sm font-semibold text-text-primary">
+          {t.dashboard.depensesMensuelles}
+        </p>
+        <TrendChart data={depensesParMois} />
       </div>
 
       {searchResults !== null && (
@@ -303,8 +341,8 @@ export default function DashboardPage() {
         </div>
       )}
 
-      <div className="relative grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
-        {tiles.map((tile) => (
+      <div className="relative grid grid-cols-2 gap-5 lg:grid-cols-4">
+        {tilesPrincipales.map((tile) => (
           <ActionCard
             key={tile.key}
             icon={tile.icon}
@@ -313,6 +351,18 @@ export default function DashboardPage() {
             href={tile.href}
           />
         ))}
+        <div className="flex min-h-[160px] flex-col justify-center gap-1.5 rounded-2xl border border-border-subtle bg-bg-card-muted p-4">
+          {tilesSecondaires.map((tile) => (
+            <Link
+              key={tile.key}
+              href={tile.href}
+              className="flex items-center gap-2 rounded-lg px-2 py-1.5 text-xs text-text-secondary transition-colors hover:bg-bg-card hover:text-accent-teal"
+            >
+              <tile.icon className="h-4 w-4" strokeWidth={1.75} />
+              <span>{tile.label}</span>
+            </Link>
+          ))}
+        </div>
       </div>
     </div>
   );

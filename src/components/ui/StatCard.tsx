@@ -13,12 +13,28 @@ export function StatCard({
   value,
   valueColor = "teal",
   icon: Icon,
+  size = "md",
 }: {
   label: string;
   value: string | number;
   valueColor?: ValueColor;
   icon?: LucideIcon;
+  size?: "md" | "lg";
 }) {
+  if (size === "lg") {
+    return (
+      <div className="rounded-2xl border border-border-subtle bg-bg-card px-6 py-5 text-left shadow-sm">
+        <div className="flex items-center gap-2">
+          {Icon && <Icon className="h-5 w-5 text-text-secondary" strokeWidth={1.75} />}
+          <p className="text-sm text-text-secondary">{label}</p>
+        </div>
+        <p className={`mt-1 text-4xl font-extrabold tracking-tight ${VALUE_CLASSES[valueColor]}`}>
+          {value}
+        </p>
+      </div>
+    );
+  }
+
   return (
     <div className="rounded-xl border border-border-subtle bg-bg-card px-4 py-2 text-left">
       <div className="flex items-center gap-2">

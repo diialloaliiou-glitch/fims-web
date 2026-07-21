@@ -119,10 +119,20 @@ export default function BalancePage() {
   }, [project]);
 
   const libelleByCompte = new Map(accounts.map((a) => [a.ccompte, a.libelle]));
-  const rows =
-    mode === "AUXILIAIRE" && !/^\d{2,6}$/.test(filtreAux)
-      ? []
-      : calculerBalance(entries, libelleByCompte, mode, filtreAux, dateDebut, dateFin);
+
+  // Reproduit GenererBalance() : en mode AUXILIAIRE, le filtre de compte
+  // tiers est obligatoire, numerique, et doit comporter 2 a 6 chiffres.
+  let erreurFiltre: string | null = null;
+  if (mode === "AUXILIAIRE") {
+    const f = filtreAux.trim();
+    if (!f) erreurFiltre = t.balance.erreurFiltreVide;
+    else if (!/^\d+$/.test(f)) erreurFiltre = t.balance.erreurFiltreNonNumerique;
+    else if (f.length < 2 || f.length > 6) erreurFiltre = t.balance.erreurFiltrePlage;
+  }
+
+  const rows = erreurFiltre
+    ? []
+    : calculerBalance(entries, libelleByCompte, mode, filtreAux, dateDebut, dateFin);
 
   const totals = rows.reduce(
     (acc, r) => ({
@@ -206,6 +216,10 @@ export default function BalancePage() {
         />
       </div>
 
+      {erreurFiltre && (
+        <p className="mb-4 text-sm text-accent-red print:hidden">{erreurFiltre}</p>
+      )}
+
       <div className="max-h-[65vh] overflow-auto rounded-xl border border-border-subtle print:max-h-none print:overflow-visible">
         <table className="min-w-full text-sm">
           <MiniTableHeader
@@ -220,7 +234,7 @@ export default function BalancePage() {
                 </td>
               </tr>
             )}
-            {!loading && rows.length === 0 && (
+            {!loading && !erreurFiltre && rows.length === 0 && (
               <tr>
                 <td colSpan={7} className="px-3 py-4 text-center text-text-secondary">
                   {t.balance.aucunMouvement}
