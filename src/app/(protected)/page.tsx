@@ -30,7 +30,7 @@ import {
 } from "lucide-react";
 
 export default function DashboardPage() {
-  const { project } = useAuth();
+  const { profile, project } = useAuth();
   const [entryCount, setEntryCount] = useState<number | null>(null);
   const [lastEntry, setLastEntry] = useState<{
     n_ecriture_journal: string | null;
@@ -228,8 +228,8 @@ export default function DashboardPage() {
           Financial Information Management System
         </p>
 
-        <h1 className="font-display mt-4 rounded-lg border border-border-subtle px-6 py-2 text-3xl font-light tracking-tight text-text-primary">
-          [ BIENVENUE ]
+        <h1 className="font-display mt-4 text-3xl font-light tracking-tight text-text-primary">
+          Bienvenu {profile?.nom_utilisateur}
         </h1>
         <p className="text-sm text-text-secondary">
           {project?.nom_projet}
