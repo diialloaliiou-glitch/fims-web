@@ -30,6 +30,18 @@ export type Organization = {
   actif: boolean;
 };
 
+export type License = {
+  id: string;
+  organization_id: string;
+  type: "ANNUELLE" | "PERMANENTE" | "DEMO";
+  date_debut: string;
+  date_expiration: string | null;
+  actif: boolean;
+  note: string | null;
+  created_at: string;
+  created_by: string | null;
+};
+
 export type ChartOfAccount = {
   id: number;
   organization_id: string;

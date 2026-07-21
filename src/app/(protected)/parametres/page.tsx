@@ -1,6 +1,6 @@
 "use client";
 
-import { BookText, Users, UserSquare2, UserCog, FolderKanban, Info } from "lucide-react";
+import { BookText, Users, UserSquare2, UserCog, FolderKanban, Info, KeyRound } from "lucide-react";
 import { ActionCard } from "@/components/ui/ActionCard";
 import { useAuth } from "@/lib/auth-context";
 import { useLanguage } from "@/lib/language-context";
@@ -22,6 +22,9 @@ export default function ParametresPage() {
       : []),
     ...(hasRole(profile?.role, ["ADMIN_N1", "ADMIN_SITE", "RAF"])
       ? [{ href: "/administration/projets", label: t.parametres.tileProjets, icon: FolderKanban, color: "blue" as const }]
+      : []),
+    ...(hasRole(profile?.role, ["ADMIN_N1"])
+      ? [{ href: "/administration/licences", label: t.parametres.tileLicences, icon: KeyRound, color: "muted" as const }]
       : []),
   ];
 

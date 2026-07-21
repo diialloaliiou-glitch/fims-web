@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { QRCodeSVG } from "qrcode.react";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/lib/auth-context";
 import { useLanguage } from "@/lib/language-context";
@@ -9,6 +10,7 @@ import { MiniTableHeader } from "@/components/ui/MiniTableHeader";
 import { Pill } from "@/components/ui/Pill";
 import { PrimaryButton } from "@/components/ui/PrimaryButton";
 import { PREFIXE_COMPTE_BANQUE_PROJET } from "@/lib/solde-banque";
+import { getOrCreateVerificationToken } from "@/lib/verification-piece";
 import type { BudgetLine, JournalEntry } from "@/lib/types";
 
 export default function FichePaiementPage() {
@@ -26,6 +28,7 @@ export default function FichePaiementPage() {
 
   const [preparePar, setPreparePar] = useState("");
   const [approuvePar, setApprouvePar] = useState("");
+  const [verificationToken, setVerificationToken] = useState<string | null>(null);
 
   useEffect(() => {
     if (!project) return;
@@ -120,6 +123,14 @@ export default function FichePaiementPage() {
   const premiere = lignes[0];
   const estPieceAnterieure = dernierNEJCompte !== null;
 
+  useEffect(() => {
+    if (!premiere?.n_piece || !project || estPieceAnterieure) {
+      setVerificationToken(null);
+      return;
+    }
+    getOrCreateVerificationToken(premiere.n_piece, project.id).then(setVerificationToken);
+  }, [premiere?.n_piece, project, estPieceAnterieure]);
+
   return (
     <div>
       <h1 className="mb-6 text-2xl font-semibold text-text-primary print:hidden">
@@ -156,6 +167,12 @@ export default function FichePaiementPage() {
             <p className="text-xl font-bold text-text-primary print:text-black">
               {t.paf.formTitle}
             </p>
+            {verificationToken && (
+              <QRCodeSVG
+                value={`${window.location.origin}/verifier/${verificationToken}`}
+                size={72}
+              />
+            )}
           </div>
 
           <div className="mb-6 grid grid-cols-1 gap-4 text-sm sm:grid-cols-2 print:grid-cols-2">
