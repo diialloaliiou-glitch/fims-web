@@ -156,7 +156,7 @@ export default function FichePaiementPage() {
             </p>
           </div>
 
-          <div className="mb-6 grid grid-cols-2 gap-4 text-sm">
+          <div className="mb-6 grid grid-cols-1 gap-4 text-sm sm:grid-cols-2 print:grid-cols-2">
             <p>
               <span className="text-text-secondary">Item No. : </span>
               <span className="font-bold text-accent-teal print:text-black">{numEJ}</span>
@@ -191,7 +191,7 @@ export default function FichePaiementPage() {
             </div>
           ) : (
             <>
-              <div className="mb-6 grid grid-cols-2 gap-4 rounded-lg border border-border-subtle p-4 text-sm print:border-black">
+              <div className="mb-6 grid grid-cols-1 gap-4 rounded-lg border border-border-subtle p-4 text-sm sm:grid-cols-2 print:grid-cols-2 print:border-black">
                 <p>
                   Approved Budget :{" "}
                   <span className="font-semibold">
@@ -263,7 +263,7 @@ export default function FichePaiementPage() {
             </>
           )}
 
-          <div className="grid grid-cols-2 gap-8 text-sm">
+          <div className="grid grid-cols-1 gap-8 text-sm sm:grid-cols-2 print:grid-cols-2">
             <div>
               <p className="mb-1 text-text-secondary print:text-black">
                 Checked by : Administrative &amp; Financial Manager

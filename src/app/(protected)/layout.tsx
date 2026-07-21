@@ -63,9 +63,12 @@ export default function ProtectedLayout({
             >
               <House className="h-4 w-4" strokeWidth={1.75} />
             </Link>
-            <div className="rounded-full bg-bg-card px-4 py-1.5 text-sm text-text-secondary">
-              Bienvenue, {profile?.nom_utilisateur} | Rôle : {profile?.role} |
-              {" "}Base : {organization?.nom}
+            <div className="max-w-[160px] truncate rounded-full bg-bg-card px-4 py-1.5 text-sm text-text-secondary sm:max-w-none">
+              <span className="sm:hidden">{profile?.nom_utilisateur}</span>
+              <span className="hidden sm:inline">
+                Bienvenue, {profile?.nom_utilisateur} | Rôle : {profile?.role} |
+                {" "}Base : {organization?.nom}
+              </span>
             </div>
           </div>
           <div className="flex items-center gap-3">
@@ -73,7 +76,7 @@ export default function ProtectedLayout({
               <select
                 value={project?.id ?? ""}
                 onChange={(e) => setActiveProjectId(e.target.value)}
-                className="rounded-full border border-border-subtle bg-bg-card px-3 py-1.5 text-sm text-text-primary"
+                className="max-w-[110px] truncate rounded-full border border-border-subtle bg-bg-card px-3 py-1.5 text-sm text-text-primary sm:max-w-[220px] lg:max-w-none"
               >
                 {projects.map((p) => (
                   <option key={p.id} value={p.id}>

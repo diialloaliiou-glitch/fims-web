@@ -179,7 +179,7 @@ export default function DashboardPage() {
       />
 
       <div className="relative mb-8 flex flex-col items-center gap-4 px-4 py-8 text-center">
-        <div className="absolute left-0 top-0 flex flex-col gap-3">
+        <div className="flex flex-wrap justify-center gap-3 lg:absolute lg:left-0 lg:top-0 lg:flex-col lg:justify-start">
           <StatCard
             label="Taux de conso budgétaire"
             value={
@@ -200,7 +200,7 @@ export default function DashboardPage() {
           />
         </div>
 
-        <div className="absolute right-0 top-0">
+        <div className="lg:absolute lg:right-0 lg:top-0">
           <StatCard
             label="Solde disponible"
             value={
@@ -213,7 +213,7 @@ export default function DashboardPage() {
           />
         </div>
 
-        <div className="absolute right-0 top-24 flex flex-col gap-3">
+        <div className="flex flex-wrap justify-center gap-3 lg:absolute lg:right-0 lg:top-24 lg:flex-col lg:justify-start">
           <StatCard
             label="Dernière opération"
             value={lastEntry?.n_ecriture_journal ?? "—"}
@@ -318,7 +318,7 @@ export default function DashboardPage() {
         </div>
       )}
 
-      <div className="relative grid grid-cols-2 gap-5 sm:grid-cols-4">
+      <div className="relative grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
         {tiles.map((t) => (
           <ActionCard
             key={t.key}

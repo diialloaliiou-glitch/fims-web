@@ -153,7 +153,7 @@ export default function CloturePage() {
           <p className="mb-4 text-sm font-medium text-text-secondary">
             Clôturer une période
           </p>
-          <div className="mb-4 grid grid-cols-2 gap-4">
+          <div className="mb-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
             <FormField label="Type">
               <select
                 value={type}
