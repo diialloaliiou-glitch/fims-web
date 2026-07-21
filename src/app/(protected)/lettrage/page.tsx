@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/lib/auth-context";
+import { useLanguage } from "@/lib/language-context";
 import { FormField } from "@/components/ui/FormField";
 import { MiniTableHeader } from "@/components/ui/MiniTableHeader";
 import { PrimaryButton } from "@/components/ui/PrimaryButton";
@@ -58,6 +59,7 @@ function calculerLettrage(entries: JournalEntry[]): {
 
 export default function LettragePage() {
   const { project } = useAuth();
+  const { t } = useLanguage();
   const [entries, setEntries] = useState<JournalEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [compte, setCompte] = useState("");
@@ -88,7 +90,7 @@ export default function LettragePage() {
 
     if (updates.length === 0) {
       setRunning(false);
-      setMessage("Aucune nouvelle correspondance trouvée.");
+      setMessage(t.lettrage.aucuneNouvelleCorrespondance);
       return;
     }
 
@@ -109,13 +111,13 @@ export default function LettragePage() {
       return;
     }
 
-    setMessage(`Lettrage terminé : ${nbPaires} paire(s) rapprochée(s).`);
+    setMessage(`${t.lettrage.lettrageTermine} ${nbPaires} ${t.lettrage.pairesRapprochees}`);
     loadEntries();
   }
 
   async function runDelettrage() {
     if (!project) return;
-    if (!window.confirm("Voulez-vous vraiment supprimer tous les lettrages ?")) {
+    if (!window.confirm(t.lettrage.confirmDelettrer)) {
       return;
     }
     setRunning(true);
@@ -133,7 +135,7 @@ export default function LettragePage() {
       return;
     }
 
-    setMessage("Tous les lettrages ont été supprimés.");
+    setMessage(t.lettrage.tousLettragesSupprimes);
     loadEntries();
   }
 
@@ -150,21 +152,21 @@ export default function LettragePage() {
 
   return (
     <div>
-      <h1 className="mb-6 text-2xl font-semibold text-text-primary">Lettrage</h1>
+      <h1 className="mb-6 text-2xl font-semibold text-text-primary">{t.lettrage.titre}</h1>
 
       <div className="mb-6 flex flex-wrap items-center gap-3 rounded-xl border border-border-subtle bg-bg-card p-4">
         <PrimaryButton onClick={runLettrage} disabled={running || loading}>
-          {running ? "..." : "Lancer le lettrage automatique"}
+          {running ? "..." : t.lettrage.lancerLettrage}
         </PrimaryButton>
         <button
           onClick={runDelettrage}
           disabled={running || loading}
           className="rounded-md border border-border-subtle px-4 py-2 text-sm text-text-secondary hover:bg-bg-card disabled:opacity-60"
         >
-          Tout délettrer
+          {t.lettrage.toutDelettrer}
         </button>
         <span className="text-sm text-text-secondary">
-          {nbLettrees} / {entries.length} écritures lettrées
+          {nbLettrees} / {entries.length} {t.lettrage.ecrituresLettrees}
         </span>
       </div>
 
@@ -176,24 +178,24 @@ export default function LettragePage() {
 
       <div className="mb-4 max-w-sm">
         <FormField
-          label="Filtrer par compte"
+          label={t.lettrage.filtrerParCompte}
           value={compte}
           onChange={(e) => setCompte(e.target.value)}
-          placeholder="Ex: 401"
+          placeholder={t.lettrage.filtrerPlaceholder}
         />
       </div>
 
       <div className="overflow-x-auto rounded-xl border border-border-subtle">
         <table className="min-w-full text-sm">
           <MiniTableHeader
-            columns={["Pièce", "Date", "Compte", "Libellé", "Débit", "Crédit", "Lettrage"]}
+            columns={[t.lettrage.colPiece, t.lettrage.colDate, t.lettrage.colCompte, t.lettrage.colLibelle, t.lettrage.colDebit, t.lettrage.colCredit, t.lettrage.colLettrage]}
             align={["left", "left", "left", "left", "right", "right", "left"]}
           />
           <tbody className="divide-y divide-border-subtle bg-bg-card/60">
             {loading && (
               <tr>
                 <td colSpan={7} className="px-3 py-4 text-center text-text-secondary">
-                  Chargement...
+                  {t.common.chargement}
                 </td>
               </tr>
             )}

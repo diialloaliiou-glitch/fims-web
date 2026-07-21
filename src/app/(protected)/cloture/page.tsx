@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/lib/auth-context";
+import { useLanguage } from "@/lib/language-context";
 import { FormField, fieldControlClass } from "@/components/ui/FormField";
 import { MiniTableHeader } from "@/components/ui/MiniTableHeader";
 import { PrimaryButton } from "@/components/ui/PrimaryButton";
@@ -20,6 +21,7 @@ function anneeCouranteDefaut() {
 
 export default function CloturePage() {
   const { profile, project } = useAuth();
+  const { t } = useLanguage();
   const [closures, setClosures] = useState<PeriodClosure[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -52,9 +54,9 @@ export default function CloturePage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [project]);
 
-  function changeType(t: "MENSUELLE" | "ANNUELLE") {
-    setType(t);
-    setPeriode(t === "MENSUELLE" ? moisCourantDefaut() : anneeCouranteDefaut());
+  function changeType(newType: "MENSUELLE" | "ANNUELLE") {
+    setType(newType);
+    setPeriode(newType === "MENSUELLE" ? moisCourantDefaut() : anneeCouranteDefaut());
   }
 
   async function handleCloturer(e: React.FormEvent) {
@@ -65,8 +67,8 @@ export default function CloturePage() {
     if (!format.test(periode.trim())) {
       setError(
         type === "MENSUELLE"
-          ? "Format attendu : MM/AAAA (ex: 07/2026)."
-          : "Format attendu : AAAA (ex: 2026)."
+          ? t.cloture.erreurFormatMensuelle
+          : t.cloture.erreurFormatAnnuelle
       );
       return;
     }
@@ -76,7 +78,7 @@ export default function CloturePage() {
       (c) => c.type === type && c.periode === periode.trim() && c.statut === "CLOTUREE"
     );
     if (dejaFermee) {
-      setError("Cette période est déjà clôturée.");
+      setError(t.cloture.erreurDejaCloturee);
       return;
     }
 
@@ -111,7 +113,7 @@ export default function CloturePage() {
   async function confirmReopen() {
     setReopenError(null);
     if (!motif.trim()) {
-      setReopenError("Indique le motif de la réouverture.");
+      setReopenError(t.cloture.erreurMotifObligatoire);
       return;
     }
     if (!profile || reopeningId === null) return;
@@ -142,7 +144,7 @@ export default function CloturePage() {
   return (
     <div>
       <h1 className="mb-6 text-2xl font-semibold text-text-primary">
-        Clôture de période
+        {t.cloture.titre}
       </h1>
 
       {canCloturer ? (
@@ -151,10 +153,10 @@ export default function CloturePage() {
           className="mb-6 max-w-lg rounded-xl border border-border-subtle bg-bg-card p-6"
         >
           <p className="mb-4 text-sm font-medium text-text-secondary">
-            Clôturer une période
+            {t.cloture.cloturerUnePeriode}
           </p>
           <div className="mb-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <FormField label="Type">
+            <FormField label={t.cloture.type}>
               <select
                 value={type}
                 onChange={(e) =>
@@ -162,12 +164,12 @@ export default function CloturePage() {
                 }
                 className={fieldControlClass}
               >
-                <option value="MENSUELLE">Mensuelle</option>
-                <option value="ANNUELLE">Annuelle</option>
+                <option value="MENSUELLE">{t.cloture.mensuelle}</option>
+                <option value="ANNUELLE">{t.cloture.annuelle}</option>
               </select>
             </FormField>
             <FormField
-              label={type === "MENSUELLE" ? "Mois (MM/AAAA)" : "Année (AAAA)"}
+              label={type === "MENSUELLE" ? t.cloture.moisFormat : t.cloture.anneeFormat}
               value={periode}
               onChange={(e) => setPeriode(e.target.value)}
             />
@@ -176,34 +178,33 @@ export default function CloturePage() {
           {error && <p className="mb-3 text-sm text-accent-red">{error}</p>}
 
           <PrimaryButton type="submit" disabled={saving}>
-            {saving ? "Clôture..." : "Clôturer"}
+            {saving ? t.cloture.cloture : t.cloture.cloturer}
           </PrimaryButton>
         </form>
       ) : (
         <p className="mb-6 text-sm text-text-secondary">
-          Ton rôle ({profile?.role}) ne permet pas de clôturer ou rouvrir une
-          période — seuls ADMIN_SITE et RAF (ou ADMIN_N1) le peuvent.
+          {t.cloture.permissionInfo.replace("{role}", profile?.role ?? "")}
         </p>
       )}
 
       <div className="overflow-x-auto rounded-xl border border-border-subtle">
         <table className="min-w-full text-sm">
           <MiniTableHeader
-            columns={["Type", "Période", "Statut", "Clôturé par", "Date clôture", "Motif réouverture", "Action"]}
+            columns={[t.cloture.colType, t.cloture.colPeriode, t.common.statut, t.cloture.colClôturePar, t.cloture.colDateCloture, t.cloture.colMotifReouverture, t.common.action]}
             align={["left", "left", "left", "left", "left", "left", "right"]}
           />
           <tbody className="divide-y divide-border-subtle bg-bg-card/60">
             {loading && (
               <tr>
                 <td colSpan={7} className="px-3 py-4 text-center text-text-secondary">
-                  Chargement...
+                  {t.common.chargement}
                 </td>
               </tr>
             )}
             {!loading && closures.length === 0 && (
               <tr>
                 <td colSpan={7} className="px-3 py-4 text-center text-text-secondary">
-                  Aucune clôture enregistrée pour ce projet.
+                  {t.cloture.aucuneCloture}
                 </td>
               </tr>
             )}
@@ -235,7 +236,7 @@ export default function CloturePage() {
                       onClick={() => openReopen(c.id)}
                       className="text-accent-blue hover:underline"
                     >
-                      Rouvrir
+                      {t.cloture.rouvrir}
                     </button>
                   )}
                 </td>
@@ -249,11 +250,11 @@ export default function CloturePage() {
         <div className="fixed inset-0 flex items-center justify-center bg-black/60 p-4">
           <div className="w-full max-w-sm rounded-xl border border-border-subtle bg-bg-card p-6">
             <p className="mb-4 font-medium text-text-primary">
-              Rouvrir la période #{reopeningId}
+              {t.cloture.rouvrirLaPeriode}{reopeningId}
             </p>
             <div className="mb-3">
               <FormField
-                label="Motif de la réouverture"
+                label={t.cloture.motifReouverture}
                 required
                 value={motif}
                 onChange={(e) => setMotif(e.target.value)}
@@ -264,13 +265,13 @@ export default function CloturePage() {
             )}
             <div className="flex gap-3">
               <PrimaryButton onClick={confirmReopen} disabled={reopening}>
-                {reopening ? "..." : "Confirmer"}
+                {reopening ? "..." : t.common.confirmer}
               </PrimaryButton>
               <button
                 onClick={() => setReopeningId(null)}
                 className="rounded-md border border-border-subtle px-4 py-2 text-text-secondary hover:bg-bg-card"
               >
-                Annuler
+                {t.common.annuler}
               </button>
             </div>
           </div>

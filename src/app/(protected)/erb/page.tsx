@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/lib/auth-context";
+import { useLanguage } from "@/lib/language-context";
 import { FormField, fieldControlClass } from "@/components/ui/FormField";
 import { MiniTableHeader } from "@/components/ui/MiniTableHeader";
 import { PrimaryButton } from "@/components/ui/PrimaryButton";
@@ -32,6 +33,7 @@ function Colonne({
   showPointe: boolean;
 }) {
   const { profile, project } = useAuth();
+  const { t } = useLanguage();
   const [form, setForm] = useState(emptyForm);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -48,11 +50,11 @@ function Colonne({
 
     const montantNum = parseFloat(form.montant);
     if (!form.operation.trim()) {
-      setError("L'opération est obligatoire.");
+      setError(t.erb.erreurOperationObligatoire);
       return;
     }
     if (!montantNum || montantNum <= 0) {
-      setError("Le montant doit être supérieur à zéro.");
+      setError(t.erb.erreurMontantPositif);
       return;
     }
     if (!project || !profile) return;
@@ -97,33 +99,33 @@ function Colonne({
       >
         <div className="mb-3 grid grid-cols-1 gap-3 sm:grid-cols-2">
           <FormField
-            label="Date"
+            label={t.erb.date}
             type="date"
             value={form.date_operation}
             onChange={(e) => setForm({ ...form, date_operation: e.target.value })}
           />
           <FormField
-            label="Référence"
+            label={t.erb.reference}
             value={form.reference}
             onChange={(e) => setForm({ ...form, reference: e.target.value })}
           />
           <div className="col-span-2">
             <FormField
-              label="Opération"
+              label={t.erb.operation}
               required
               value={form.operation}
               onChange={(e) => setForm({ ...form, operation: e.target.value })}
             />
           </div>
           <FormField
-            label="Montant"
+            label={t.erb.montant}
             required
             type="number"
             step="0.01"
             value={form.montant}
             onChange={(e) => setForm({ ...form, montant: e.target.value })}
           />
-          <FormField label="Sens">
+          <FormField label={t.erb.sens}>
             <select
               value={form.sens}
               onChange={(e) =>
@@ -131,14 +133,14 @@ function Colonne({
               }
               className={fieldControlClass}
             >
-              <option value="debit">Débit</option>
-              <option value="credit">Crédit</option>
+              <option value="debit">{t.erb.debit}</option>
+              <option value="credit">{t.erb.credit}</option>
             </select>
           </FormField>
         </div>
         {error && <p className="mb-2 text-xs text-accent-red">{error}</p>}
         <PrimaryButton type="submit" disabled={saving}>
-          {saving ? "..." : "+ Ajouter"}
+          {saving ? "..." : t.erb.ajouter}
         </PrimaryButton>
       </form>
 
@@ -147,8 +149,8 @@ function Colonne({
           <MiniTableHeader
             columns={
               showPointe
-                ? ["Date", "Référence", "Opération", "Débit", "Crédit", "C", "Solde"]
-                : ["Date", "Référence", "Opération", "Débit", "Crédit", "Solde"]
+                ? [t.erb.colDate, t.erb.colReference, t.erb.colOperation, t.erb.colDebit, t.erb.colCredit, t.erb.colC, t.erb.colSolde]
+                : [t.erb.colDate, t.erb.colReference, t.erb.colOperation, t.erb.colDebit, t.erb.colCredit, t.erb.colSolde]
             }
             align={
               showPointe
@@ -163,7 +165,7 @@ function Colonne({
                   colSpan={showPointe ? 7 : 6}
                   className="px-2 py-3 text-center text-text-secondary"
                 >
-                  Aucune ligne.
+                  {t.erb.aucuneLigne}
                 </td>
               </tr>
             )}
@@ -206,7 +208,7 @@ function Colonne({
             <tfoot className="bg-bg-card font-semibold text-text-primary">
               <tr>
                 <td className="px-2 py-1.5" colSpan={showPointe ? 5 : 4}>
-                  SOLDE
+                  {t.erb.solde}
                 </td>
                 <td className="px-2 py-1.5 text-right" colSpan={showPointe ? 2 : 2}>
                   {solde.toLocaleString("fr-FR")}
@@ -222,6 +224,7 @@ function Colonne({
 
 export default function ErbPage() {
   const { project } = useAuth();
+  const { t } = useLanguage();
   const [lines, setLines] = useState<ErbLine[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -255,12 +258,10 @@ export default function ErbPage() {
   return (
     <div>
       <h1 className="mb-2 text-2xl font-semibold text-text-primary">
-        État de Rapprochement Bancaire (ERB)
+        {t.erb.titre}
       </h1>
       <p className="mb-6 text-sm text-text-secondary">
-        Saisie manuelle des deux côtés — les lignes "CHEZ MOI" (tes livres) ne
-        sont pas générées automatiquement depuis le journal, comme dans le
-        classeur d&apos;origine.
+        {t.erb.description}
       </p>
 
       <div
@@ -270,24 +271,24 @@ export default function ErbPage() {
             : "border-accent-amber bg-accent-amber/10 text-accent-amber"
         }`}
       >
-        Écart entre les deux soldes :{" "}
+        {t.erb.ecartEntreSoldes}{" "}
         <span className="font-bold">{ecart.toLocaleString("fr-FR")}</span>
-        {ecart === 0 ? " — rapprochement équilibré." : " — à investiguer."}
+        {ecart === 0 ? ` ${t.erb.rapprochementEquilibre}` : ` ${t.erb.aInvestiguer}`}
       </div>
 
       {loading ? (
-        <p className="text-text-secondary">Chargement...</p>
+        <p className="text-text-secondary">{t.common.chargement}</p>
       ) : (
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
           <Colonne
-            titre="CHEZ MOI"
+            titre={t.erb.chezMoi}
             cote="CHEZ_MOI"
             lines={chezMoi}
             onAdded={loadLines}
             showPointe
           />
           <Colonne
-            titre="CHEZ LA BANQUE"
+            titre={t.erb.chezLaBanque}
             cote="CHEZ_BANQUE"
             lines={chezBanque}
             onAdded={loadLines}

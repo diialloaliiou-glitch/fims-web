@@ -3,6 +3,7 @@
 import { Fragment, useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/lib/auth-context";
+import { useLanguage } from "@/lib/language-context";
 import { hasRole } from "@/lib/roles";
 import { FormField } from "@/components/ui/FormField";
 import { MiniTableHeader } from "@/components/ui/MiniTableHeader";
@@ -16,6 +17,7 @@ const emptyForm = {
 
 export default function ProjetsPage() {
   const { profile } = useAuth();
+  const { t } = useLanguage();
   const [projects, setProjects] = useState<Project[]>([]);
   const [profiles, setProfiles] = useState<Profile[]>([]);
   const [links, setLinks] = useState<{ profile_id: string; project_id: string }[]>([]);
@@ -68,7 +70,7 @@ export default function ProjetsPage() {
     setError(null);
 
     if (!form.nom_projet.trim() || !form.code_projet.trim()) {
-      setError("Nom et code du projet sont obligatoires.");
+      setError(t.projets.erreurChampsObligatoires);
       return;
     }
     if (!profile) return;
@@ -120,7 +122,7 @@ export default function ProjetsPage() {
     const source = sourceProjectId[targetProjectId];
     const tables = cloneTables[targetProjectId] ?? new Set<string>();
     if (!source || tables.size === 0 || !profile) {
-      setCloneMessage("Choisis un projet source et au moins une table à cloner.");
+      setCloneMessage(t.projets.erreurCloner);
       return;
     }
 
@@ -143,7 +145,7 @@ export default function ProjetsPage() {
           const { error } = rows.length
             ? await supabase.from("chart_of_accounts").insert(rows)
             : { error: null };
-          return { table: "Plan comptable", count: rows.length, error: error?.message ?? null };
+          return { table: t.projets.tablePlanComptable, count: rows.length, error: error?.message ?? null };
         })()
       );
     }
@@ -163,7 +165,7 @@ export default function ProjetsPage() {
           const { error } = rows.length
             ? await supabase.from("third_parties").insert(rows)
             : { error: null };
-          return { table: "Tiers", count: rows.length, error: error?.message ?? null };
+          return { table: t.projets.tableTiers, count: rows.length, error: error?.message ?? null };
         })()
       );
     }
@@ -185,7 +187,7 @@ export default function ProjetsPage() {
           const { error } = rows.length
             ? await supabase.from("personnel").insert(rows)
             : { error: null };
-          return { table: "Personnel", count: rows.length, error: error?.message ?? null };
+          return { table: t.projets.tablePersonnel, count: rows.length, error: error?.message ?? null };
         })()
       );
     }
@@ -196,13 +198,13 @@ export default function ProjetsPage() {
     const erreurs = results.filter((r) => r.error);
     if (erreurs.length > 0) {
       setCloneMessage(
-        `Erreur(s) : ${erreurs.map((r) => `${r.table} — ${r.error}`).join(" · ")}`
+        `${t.projets.erreurs} ${erreurs.map((r) => `${r.table} — ${r.error}`).join(" · ")}`
       );
       return;
     }
 
     setCloneMessage(
-      `Copié : ${results.map((r) => `${r.table} (${r.count})`).join(", ")}.`
+      `${t.projets.resultatCopie} ${results.map((r) => `${r.table} (${r.count})`).join(", ")}.`
     );
   }
 
@@ -228,10 +230,9 @@ export default function ProjetsPage() {
   if (!canManage) {
     return (
       <div>
-        <h1 className="mb-4 text-2xl font-semibold text-text-primary">Projets</h1>
+        <h1 className="mb-4 text-2xl font-semibold text-text-primary">{t.projets.titre}</h1>
         <p className="text-sm text-text-secondary">
-          Ton rôle ({profile?.role}) ne permet pas d&apos;accéder à la gestion
-          des projets — réservée à ADMIN_N1, ADMIN_SITE et RAF.
+          {t.projets.permissionInfo.replace("{role}", profile?.role ?? "")}
         </p>
       </div>
     );
@@ -239,24 +240,24 @@ export default function ProjetsPage() {
 
   return (
     <div>
-      <h1 className="mb-6 text-2xl font-semibold text-text-primary">Projets</h1>
+      <h1 className="mb-6 text-2xl font-semibold text-text-primary">{t.projets.titre}</h1>
 
       <form
         onSubmit={handleSubmit}
         className="mb-6 max-w-xl rounded-xl border border-border-subtle bg-bg-card p-6"
       >
         <p className="mb-4 text-sm font-medium text-text-secondary">
-          Créer un projet
+          {t.projets.creerProjet}
         </p>
         <div className="mb-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
           <FormField
-            label="Nom du projet"
+            label={t.projets.nomDuProjet}
             required
             value={form.nom_projet}
             onChange={(e) => setForm({ ...form, nom_projet: e.target.value })}
           />
           <FormField
-            label="Code projet"
+            label={t.projets.codeProjet}
             required
             value={form.code_projet}
             onChange={(e) => setForm({ ...form, code_projet: e.target.value })}
@@ -266,7 +267,7 @@ export default function ProjetsPage() {
         {error && <p className="mb-3 text-sm text-accent-red">{error}</p>}
 
         <PrimaryButton type="submit" disabled={saving}>
-          {saving ? "Création..." : "Créer"}
+          {saving ? t.common.creation : t.projets.creer}
         </PrimaryButton>
       </form>
 
@@ -276,21 +277,21 @@ export default function ProjetsPage() {
       <div className="overflow-x-auto rounded-xl border border-border-subtle">
         <table className="min-w-full text-sm">
           <MiniTableHeader
-            columns={["Code", "Nom", "Statut", "Modèle", "Utilisateurs assignés"]}
+            columns={[t.projets.colCode, t.projets.colNom, t.projets.colStatut, t.projets.colModele, t.projets.colUtilisateursAssignes]}
             align={["left", "left", "left", "left", "left"]}
           />
           <tbody className="divide-y divide-border-subtle bg-bg-card/60">
             {loading && (
               <tr>
                 <td colSpan={5} className="px-3 py-4 text-center text-text-secondary">
-                  Chargement...
+                  {t.common.chargement}
                 </td>
               </tr>
             )}
             {!loading && projects.length === 0 && (
               <tr>
                 <td colSpan={5} className="px-3 py-4 text-center text-text-secondary">
-                  Aucun projet.
+                  {t.projets.aucunProjet}
                 </td>
               </tr>
             )}
@@ -313,7 +314,7 @@ export default function ProjetsPage() {
                             : "rounded-full bg-accent-red/10 px-2 py-0.5 text-xs text-accent-red"
                         }
                       >
-                        {p.actif ? "Actif" : "Désactivé"}
+                        {p.actif ? t.common.actif : t.common.desactive}
                       </button>
                     </td>
                     <td className="px-3 py-2">
@@ -325,7 +326,7 @@ export default function ProjetsPage() {
                             : "rounded-full border border-border-subtle px-2 py-0.5 text-xs text-text-secondary"
                         }
                       >
-                        {p.is_template ? "★ Modèle" : "Définir modèle"}
+                        {p.is_template ? t.projets.modele : t.projets.definirModele}
                       </button>
                     </td>
                     <td className="px-3 py-2">
@@ -333,7 +334,7 @@ export default function ProjetsPage() {
                         onClick={() => setExpandedId(isExpanded ? null : p.id)}
                         className="text-accent-blue hover:underline"
                       >
-                        {assignedIds.size} utilisateur(s) — {isExpanded ? "masquer" : "gérer"}
+                        {assignedIds.size} {t.projets.utilisateurs} — {isExpanded ? t.projets.masquer : t.projets.gerer}
                       </button>
                     </td>
                   </tr>
@@ -361,7 +362,7 @@ export default function ProjetsPage() {
 
                         <div className="mt-4 border-t border-border-subtle pt-4">
                           <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-text-secondary">
-                            Amorcer les données (copier depuis un autre projet)
+                            {t.projets.amorcerDonnees}
                           </p>
                           <div className="flex flex-wrap items-end gap-3">
                             <select
@@ -371,7 +372,7 @@ export default function ProjetsPage() {
                               }
                               className="rounded-md border border-border-subtle bg-bg-card px-2 py-1.5 text-sm text-text-primary"
                             >
-                              <option value="">Choisir un projet source...</option>
+                              <option value="">{t.projets.choisirProjetSource}</option>
                               {projects
                                 .filter((autre) => autre.id !== p.id)
                                 .map((autre) => (
@@ -382,20 +383,20 @@ export default function ProjetsPage() {
                                 ))}
                             </select>
                             {[
-                              { key: "chart_of_accounts", label: "Plan comptable" },
-                              { key: "third_parties", label: "Tiers" },
-                              { key: "personnel", label: "Personnel" },
-                            ].map((t) => (
+                              { key: "chart_of_accounts", label: t.projets.tablePlanComptable },
+                              { key: "third_parties", label: t.projets.tableTiers },
+                              { key: "personnel", label: t.projets.tablePersonnel },
+                            ].map((tbl) => (
                               <label
-                                key={t.key}
+                                key={tbl.key}
                                 className="flex items-center gap-1.5 text-sm text-text-secondary"
                               >
                                 <input
                                   type="checkbox"
-                                  checked={(cloneTables[p.id] ?? new Set()).has(t.key)}
-                                  onChange={() => toggleCloneTable(p.id, t.key)}
+                                  checked={(cloneTables[p.id] ?? new Set()).has(tbl.key)}
+                                  onChange={() => toggleCloneTable(p.id, tbl.key)}
                                 />
-                                {t.label}
+                                {tbl.label}
                               </label>
                             ))}
                             <button
@@ -403,7 +404,7 @@ export default function ProjetsPage() {
                               disabled={cloning === p.id}
                               className="rounded-md bg-accent-teal px-4 py-1.5 text-sm font-medium text-on-accent-light hover:opacity-90 disabled:opacity-60"
                             >
-                              {cloning === p.id ? "Copie..." : "Cloner"}
+                              {cloning === p.id ? t.projets.copie : t.projets.cloner}
                             </button>
                           </div>
                         </div>

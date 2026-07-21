@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/lib/auth-context";
+import { useLanguage } from "@/lib/language-context";
 import { assignableRoles, hasRole } from "@/lib/roles";
 import { FormField, fieldControlClass } from "@/components/ui/FormField";
 import { MiniTableHeader } from "@/components/ui/MiniTableHeader";
@@ -18,6 +19,7 @@ const emptyForm = {
 
 export default function UtilisateursPage() {
   const { profile } = useAuth();
+  const { t } = useLanguage();
   const [profiles, setProfiles] = useState<Profile[]>([]);
   const [loading, setLoading] = useState(true);
   const [form, setForm] = useState(emptyForm);
@@ -50,7 +52,7 @@ export default function UtilisateursPage() {
     setError(null);
 
     if (!form.nom_utilisateur.trim() || !form.email.trim() || !form.password || !form.role) {
-      setError("Tous les champs sont obligatoires.");
+      setError(t.budgetStaging.erreurChampsObligatoires);
       return;
     }
     if (!profile) return;
@@ -116,10 +118,9 @@ export default function UtilisateursPage() {
   if (!canManage) {
     return (
       <div>
-        <h1 className="mb-4 text-2xl font-semibold text-text-primary">Utilisateurs</h1>
+        <h1 className="mb-4 text-2xl font-semibold text-text-primary">{t.utilisateurs.titre}</h1>
         <p className="text-sm text-text-secondary">
-          Ton rôle ({profile?.role}) ne permet pas d&apos;accéder à la gestion
-          des utilisateurs — réservée à ADMIN_N1 et ADMIN_SITE.
+          {t.utilisateurs.permissionInfo.replace("{role}", profile?.role ?? "")}
         </p>
       </div>
     );
@@ -133,37 +134,37 @@ export default function UtilisateursPage() {
 
   return (
     <div>
-      <h1 className="mb-6 text-2xl font-semibold text-text-primary">Utilisateurs</h1>
+      <h1 className="mb-6 text-2xl font-semibold text-text-primary">{t.utilisateurs.titre}</h1>
 
       <form
         onSubmit={handleSubmit}
         className="mb-6 max-w-2xl rounded-xl border border-border-subtle bg-bg-card p-6"
       >
         <p className="mb-4 text-sm font-medium text-text-secondary">
-          Créer un utilisateur
+          {t.utilisateurs.creerUtilisateur}
         </p>
         <div className="mb-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
           <FormField
-            label="Nom complet"
+            label={t.utilisateurs.nomComplet}
             required
             value={form.nom_utilisateur}
             onChange={(e) => setForm({ ...form, nom_utilisateur: e.target.value })}
           />
           <FormField
-            label="Email"
+            label={t.utilisateurs.email}
             required
             type="email"
             value={form.email}
             onChange={(e) => setForm({ ...form, email: e.target.value })}
           />
           <FormField
-            label="Mot de passe temporaire"
+            label={t.utilisateurs.motDePasseTemp}
             required
             type="password"
             value={form.password}
             onChange={(e) => setForm({ ...form, password: e.target.value })}
           />
-          <FormField label="Rôle" required>
+          <FormField label={t.utilisateurs.role} required>
             <select
               value={form.role}
               onChange={(e) => setForm({ ...form, role: e.target.value })}
@@ -182,7 +183,7 @@ export default function UtilisateursPage() {
         {error && <p className="mb-3 text-sm text-accent-red">{error}</p>}
 
         <PrimaryButton type="submit" disabled={saving}>
-          {saving ? "Création..." : "Créer"}
+          {saving ? t.common.creation : t.utilisateurs.creer}
         </PrimaryButton>
       </form>
 
@@ -191,21 +192,21 @@ export default function UtilisateursPage() {
       <div className="overflow-x-auto rounded-xl border border-border-subtle">
         <table className="min-w-full text-sm">
           <MiniTableHeader
-            columns={["Nom", "Rôle", "Statut"]}
+            columns={[t.utilisateurs.colNom, t.utilisateurs.colRole, t.utilisateurs.colStatut]}
             align={["left", "left", "left"]}
           />
           <tbody className="divide-y divide-border-subtle bg-bg-card/60">
             {loading && (
               <tr>
                 <td colSpan={3} className="px-3 py-4 text-center text-text-secondary">
-                  Chargement...
+                  {t.common.chargement}
                 </td>
               </tr>
             )}
             {!loading && visibleProfiles.length === 0 && (
               <tr>
                 <td colSpan={3} className="px-3 py-4 text-center text-text-secondary">
-                  Aucun utilisateur.
+                  {t.utilisateurs.aucunUtilisateur}
                 </td>
               </tr>
             )}
@@ -245,11 +246,11 @@ export default function UtilisateursPage() {
                             : "rounded-full bg-accent-red/10 px-2 py-0.5 text-xs text-accent-red"
                         }
                       >
-                        {p.actif ? "Actif" : "Désactivé"}
+                        {p.actif ? t.common.actif : t.common.desactive}
                       </button>
                     ) : (
                       <span className="text-text-secondary">
-                        {p.actif ? "Actif" : "Désactivé"}
+                        {p.actif ? t.common.actif : t.common.desactive}
                       </span>
                     )}
                   </td>

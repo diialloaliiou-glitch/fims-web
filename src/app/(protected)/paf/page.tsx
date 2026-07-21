@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/lib/auth-context";
+import { useLanguage } from "@/lib/language-context";
 import { FormField } from "@/components/ui/FormField";
 import { MiniTableHeader } from "@/components/ui/MiniTableHeader";
 import { Pill } from "@/components/ui/Pill";
@@ -12,6 +13,7 @@ import type { BudgetLine, JournalEntry } from "@/lib/types";
 
 export default function FichePaiementPage() {
   const { profile, project, organization } = useAuth();
+  const { t } = useLanguage();
 
   const [options, setOptions] = useState<string[]>([]);
   const [numEJ, setNumEJ] = useState("");
@@ -61,7 +63,7 @@ export default function FichePaiementPage() {
 
     if (rows.length === 0) {
       setLoading(false);
-      setError(`Aucun règlement (TRESORERIE) trouvé pour l'écriture ${nej}.`);
+      setError(`${t.paf.erreurAucunReglement} ${nej}.`);
       return;
     }
 
@@ -121,13 +123,13 @@ export default function FichePaiementPage() {
   return (
     <div>
       <h1 className="mb-6 text-2xl font-semibold text-text-primary print:hidden">
-        Fiche de Paiement
+        {t.paf.titre}
       </h1>
 
       <div className="mb-6 flex flex-wrap items-end gap-3 print:hidden">
         <div className="w-56">
           <FormField
-            label="N° Écriture (ex: BQ-0019)"
+            label={t.paf.nEcriture}
             list="nej-list"
             value={numEJ}
             onChange={(e) => setNumEJ(e.target.value)}
@@ -139,10 +141,10 @@ export default function FichePaiementPage() {
           </datalist>
         </div>
         <PrimaryButton onClick={() => chargerFiche(numEJ)} disabled={loading}>
-          {loading ? "Chargement..." : "Charger"}
+          {loading ? t.common.chargement : t.paf.charger}
         </PrimaryButton>
         {lignes.length > 0 && !estPieceAnterieure && (
-          <Pill onClick={() => window.print()}>Imprimer</Pill>
+          <Pill onClick={() => window.print()}>{t.common.imprimer}</Pill>
         )}
       </div>
 
@@ -152,54 +154,54 @@ export default function FichePaiementPage() {
         <div className="rounded-xl border border-border-subtle bg-bg-card p-6 print:border-black print:bg-white print:text-black">
           <div className="mb-4 flex items-start justify-between">
             <p className="text-xl font-bold text-text-primary print:text-black">
-              PAYMENT AUTHORIZATION FORM
+              {t.paf.formTitle}
             </p>
           </div>
 
           <div className="mb-6 grid grid-cols-1 gap-4 text-sm sm:grid-cols-2 print:grid-cols-2">
             <p>
-              <span className="text-text-secondary">Item No. : </span>
+              <span className="text-text-secondary">{t.paf.itemNo} </span>
               <span className="font-bold text-accent-teal print:text-black">{numEJ}</span>
             </p>
             <p>
-              <span className="text-text-secondary">Date : </span>
+              <span className="text-text-secondary">{t.paf.date} </span>
               {new Date(premiere.date_operation).toLocaleDateString("fr-FR")}
             </p>
             <p>
-              <span className="text-text-secondary">N°chq/ov/bcs : </span>
+              <span className="text-text-secondary">{t.paf.nChqOvBcs} </span>
               {premiere.n_cheque_ov}
             </p>
             <p>
-              <span className="text-text-secondary">Project ID : </span>
+              <span className="text-text-secondary">{t.paf.projectId} </span>
               {project?.code_projet}
             </p>
             <p className="col-span-2">
-              <span className="text-text-secondary">Beneficiary : </span>
+              <span className="text-text-secondary">{t.paf.beneficiary} </span>
               {premiere.tiers}
             </p>
             <p className="col-span-2">
-              <span className="text-text-secondary">Organization : </span>
+              <span className="text-text-secondary">{t.paf.organization} </span>
               {organization?.nom}
             </p>
           </div>
 
           {estPieceAnterieure ? (
             <div className="mb-6 rounded-md border border-accent-red bg-accent-red/10 px-4 py-3 text-sm font-semibold text-accent-red">
-              PIÈCE ANTÉRIEURE — solde non calculable. Une opération plus
-              récente existe sur ce compte ({dernierNEJCompte}). Impression
-              non disponible pour {numEJ}.
+              {t.paf.pieceAnterieure
+                .replace("{nej}", dernierNEJCompte ?? "")
+                .replace("{numEJ}", numEJ)}
             </div>
           ) : (
             <>
               <div className="mb-6 grid grid-cols-1 gap-4 rounded-lg border border-border-subtle p-4 text-sm sm:grid-cols-2 print:grid-cols-2 print:border-black">
                 <p>
-                  Approved Budget :{" "}
+                  {t.paf.approvedBudget}{" "}
                   <span className="font-semibold">
                     {Math.round(budgetGlobal).toLocaleString("fr-FR")}
                   </span>
                 </p>
                 <p>
-                  Currently available :{" "}
+                  {t.paf.currentlyAvailable}{" "}
                   <span className="font-semibold">
                     {soldeDisponible !== null
                       ? Math.round(soldeDisponible).toLocaleString("fr-FR")
@@ -207,13 +209,13 @@ export default function FichePaiementPage() {
                   </span>
                 </p>
                 <p>
-                  This request :{" "}
+                  {t.paf.thisRequest}{" "}
                   <span className="font-semibold">
                     {Math.round(montantDemande).toLocaleString("fr-FR")}
                   </span>
                 </p>
                 <p>
-                  RESTING balance :{" "}
+                  {t.paf.restingBalance}{" "}
                   <span className="font-semibold">
                     {soldeRestant !== null
                       ? Math.round(soldeRestant).toLocaleString("fr-FR")
@@ -224,7 +226,7 @@ export default function FichePaiementPage() {
 
               <table className="mb-6 min-w-full text-sm">
                 <MiniTableHeader
-                  columns={["Budget code", "Account No.", "Libellé", "Debit", "Credit"]}
+                  columns={[t.paf.colBudgetCode, t.paf.colAccountNo, t.paf.colLibelle, t.paf.colDebit, t.paf.colCredit]}
                   align={["left", "left", "left", "right", "right"]}
                 />
                 <tbody>
@@ -245,7 +247,7 @@ export default function FichePaiementPage() {
                   ))}
                   <tr className="font-semibold">
                     <td className="py-1" colSpan={3}>
-                      TOTALS
+                      {t.paf.totals}
                     </td>
                     <td className="py-1 text-right">
                       {lignes
@@ -266,40 +268,40 @@ export default function FichePaiementPage() {
           <div className="grid grid-cols-1 gap-8 text-sm sm:grid-cols-2 print:grid-cols-2">
             <div>
               <p className="mb-1 text-text-secondary print:text-black">
-                Checked by : Administrative &amp; Financial Manager
+                {t.paf.checkedBy}
               </p>
               <input
                 type="text"
                 value={preparePar}
                 onChange={(e) => setPreparePar(e.target.value)}
-                placeholder="Nom"
+                placeholder={t.common.nom}
                 className="w-full rounded-md border border-border-subtle bg-bg-card px-3 py-2 text-text-primary print:border-b print:border-black print:bg-transparent print:text-black"
               />
-              <p className="mt-1 text-xs text-text-secondary print:text-black">Date :</p>
+              <p className="mt-1 text-xs text-text-secondary print:text-black">{t.paf.date2}</p>
               <p className="mt-1 text-xs text-text-secondary print:text-black">
-                By signing, you certify that the entries made are correct.
+                {t.paf.certifyCorrect}
               </p>
             </div>
             <div>
               <p className="mb-1 text-text-secondary print:text-black">
-                Approved by : Program Coordinator/President
+                {t.paf.approvedBy}
               </p>
               <input
                 type="text"
                 value={approuvePar}
                 onChange={(e) => setApprouvePar(e.target.value)}
-                placeholder="Nom"
+                placeholder={t.common.nom}
                 className="w-full rounded-md border border-border-subtle bg-bg-card px-3 py-2 text-text-primary print:border-b print:border-black print:bg-transparent print:text-black"
               />
-              <p className="mt-1 text-xs text-text-secondary print:text-black">Date :</p>
+              <p className="mt-1 text-xs text-text-secondary print:text-black">{t.paf.date2}</p>
               <p className="mt-1 text-xs text-text-secondary print:text-black">
-                By signing, you authorise the expenditure for the project.
+                {t.paf.authoriseExpenditure}
               </p>
             </div>
           </div>
 
           <p className="mt-6 text-xs text-text-secondary print:text-black">
-            Seized by : {premiere.utilisateur}
+            {t.paf.seizedBy} {premiere.utilisateur}
           </p>
         </div>
       )}

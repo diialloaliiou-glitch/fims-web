@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/lib/auth-context";
+import { useLanguage } from "@/lib/language-context";
 import { FormField, fieldControlClass } from "@/components/ui/FormField";
 import { MiniTableHeader } from "@/components/ui/MiniTableHeader";
 import { PrimaryButton } from "@/components/ui/PrimaryButton";
@@ -31,6 +32,7 @@ const emptyForm = {
 
 export default function PlanComptablePage() {
   const { profile, project } = useAuth();
+  const { t } = useLanguage();
   const [accounts, setAccounts] = useState<ChartOfAccount[]>([]);
   const [loading, setLoading] = useState(true);
   const [editingId, setEditingId] = useState<number | null>(null);
@@ -78,7 +80,7 @@ export default function PlanComptablePage() {
     setError(null);
 
     if (!form.ccompte.trim() || !form.libelle.trim()) {
-      setError("N° de compte complet et Libellé sont obligatoires.");
+      setError(t.planComptable.erreurChampsObligatoires);
       return;
     }
     if (!project || !profile) return;
@@ -131,7 +133,7 @@ export default function PlanComptablePage() {
   return (
     <div>
       <h1 className="mb-6 text-2xl font-semibold text-text-primary">
-        Plan comptable
+        {t.planComptable.titre}
       </h1>
 
       <form
@@ -139,33 +141,33 @@ export default function PlanComptablePage() {
         className="mb-6 max-w-3xl rounded-xl border border-border-subtle bg-bg-card p-6"
       >
         <p className="mb-4 text-sm font-medium text-text-secondary">
-          {editingId ? `Modifier le compte #${editingId}` : "Ajouter un compte"}
+          {editingId ? `${t.planComptable.modifierCompte}${editingId}` : t.planComptable.ajouterCompte}
         </p>
         <div className="mb-4 grid grid-cols-1 gap-4 sm:grid-cols-3">
           <FormField
-            label="N° compte complet"
+            label={t.planComptable.nCompteComplet}
             required
             value={form.ccompte}
             onChange={(e) => setForm({ ...form, ccompte: e.target.value })}
           />
           <div className="sm:col-span-2">
             <FormField
-              label="Libellé"
+              label={t.planComptable.libelle}
               required
               value={form.libelle}
               onChange={(e) => setForm({ ...form, libelle: e.target.value })}
             />
           </div>
-          <FormField label="Type de compte">
+          <FormField label={t.planComptable.typeCompte}>
             <select
               value={form.type_compte}
               onChange={(e) => setForm({ ...form, type_compte: e.target.value })}
               className={fieldControlClass}
             >
               <option value="">—</option>
-              {TYPES_COMPTE.map((t) => (
-                <option key={t} value={t}>
-                  {t}
+              {TYPES_COMPTE.map((tc) => (
+                <option key={tc} value={tc}>
+                  {tc}
                 </option>
               ))}
             </select>
@@ -179,7 +181,7 @@ export default function PlanComptablePage() {
                   setForm({ ...form, compte_tiers: e.target.checked })
                 }
               />
-              Compte de tiers
+              {t.planComptable.compteDeTiers}
             </label>
           </div>
         </div>
@@ -188,7 +190,7 @@ export default function PlanComptablePage() {
 
         <div className="flex gap-3">
           <PrimaryButton type="submit" disabled={saving}>
-            {saving ? "Enregistrement..." : editingId ? "Mettre à jour" : "Ajouter"}
+            {saving ? t.common.enregistrement : editingId ? t.common.mettreAJour : t.common.ajouter}
           </PrimaryButton>
           {editingId && (
             <button
@@ -196,7 +198,7 @@ export default function PlanComptablePage() {
               onClick={startCreate}
               className="rounded-md border border-border-subtle px-5 py-2 text-text-secondary hover:bg-bg-card"
             >
-              Annuler
+              {t.common.annuler}
             </button>
           )}
         </div>
@@ -204,24 +206,24 @@ export default function PlanComptablePage() {
 
       <div className="mb-4 max-w-sm">
         <FormField
-          label="Filtrer"
+          label={t.planComptable.filtrer}
           value={filter}
           onChange={(e) => setFilter(e.target.value)}
-          placeholder="Compte ou libellé..."
+          placeholder={t.planComptable.filtrerPlaceholder}
         />
       </div>
 
       <div className="overflow-x-auto rounded-xl border border-border-subtle">
         <table className="min-w-full text-sm">
           <MiniTableHeader
-            columns={["N° compte", "Libellé", "Type", "Tiers", "Action"]}
+            columns={[t.planComptable.colNCompte, t.planComptable.colLibelle, t.planComptable.colType, t.planComptable.colTiers, t.common.action]}
             align={["left", "left", "left", "center", "right"]}
           />
           <tbody className="divide-y divide-border-subtle bg-bg-card/60">
             {loading && (
               <tr>
                 <td colSpan={5} className="px-3 py-4 text-center text-text-secondary">
-                  Chargement...
+                  {t.common.chargement}
                 </td>
               </tr>
             )}
@@ -239,7 +241,7 @@ export default function PlanComptablePage() {
                       onClick={() => startEdit(a)}
                       className="text-accent-blue hover:underline"
                     >
-                      Modifier
+                      {t.common.modifier}
                     </button>
                   </td>
                 </tr>

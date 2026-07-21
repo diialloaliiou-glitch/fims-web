@@ -35,6 +35,8 @@ export const fr = {
     au: "Au",
     filtrer: "Filtrer",
     voirDashboard: "← Dashboard",
+    nom: "Nom",
+    mettreAJour: "Mettre à jour",
   },
   langue: {
     francais: "Français",
@@ -548,5 +550,7 @@ export const fr = {
     copie: "Copie...",
     erreurChampsObligatoires: "Nom et code du projet sont obligatoires.",
     erreurCloner: "Choisis un projet source et au moins une table à cloner.",
+    erreurs: "Erreur(s) :",
+    resultatCopie: "Copié :",
   },
 };

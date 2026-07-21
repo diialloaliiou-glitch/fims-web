@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/lib/auth-context";
+import { useLanguage } from "@/lib/language-context";
 import { FormField, fieldControlClass } from "@/components/ui/FormField";
 import { MiniTableHeader } from "@/components/ui/MiniTableHeader";
 import { PrimaryButton } from "@/components/ui/PrimaryButton";
@@ -28,6 +29,7 @@ const emptyForm = {
 
 export default function BudgetStagingPage() {
   const { profile, project } = useAuth();
+  const { t } = useLanguage();
   const [rows, setRows] = useState<BudgetLineStaging[]>([]);
   const [rubriques, setRubriques] = useState<Rubrique[]>([]);
   const [loading, setLoading] = useState(true);
@@ -99,7 +101,7 @@ export default function BudgetStagingPage() {
     setError(null);
 
     if (!form.code_1.trim() || !form.description.trim()) {
-      setError("Code et description sont obligatoires.");
+      setError(t.budgetStaging.erreurChampsObligatoires);
       return;
     }
     if (!project || !profile) return;
@@ -153,7 +155,7 @@ export default function BudgetStagingPage() {
     const unitCost = parseFloat(unitCostInput);
 
     if (isNaN(unitCost) || unitCost < 0) {
-      setValidateError("Indique un coût unitaire valide (0 ou plus).");
+      setValidateError(t.budgetStaging.erreurCoutUnitaire);
       return;
     }
     if (!project || !profile) return;
@@ -218,10 +220,10 @@ export default function BudgetStagingPage() {
     <div>
       <div className="mb-6 flex items-center justify-between">
         <h1 className="text-2xl font-semibold text-text-primary">
-          Propositions budgétaires
+          {t.budgetStaging.titre}
         </h1>
         <Link href="/budget" className="text-sm text-accent-blue hover:underline">
-          Voir le Financial Report →
+          {t.budgetStaging.voirFinancialReport}
         </Link>
       </div>
 
@@ -230,34 +232,34 @@ export default function BudgetStagingPage() {
         className="mb-6 max-w-3xl rounded-xl border border-border-subtle bg-bg-card p-6"
       >
         <p className="mb-4 text-sm font-medium text-text-secondary">
-          {editingId ? `Modifier la proposition #${editingId}` : "Proposer une ligne budgétaire"}
+          {editingId ? `${t.budgetStaging.modifierProposition}${editingId}` : t.budgetStaging.proposerUneLigne}
         </p>
         <div className="mb-4 grid grid-cols-1 gap-4 sm:grid-cols-3">
           <FormField
-            label="Code"
+            label={t.budgetStaging.code}
             required
             value={form.code_1}
             onChange={(e) => setForm({ ...form, code_1: e.target.value })}
           />
           <FormField
-            label="Ligne budgétaire"
+            label={t.budgetStaging.ligneBudgetaire}
             value={form.budget_line}
             onChange={(e) => setForm({ ...form, budget_line: e.target.value })}
           />
           <FormField
-            label="Code interne"
+            label={t.budgetStaging.codeInterne}
             value={form.our_line_code}
             onChange={(e) => setForm({ ...form, our_line_code: e.target.value })}
           />
           <div className="sm:col-span-3">
             <FormField
-              label="Description"
+              label={t.budgetStaging.description}
               required
               value={form.description}
               onChange={(e) => setForm({ ...form, description: e.target.value })}
             />
           </div>
-          <FormField label="Rubrique">
+          <FormField label={t.budgetStaging.rubrique}>
             <select
               value={form.rubrique}
               onChange={(e) => setForm({ ...form, rubrique: e.target.value })}
@@ -272,43 +274,43 @@ export default function BudgetStagingPage() {
             </select>
           </FormField>
           <FormField
-            label="Unité"
+            label={t.budgetStaging.unite}
             value={form.unit}
             onChange={(e) => setForm({ ...form, unit: e.target.value })}
           />
           <FormField
-            label="Quantité"
+            label={t.budgetStaging.quantite}
             type="number"
             step="0.01"
             value={form.quantity}
             onChange={(e) => setForm({ ...form, quantity: e.target.value })}
           />
           <FormField
-            label="Fréquence"
+            label={t.budgetStaging.frequence}
             type="number"
             step="0.01"
             value={form.frequence}
             onChange={(e) => setForm({ ...form, frequence: e.target.value })}
           />
           <FormField
-            label="% pris en charge (T-PEC)"
+            label={t.budgetStaging.pctPriseEnCharge}
             value={form.t_pec}
             onChange={(e) => setForm({ ...form, t_pec: e.target.value })}
           />
           <FormField
-            label="Devise"
+            label={t.budgetStaging.devise}
             value={form.devise}
             onChange={(e) => setForm({ ...form, devise: e.target.value })}
           />
           <FormField
-            label="Coût unitaire (devise)"
+            label={t.budgetStaging.coutUnitaireDevise}
             type="number"
             step="0.01"
             value={form.unit_cost_devise}
             onChange={(e) => setForm({ ...form, unit_cost_devise: e.target.value })}
           />
           <FormField
-            label="Taux de conversion"
+            label={t.budgetStaging.tauxConversion}
             type="number"
             step="0.0001"
             value={form.taux_conversion}
@@ -316,7 +318,7 @@ export default function BudgetStagingPage() {
           />
           <div className="sm:col-span-3">
             <FormField
-              label="Note"
+              label={t.budgetStaging.note}
               value={form.note}
               onChange={(e) => setForm({ ...form, note: e.target.value })}
             />
@@ -327,7 +329,7 @@ export default function BudgetStagingPage() {
 
         <div className="flex gap-3">
           <PrimaryButton type="submit" disabled={saving}>
-            {saving ? "Enregistrement..." : editingId ? "Mettre à jour" : "Proposer"}
+            {saving ? t.common.enregistrement : editingId ? t.budgetStaging.mettreAJour : t.budgetStaging.proposer}
           </PrimaryButton>
           {editingId && (
             <button
@@ -335,7 +337,7 @@ export default function BudgetStagingPage() {
               onClick={startCreate}
               className="rounded-md border border-border-subtle px-5 py-2 text-text-secondary hover:bg-bg-card"
             >
-              Annuler
+              {t.common.annuler}
             </button>
           )}
         </div>
@@ -343,29 +345,29 @@ export default function BudgetStagingPage() {
 
       {!canValidate && (
         <p className="mb-4 text-sm text-text-secondary">
-          Ton rôle ({profile?.role}) permet de proposer des lignes, mais seul un
-          ADMIN_SITE, RAF (ou ADMIN_N1) peut les valider et les transférer au budget officiel.
+          {t.budgetStaging.permissionInfo.replace("{role}", profile?.role ?? "")}{" "}
+          {t.budgetStaging.peutValider}
         </p>
       )}
 
       <div className="overflow-x-auto rounded-xl border border-border-subtle">
         <table className="min-w-full text-sm">
           <MiniTableHeader
-            columns={["Code", "Description", "Rubrique", "Qté", "Statut", "Action"]}
+            columns={[t.budgetStaging.colCode, t.budgetStaging.colDescription, t.budgetStaging.colRubrique, t.budgetStaging.colQte, t.common.statut, t.common.action]}
             align={["left", "left", "left", "right", "left", "right"]}
           />
           <tbody className="divide-y divide-border-subtle bg-bg-card/60">
             {loading && (
               <tr>
                 <td colSpan={6} className="px-3 py-4 text-center text-text-secondary">
-                  Chargement...
+                  {t.common.chargement}
                 </td>
               </tr>
             )}
             {!loading && rows.length === 0 && (
               <tr>
                 <td colSpan={6} className="px-3 py-4 text-center text-text-secondary">
-                  Aucune proposition pour ce projet.
+                  {t.budgetStaging.aucuneProposition}
                 </td>
               </tr>
             )}
@@ -393,14 +395,14 @@ export default function BudgetStagingPage() {
                         onClick={() => startEdit(r)}
                         className="text-accent-blue hover:underline"
                       >
-                        Modifier
+                        {t.common.modifier}
                       </button>
                       {canValidate && (
                         <button
                           onClick={() => openValidate(r.id)}
                           className="text-accent-teal hover:underline"
                         >
-                          Valider
+                          {t.budgetStaging.valider}
                         </button>
                       )}
                     </div>
@@ -416,11 +418,11 @@ export default function BudgetStagingPage() {
         <div className="fixed inset-0 flex items-center justify-center bg-black/60 p-4">
           <div className="w-full max-w-sm rounded-xl border border-border-subtle bg-bg-card p-6">
             <p className="mb-4 font-medium text-text-primary">
-              Valider la proposition #{validatingId}
+              {t.budgetStaging.validerLaProposition}{validatingId}
             </p>
             <div className="mb-3">
               <FormField
-                label="Coût unitaire (FCFA)"
+                label={t.budgetStaging.coutUnitaireFcfa}
                 required
                 type="number"
                 step="0.01"
@@ -429,9 +431,7 @@ export default function BudgetStagingPage() {
               />
             </div>
             <p className="mb-3 text-xs text-text-secondary">
-              Le coût total sera calculé automatiquement (quantité × fréquence ×
-              coût unitaire), et la ligne sera ajoutée au budget officiel du
-              projet.
+              {t.budgetStaging.coutCalculeAuto}
             </p>
             {validateError && (
               <p className="mb-3 text-sm text-accent-red">{validateError}</p>
@@ -444,13 +444,13 @@ export default function BudgetStagingPage() {
                 }}
                 disabled={validating}
               >
-                {validating ? "Validation..." : "Confirmer"}
+                {validating ? t.common.enregistrement : t.common.confirmer}
               </PrimaryButton>
               <button
                 onClick={() => setValidatingId(null)}
                 className="rounded-md border border-border-subtle px-4 py-2 text-text-secondary hover:bg-bg-card"
               >
-                Annuler
+                {t.common.annuler}
               </button>
             </div>
           </div>

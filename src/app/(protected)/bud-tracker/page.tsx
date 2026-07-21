@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/lib/auth-context";
+import { useLanguage } from "@/lib/language-context";
 import { scopeToProjectSpending } from "@/lib/project-scope";
 import { cumulAvanceRecue } from "@/lib/avance-recue";
 import { MiniTableHeader } from "@/components/ui/MiniTableHeader";
@@ -46,6 +47,7 @@ type LigneCalculee = BudgetLine & {
 
 export default function BudTrackerPage() {
   const { project } = useAuth();
+  const { t } = useLanguage();
   const [lignes, setLignes] = useState<LigneCalculee[]>([]);
   const [mois, setMois] = useState<Mois[]>([]);
   const [cumulAvance, setCumulAvance] = useState(0);
@@ -142,38 +144,38 @@ export default function BudTrackerPage() {
   return (
     <div>
       <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
-        <h1 className="text-2xl font-semibold text-text-primary">BUD TRACKER</h1>
+        <h1 className="text-2xl font-semibold text-text-primary">{t.budTracker.titre}</h1>
         <Link href="/budget" className="text-sm text-accent-blue hover:underline">
-          Voir le Financial Report →
+          {t.budTracker.voirFinancialReport}
         </Link>
       </div>
 
       {erreurDates && (
         <p className="mb-6 text-sm text-text-secondary">
-          Les dates de début et de fin du projet ne sont pas renseignées.{" "}
+          {t.budTracker.datesManquantes}{" "}
           <Link href="/parametres/projet" className="text-accent-blue hover:underline">
-            Renseigne-les dans Paramètres du projet
+            {t.budTracker.renseigneDates}
           </Link>{" "}
-          pour afficher le suivi mensuel.
+          {t.budTracker.pourAfficherSuivi}
         </p>
       )}
 
       {!erreurDates && (
         <>
           <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-4">
-            <StatCard label="Budget approuvé" value={Math.round(totalBudget).toLocaleString("fr-FR")} />
+            <StatCard label={t.budTracker.budgetApprouve} value={Math.round(totalBudget).toLocaleString("fr-FR")} />
             <StatCard
-              label="Cumul avance reçue"
+              label={t.budTracker.cumulAvanceRecue}
               value={Math.round(cumulAvance).toLocaleString("fr-FR")}
               valueColor="blue"
             />
             <StatCard
-              label="Taux de conso budgétaire"
+              label={t.budTracker.tauxConsoBudgetaire}
               value={`${(totalPctConso * 100).toFixed(1)}%`}
               valueColor="teal"
             />
             <StatCard
-              label="Taux de conso de l'avance"
+              label={t.budTracker.tauxConsoAvance}
               value={`${(totalPctConsoAvance * 100).toFixed(1)}%`}
               valueColor="amber"
             />
@@ -183,16 +185,16 @@ export default function BudTrackerPage() {
             <table className="min-w-full text-sm">
               <MiniTableHeader
                 columns={[
-                  "B-S-Line",
-                  "Description",
-                  "Budget approuvé",
-                  "% répartition",
+                  t.budTracker.colBSLine,
+                  t.budTracker.colDescription,
+                  t.budTracker.colBudgetApprouve,
+                  t.budTracker.colPctRepartition,
                   ...mois.map((m) => m.label),
-                  "Total",
-                  "Écart",
-                  "% conso",
-                  "R-avance acc.",
-                  "% conso avance",
+                  t.budTracker.colTotal,
+                  t.budTracker.colEcart,
+                  t.budTracker.colPctConso,
+                  t.budTracker.colRAvanceAcc,
+                  t.budTracker.colPctConsoAvance,
                 ]}
                 align={[
                   "left",
@@ -211,14 +213,14 @@ export default function BudTrackerPage() {
                 {loading && (
                   <tr>
                     <td colSpan={9 + mois.length} className="px-3 py-4 text-center text-text-secondary">
-                      Chargement...
+                      {t.common.chargement}
                     </td>
                   </tr>
                 )}
                 {!loading && lignes.length === 0 && (
                   <tr>
                     <td colSpan={9 + mois.length} className="px-3 py-4 text-center text-text-secondary">
-                      Aucune ligne budgétaire.
+                      {t.budTracker.aucuneLigne}
                     </td>
                   </tr>
                 )}
@@ -263,7 +265,7 @@ export default function BudTrackerPage() {
                 <tfoot className="bg-bg-card font-semibold text-text-primary">
                   <tr>
                     <td className="px-3 py-2" colSpan={2}>
-                      TOTAL GENERAL
+                      {t.budTracker.totalGeneral}
                     </td>
                     <td className="px-3 py-2 text-right">
                       {Math.round(totalBudget).toLocaleString("fr-FR")}

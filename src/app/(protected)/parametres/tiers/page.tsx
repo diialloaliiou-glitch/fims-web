@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/lib/auth-context";
+import { useLanguage } from "@/lib/language-context";
 import { FormField, fieldControlClass } from "@/components/ui/FormField";
 import { MiniTableHeader } from "@/components/ui/MiniTableHeader";
 import { PrimaryButton } from "@/components/ui/PrimaryButton";
@@ -23,6 +24,7 @@ const emptyForm = {
 
 export default function TiersPage() {
   const { profile, project } = useAuth();
+  const { t } = useLanguage();
   const [tiers, setTiers] = useState<ThirdParty[]>([]);
   const [zones, setZones] = useState<Zone[]>([]);
   const [comptesTiers, setComptesTiers] = useState<ChartOfAccount[]>([]);
@@ -72,15 +74,15 @@ export default function TiersPage() {
     setError(null);
   }
 
-  function startEdit(t: ThirdParty) {
-    setEditingId(t.id);
+  function startEdit(tiersItem: ThirdParty) {
+    setEditingId(tiersItem.id);
     setForm({
-      compte_classe_4: t.compte_classe_4 ?? "",
-      nom_tiers: t.nom_tiers,
-      type: t.type ?? TYPES_TIERS[0],
-      contact: t.contact ?? "",
-      statut: t.statut ?? "Actif",
-      zone_id: t.zone_id != null ? String(t.zone_id) : "",
+      compte_classe_4: tiersItem.compte_classe_4 ?? "",
+      nom_tiers: tiersItem.nom_tiers,
+      type: tiersItem.type ?? TYPES_TIERS[0],
+      contact: tiersItem.contact ?? "",
+      statut: tiersItem.statut ?? "Actif",
+      zone_id: tiersItem.zone_id != null ? String(tiersItem.zone_id) : "",
     });
     setError(null);
   }
@@ -90,11 +92,11 @@ export default function TiersPage() {
     setError(null);
 
     if (!form.nom_tiers.trim()) {
-      setError("Le nom du tiers est obligatoire.");
+      setError(t.tiersPage.erreurNomObligatoire);
       return;
     }
     if (!form.compte_classe_4.trim()) {
-      setError("Le compte classe 4 est obligatoire.");
+      setError(t.tiersPage.erreurCompteObligatoire);
       return;
     }
     if (!project || !profile) return;
@@ -129,56 +131,56 @@ export default function TiersPage() {
     loadTiers();
   }
 
-  async function toggleStatut(t: ThirdParty) {
-    const nextStatut = t.statut === "Actif" ? "Inactif" : "Actif";
+  async function toggleStatut(tiersItem: ThirdParty) {
+    const nextStatut = tiersItem.statut === "Actif" ? "Inactif" : "Actif";
     await supabase
       .from("third_parties")
       .update({ statut: nextStatut })
-      .eq("id", t.id);
+      .eq("id", tiersItem.id);
     loadTiers();
   }
 
-  const filtered = tiers.filter((t) => {
+  const filtered = tiers.filter((tiersItem) => {
     if (!filter.trim()) return true;
-    return t.nom_tiers.toLowerCase().includes(filter.toLowerCase());
+    return tiersItem.nom_tiers.toLowerCase().includes(filter.toLowerCase());
   });
 
   return (
     <div>
-      <h1 className="mb-6 text-2xl font-semibold text-text-primary">Tiers</h1>
+      <h1 className="mb-6 text-2xl font-semibold text-text-primary">{t.tiersPage.titre}</h1>
 
       <form
         onSubmit={handleSubmit}
         className="mb-6 max-w-3xl rounded-xl border border-border-subtle bg-bg-card p-6"
       >
         <p className="mb-4 text-sm font-medium text-text-secondary">
-          {editingId ? `Modifier le tiers #${editingId}` : "Ajouter un tiers"}
+          {editingId ? `${t.tiersPage.modifierTiers}${editingId}` : t.tiersPage.ajouterUnTiers}
         </p>
         <div className="mb-4 grid grid-cols-1 gap-4 sm:grid-cols-3">
           <div className="sm:col-span-2">
             <FormField
-              label="Nom du tiers"
+              label={t.tiersPage.nomDuTiers}
               required
               value={form.nom_tiers}
               onChange={(e) => setForm({ ...form, nom_tiers: e.target.value })}
             />
           </div>
-          <FormField label="Type">
+          <FormField label={t.tiersPage.type}>
             <select
               value={form.type}
               onChange={(e) => setForm({ ...form, type: e.target.value })}
               className={fieldControlClass}
             >
-              {TYPES_TIERS.map((t) => (
-                <option key={t} value={t}>
-                  {t}
+              {TYPES_TIERS.map((tp) => (
+                <option key={tp} value={tp}>
+                  {tp}
                 </option>
               ))}
             </select>
           </FormField>
           <div>
             <FormField
-              label="Compte classe 4"
+              label={t.tiersPage.compteClasse4}
               required
               list="comptes-tiers-list"
               value={form.compte_classe_4}
@@ -195,11 +197,11 @@ export default function TiersPage() {
             </datalist>
           </div>
           <FormField
-            label="Contact"
+            label={t.tiersPage.contact}
             value={form.contact}
             onChange={(e) => setForm({ ...form, contact: e.target.value })}
           />
-          <FormField label="Zone">
+          <FormField label={t.common.zone}>
             <select
               value={form.zone_id}
               onChange={(e) => setForm({ ...form, zone_id: e.target.value })}
@@ -219,7 +221,7 @@ export default function TiersPage() {
 
         <div className="flex gap-3">
           <PrimaryButton type="submit" disabled={saving}>
-            {saving ? "Enregistrement..." : editingId ? "Mettre à jour" : "Ajouter"}
+            {saving ? t.common.enregistrement : editingId ? t.common.mettreAJour : t.common.ajouter}
           </PrimaryButton>
           {editingId && (
             <button
@@ -227,7 +229,7 @@ export default function TiersPage() {
               onClick={startCreate}
               className="rounded-md border border-border-subtle px-5 py-2 text-text-secondary hover:bg-bg-card"
             >
-              Annuler
+              {t.common.annuler}
             </button>
           )}
         </div>
@@ -235,51 +237,51 @@ export default function TiersPage() {
 
       <div className="mb-4 max-w-sm">
         <FormField
-          label="Filtrer"
+          label={t.tiersPage.filtrer}
           value={filter}
           onChange={(e) => setFilter(e.target.value)}
-          placeholder="Nom du tiers..."
+          placeholder={t.tiersPage.filtrerPlaceholder}
         />
       </div>
 
       <div className="overflow-x-auto rounded-xl border border-border-subtle">
         <table className="min-w-full text-sm">
           <MiniTableHeader
-            columns={["Nom", "Type", "Contact", "Statut", "Action"]}
+            columns={[t.tiersPage.colNom, t.tiersPage.colType, t.tiersPage.colContact, t.common.statut, t.common.action]}
             align={["left", "left", "left", "left", "right"]}
           />
           <tbody className="divide-y divide-border-subtle bg-bg-card/60">
             {loading && (
               <tr>
                 <td colSpan={5} className="px-3 py-4 text-center text-text-secondary">
-                  Chargement...
+                  {t.common.chargement}
                 </td>
               </tr>
             )}
             {!loading &&
-              filtered.map((t) => (
-                <tr key={t.id} className="text-text-primary">
-                  <td className="px-3 py-2">{t.nom_tiers}</td>
-                  <td className="px-3 py-2 text-text-secondary">{t.type}</td>
-                  <td className="px-3 py-2 text-text-secondary">{t.contact}</td>
+              filtered.map((tiersItem) => (
+                <tr key={tiersItem.id} className="text-text-primary">
+                  <td className="px-3 py-2">{tiersItem.nom_tiers}</td>
+                  <td className="px-3 py-2 text-text-secondary">{tiersItem.type}</td>
+                  <td className="px-3 py-2 text-text-secondary">{tiersItem.contact}</td>
                   <td className="px-3 py-2">
                     <button
-                      onClick={() => toggleStatut(t)}
+                      onClick={() => toggleStatut(tiersItem)}
                       className={
-                        t.statut === "Actif"
+                        tiersItem.statut === "Actif"
                           ? "rounded-full bg-bg-card-teal px-2 py-0.5 text-xs text-accent-teal"
                           : "rounded-full bg-bg-card px-2 py-0.5 text-xs text-text-secondary"
                       }
                     >
-                      {t.statut ?? "Actif"}
+                      {tiersItem.statut ?? "Actif"}
                     </button>
                   </td>
                   <td className="px-3 py-2 text-right">
                     <button
-                      onClick={() => startEdit(t)}
+                      onClick={() => startEdit(tiersItem)}
                       className="text-accent-blue hover:underline"
                     >
-                      Modifier
+                      {t.common.modifier}
                     </button>
                   </td>
                 </tr>

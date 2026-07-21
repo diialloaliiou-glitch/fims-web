@@ -37,8 +37,10 @@ export const en: typeof fr = {
     imprimer: "Print",
     du: "From",
     au: "To",
+    nom: "Name",
     filtrer: "Filter",
     voirDashboard: "← Dashboard",
+    mettreAJour: "Update",
   },
   langue: {
     francais: "French",
@@ -551,5 +553,7 @@ export const en: typeof fr = {
     copie: "Copying...",
     erreurChampsObligatoires: "Project name and code are required.",
     erreurCloner: "Choose a source project and at least one table to clone.",
+    erreurs: "Error(s):",
+    resultatCopie: "Copied:",
   },
 };

@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/lib/auth-context";
+import { useLanguage } from "@/lib/language-context";
 import { FormField, fieldControlClass } from "@/components/ui/FormField";
 import { MiniTableHeader } from "@/components/ui/MiniTableHeader";
 import { PrimaryButton } from "@/components/ui/PrimaryButton";
@@ -33,6 +34,7 @@ function calculerSalaireNet(brut: string, inpsOuvriere: string, its: string) {
 
 export default function PersonnelPage() {
   const { profile, project } = useAuth();
+  const { t } = useLanguage();
   const [personnel, setPersonnel] = useState<Personnel[]>([]);
   const [comptes, setComptes] = useState<ChartOfAccount[]>([]);
   const [zones, setZones] = useState<Zone[]>([]);
@@ -108,11 +110,11 @@ export default function PersonnelPage() {
     setError(null);
 
     if (!form.matricule.trim() || !form.prenom_nom.trim()) {
-      setError("Matricule et nom sont obligatoires.");
+      setError(t.personnel.erreurMatriculeNom);
       return;
     }
     if (!form.salaire_brut || parseFloat(form.salaire_brut) <= 0) {
-      setError("Le salaire brut doit être supérieur à zéro.");
+      setError(t.personnel.erreurSalaire);
       return;
     }
     if (!profile || !project) return;
@@ -186,7 +188,7 @@ export default function PersonnelPage() {
   return (
     <div>
       <h1 className="mb-6 text-2xl font-semibold text-text-primary">
-        Fiche Personnel
+        {t.personnel.titre}
       </h1>
 
       <form
@@ -194,36 +196,36 @@ export default function PersonnelPage() {
         className="mb-6 max-w-3xl rounded-xl border border-border-subtle bg-bg-card p-6"
       >
         <p className="mb-4 text-sm font-medium text-text-secondary">
-          {editingId ? `Modifier #${editingId}` : "Ajouter un membre du personnel"}
+          {editingId ? `${t.personnel.modifier}${editingId}` : t.personnel.ajouterMembre}
         </p>
         <div className="mb-4 grid grid-cols-1 gap-4 sm:grid-cols-3">
           <FormField
-            label="Matricule"
+            label={t.personnel.matricule}
             required
             value={form.matricule}
             onChange={(e) => setForm({ ...form, matricule: e.target.value })}
           />
           <div className="sm:col-span-2">
             <FormField
-              label="Nom complet"
+              label={t.personnel.nomComplet}
               required
               value={form.prenom_nom}
               onChange={(e) => setForm({ ...form, prenom_nom: e.target.value })}
             />
           </div>
           <FormField
-            label="Poste"
+            label={t.personnel.poste}
             value={form.poste}
             onChange={(e) => setForm({ ...form, poste: e.target.value })}
           />
           <FormField
-            label="B-S-Line (ligne budgétaire)"
+            label={t.personnel.bSLine}
             value={form.b_s_line}
             onChange={(e) => setForm({ ...form, b_s_line: e.target.value })}
           />
           <div>
             <FormField
-              label="Compte classe 4"
+              label={t.personnel.compteClasse4}
               list="comptes-list"
               value={form.compte_classe_4}
               onChange={(e) =>
@@ -238,7 +240,7 @@ export default function PersonnelPage() {
               ))}
             </datalist>
           </div>
-          <FormField label="Zone">
+          <FormField label={t.personnel.zone}>
             <select
               value={form.zone_id}
               onChange={(e) => setForm({ ...form, zone_id: e.target.value })}
@@ -253,7 +255,7 @@ export default function PersonnelPage() {
             </select>
           </FormField>
           <FormField
-            label="Salaire brut"
+            label={t.personnel.salaireBrut}
             required
             type="number"
             step="0.01"
@@ -261,46 +263,46 @@ export default function PersonnelPage() {
             onChange={(e) => setForm({ ...form, salaire_brut: e.target.value })}
           />
           <FormField
-            label="INPS ouvrière"
+            label={t.personnel.inpsOuvriere}
             type="number"
             step="0.01"
             value={form.inps_ouvriere}
             onChange={(e) => setForm({ ...form, inps_ouvriere: e.target.value })}
           />
           <FormField
-            label="ITS"
+            label={t.personnel.its}
             type="number"
             step="0.01"
             value={form.its}
             onChange={(e) => setForm({ ...form, its: e.target.value })}
           />
           <FormField
-            label="INPS patronale"
+            label={t.personnel.inpsPatronale}
             type="number"
             step="0.01"
             value={form.inps_patronale}
             onChange={(e) => setForm({ ...form, inps_patronale: e.target.value })}
           />
           <FormField
-            label="TL patronale"
+            label={t.personnel.tlPatronale}
             type="number"
             step="0.01"
             value={form.tl_patronale}
             onChange={(e) => setForm({ ...form, tl_patronale: e.target.value })}
           />
           <FormField
-            label="Salaire net (calculé)"
+            label={t.personnel.salaireNetCalcule}
             disabled
             value={salaireNetPreview.toLocaleString("fr-FR")}
           />
           <FormField
-            label="Date début"
+            label={t.personnel.dateDebut}
             type="date"
             value={form.date_debut}
             onChange={(e) => setForm({ ...form, date_debut: e.target.value })}
           />
           <FormField
-            label="Date fin"
+            label={t.personnel.dateFin}
             type="date"
             value={form.date_fin}
             onChange={(e) => setForm({ ...form, date_fin: e.target.value })}
@@ -311,7 +313,7 @@ export default function PersonnelPage() {
 
         <div className="flex gap-3">
           <PrimaryButton type="submit" disabled={saving}>
-            {saving ? "Enregistrement..." : editingId ? "Mettre à jour" : "Ajouter"}
+            {saving ? t.common.enregistrement : editingId ? t.common.mettreAJour : t.common.ajouter}
           </PrimaryButton>
           {editingId && (
             <button
@@ -319,7 +321,7 @@ export default function PersonnelPage() {
               onClick={startCreate}
               className="rounded-md border border-border-subtle px-5 py-2 text-text-secondary hover:bg-bg-card"
             >
-              Annuler
+              {t.common.annuler}
             </button>
           )}
         </div>
@@ -327,24 +329,24 @@ export default function PersonnelPage() {
 
       <div className="mb-4 max-w-sm">
         <FormField
-          label="Filtrer"
+          label={t.personnel.filtrer}
           value={filter}
           onChange={(e) => setFilter(e.target.value)}
-          placeholder="Nom ou matricule..."
+          placeholder={t.personnel.filtrerPlaceholder}
         />
       </div>
 
       <div className="overflow-x-auto rounded-xl border border-border-subtle">
         <table className="min-w-full text-sm">
           <MiniTableHeader
-            columns={["Matricule", "Nom", "Poste", "Salaire net", "Statut", "Action"]}
+            columns={[t.personnel.colMatricule, t.personnel.colNom, t.personnel.colPoste, t.personnel.colSalaireNet, t.common.statut, t.common.action]}
             align={["left", "left", "left", "right", "left", "right"]}
           />
           <tbody className="divide-y divide-border-subtle bg-bg-card/60">
             {loading && (
               <tr>
                 <td colSpan={6} className="px-3 py-4 text-center text-text-secondary">
-                  Chargement...
+                  {t.common.chargement}
                 </td>
               </tr>
             )}
@@ -374,7 +376,7 @@ export default function PersonnelPage() {
                       onClick={() => startEdit(p)}
                       className="text-accent-blue hover:underline"
                     >
-                      Modifier
+                      {t.common.modifier}
                     </button>
                   </td>
                 </tr>

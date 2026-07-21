@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/lib/auth-context";
+import { useLanguage } from "@/lib/language-context";
 import { periodeCouranteFermee } from "@/lib/period-closure";
 import { FormField, fieldControlClass } from "@/components/ui/FormField";
 import { MiniTableHeader } from "@/components/ui/MiniTableHeader";
@@ -69,6 +70,7 @@ function toEditForm(e: JournalEntry): EditForm {
 
 export default function JdepensePage() {
   const { profile, project } = useAuth();
+  const { t } = useLanguage();
 
   const [accounts, setAccounts] = useState<ChartOfAccount[]>([]);
   const [thirdParties, setThirdParties] = useState<ThirdParty[]>([]);
@@ -164,15 +166,15 @@ export default function JdepensePage() {
     const montantCredit = form.montant_credit ? parseFloat(form.montant_credit) : 0;
 
     if (!form.compte_debit.trim() && !form.compte_credit.trim()) {
-      setError("Au moins un compte (débit ou crédit) est obligatoire.");
+      setError(t.jdepense.erreurCompteObligatoire);
       return;
     }
     if (!montantDebit && !montantCredit) {
-      setError("Le montant débit ou crédit doit être supérieur à zéro.");
+      setError(t.jdepense.erreurMontantObligatoire);
       return;
     }
     if (!form.libelle.trim()) {
-      setError("Le libellé est obligatoire.");
+      setError(t.jdepense.erreurLibelleObligatoire);
       return;
     }
 
@@ -222,17 +224,17 @@ export default function JdepensePage() {
   return (
     <div>
       <h1 className="mb-6 text-2xl font-semibold text-text-primary">
-        Journal des dépenses (JDEPENSE)
+        {t.jdepense.titre}
       </h1>
 
       <div className="mb-6 flex flex-wrap gap-4 rounded-xl border border-border-subtle bg-bg-card p-4">
-        <FormField label="Compte">
+        <FormField label={t.jdepense.compte}>
           <select
             value={compteFiltre}
             onChange={(e) => setCompteFiltre(e.target.value)}
             className={fieldControlClass}
           >
-            <option value="">Tous les comptes</option>
+            <option value="">{t.jdepense.tousLesComptes}</option>
             {accounts.map((a) => (
               <option key={a.id} value={a.ccompte}>
                 {a.ccompte} - {a.libelle}
@@ -240,37 +242,37 @@ export default function JdepensePage() {
             ))}
           </select>
         </FormField>
-        <FormField label="Du" type="date" value={dateDebut} onChange={(e) => setDateDebut(e.target.value)} />
-        <FormField label="Au" type="date" value={dateFin} onChange={(e) => setDateFin(e.target.value)} />
+        <FormField label={t.common.du} type="date" value={dateDebut} onChange={(e) => setDateDebut(e.target.value)} />
+        <FormField label={t.common.au} type="date" value={dateFin} onChange={(e) => setDateFin(e.target.value)} />
         <FormField
-          label="N°E-J"
+          label={t.jdepense.nEJ}
           value={nejFiltre}
           onChange={(e) => setNejFiltre(e.target.value)}
-          placeholder="Ex: BQ-0012"
+          placeholder={t.jdepense.nEJPlaceholder}
         />
         <FormField
-          label="Tiers"
+          label={t.jdepense.tiers}
           value={tiersFiltre}
           onChange={(e) => setTiersFiltre(e.target.value)}
-          placeholder="Nom du tiers..."
+          placeholder={t.jdepense.tiersPlaceholder}
         />
       </div>
 
       {editingId !== null && form && (
         <div className="mb-6 rounded-xl border border-border-subtle bg-bg-card p-6">
           <p className="mb-4 text-sm font-medium text-text-secondary">
-            Modifier l&apos;écriture #{editingId}
+            {t.jdepense.modifierEcriture}{editingId}
           </p>
 
           <div className="mb-4 grid grid-cols-1 gap-4 sm:grid-cols-4">
             <FormField
-              label="Date"
+              label={t.jdepense.dateLabel}
               required
               type="date"
               value={form.date_operation}
               onChange={(e) => setForm({ ...form, date_operation: e.target.value })}
             />
-            <FormField label="Journal" required>
+            <FormField label={t.jdepense.journal} required>
               <select
                 value={form.journal}
                 onChange={(e) => setForm({ ...form, journal: e.target.value })}
@@ -284,34 +286,34 @@ export default function JdepensePage() {
               </select>
             </FormField>
             <FormField
-              label="N°E-J"
+              label={t.jdepense.nEJ}
               value={form.n_ecriture_journal}
               onChange={(e) => setForm({ ...form, n_ecriture_journal: e.target.value })}
             />
             <FormField
-              label="N°Pièce"
+              label={t.jdepense.nPiece}
               value={form.n_piece}
               onChange={(e) => setForm({ ...form, n_piece: e.target.value })}
             />
-            <FormField label="Type d'opération" required>
+            <FormField label={t.jdepense.typeOperation} required>
               <select
                 value={form.type_operation}
                 onChange={(e) => setForm({ ...form, type_operation: e.target.value })}
                 className={fieldControlClass}
               >
-                {TYPES_OPERATION.map((t) => (
-                  <option key={t} value={t}>
-                    {t}
+                {TYPES_OPERATION.map((op) => (
+                  <option key={op} value={op}>
+                    {op}
                   </option>
                 ))}
               </select>
             </FormField>
             <FormField
-              label="B-S-Line"
+              label={t.jdepense.bSLine}
               value={form.b_s_line}
               onChange={(e) => setForm({ ...form, b_s_line: e.target.value })}
             />
-            <FormField label="Zone">
+            <FormField label={t.jdepense.zone}>
               <select
                 value={form.zone_id}
                 onChange={(e) => setForm({ ...form, zone_id: e.target.value })}
@@ -325,7 +327,7 @@ export default function JdepensePage() {
                 ))}
               </select>
             </FormField>
-            <FormField label="Tiers">
+            <FormField label={t.jdepense.tiers}>
               <input
                 list="jdepense-tiers-list"
                 type="text"
@@ -334,15 +336,15 @@ export default function JdepensePage() {
                 className={fieldControlClass}
               />
               <datalist id="jdepense-tiers-list">
-                {thirdParties.map((t) => (
-                  <option key={t.id} value={t.nom_tiers} />
+                {thirdParties.map((tp) => (
+                  <option key={tp.id} value={tp.nom_tiers} />
                 ))}
               </datalist>
             </FormField>
           </div>
 
           <div className="mb-4 grid grid-cols-1 gap-4 sm:grid-cols-4">
-            <FormField label="N° Compte débit">
+            <FormField label={t.jdepense.nCompteDebit}>
               <input
                 list="jdepense-comptes-list"
                 type="text"
@@ -352,13 +354,13 @@ export default function JdepensePage() {
               />
             </FormField>
             <FormField
-              label="Montant débit"
+              label={t.jdepense.montantDebit}
               type="number"
               step="0.01"
               value={form.montant_debit}
               onChange={(e) => setForm({ ...form, montant_debit: e.target.value })}
             />
-            <FormField label="N° Compte crédit">
+            <FormField label={t.jdepense.nCompteCredit}>
               <input
                 list="jdepense-comptes-list"
                 type="text"
@@ -368,7 +370,7 @@ export default function JdepensePage() {
               />
             </FormField>
             <FormField
-              label="Montant crédit"
+              label={t.jdepense.montantCredit}
               type="number"
               step="0.01"
               value={form.montant_credit}
@@ -386,19 +388,19 @@ export default function JdepensePage() {
           <div className="mb-4 grid grid-cols-1 gap-4 sm:grid-cols-4">
             <div className="sm:col-span-2">
               <FormField
-                label="Libellé"
+                label={t.jdepense.libelle}
                 required
                 value={form.libelle}
                 onChange={(e) => setForm({ ...form, libelle: e.target.value })}
               />
             </div>
             <FormField
-              label="Réf. Fact/D"
+              label={t.jdepense.refFactD}
               value={form.ref_fact_d}
               onChange={(e) => setForm({ ...form, ref_fact_d: e.target.value })}
             />
             <FormField
-              label="N°/Chq/OV"
+              label={t.jdepense.nChqOv}
               value={form.n_cheque_ov}
               onChange={(e) => setForm({ ...form, n_cheque_ov: e.target.value })}
             />
@@ -406,7 +408,7 @@ export default function JdepensePage() {
 
           <div className="mb-4 max-w-xs">
             <FormField
-              label="Tag projet local"
+              label={t.jdepense.tagProjetLocal}
               value={form.tag_projet_local}
               onChange={(e) => setForm({ ...form, tag_projet_local: e.target.value })}
               placeholder={project?.code_projet}
@@ -417,13 +419,13 @@ export default function JdepensePage() {
 
           <div className="flex gap-3">
             <PrimaryButton onClick={handleSave} disabled={saving}>
-              {saving ? "Enregistrement..." : "Enregistrer"}
+              {saving ? t.common.enregistrement : t.common.enregistrer}
             </PrimaryButton>
             <button
               onClick={cancelEdit}
               className="rounded-md border border-border-subtle px-5 py-2 text-text-secondary hover:bg-bg-card"
             >
-              Annuler
+              {t.common.annuler}
             </button>
           </div>
         </div>
@@ -432,21 +434,21 @@ export default function JdepensePage() {
       <div className="overflow-x-auto rounded-xl border border-border-subtle">
         <table className="min-w-full text-sm">
           <MiniTableHeader
-            columns={["Date", "N°Pièce", "N°E-J", "B-S-Line", "Compte D", "Compte C", "Tiers", "Libellé", "Débit", "Crédit", "Action"]}
+            columns={[t.jdepense.colDate, t.jdepense.colNPiece, t.jdepense.colNEJ, t.jdepense.colBSLine, t.jdepense.colCompteD, t.jdepense.colCompteC, t.jdepense.colTiers, t.jdepense.colLibelle, t.jdepense.colDebit, t.jdepense.colCredit, t.common.action]}
             align={["left", "left", "left", "left", "left", "left", "left", "left", "right", "right", "right"]}
           />
           <tbody className="divide-y divide-border-subtle bg-bg-card/60">
             {loading && (
               <tr>
                 <td colSpan={11} className="px-3 py-4 text-center text-text-secondary">
-                  Chargement...
+                  {t.common.chargement}
                 </td>
               </tr>
             )}
             {!loading && entries.length === 0 && (
               <tr>
                 <td colSpan={11} className="px-3 py-4 text-center text-text-secondary">
-                  Aucune écriture sur cette période.
+                  {t.jdepense.aucuneEcriture}
                 </td>
               </tr>
             )}
@@ -473,7 +475,7 @@ export default function JdepensePage() {
                     onClick={() => startEdit(e)}
                     className="text-accent-blue hover:underline"
                   >
-                    Modifier
+                    {t.common.modifier}
                   </button>
                 </td>
               </tr>
