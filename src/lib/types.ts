@@ -22,6 +22,8 @@ export type Project = {
   authorized_by: string | null;
   country: string | null;
   is_template: boolean;
+  administrative_financial_manager: string | null;
+  program_coordinator_president: string | null;
 };
 
 export type Organization = {

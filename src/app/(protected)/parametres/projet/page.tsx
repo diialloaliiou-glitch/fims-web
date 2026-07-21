@@ -29,6 +29,8 @@ export default function ParametresProjetPage() {
     requested_by: "",
     reviewed_by: "",
     authorized_by: "",
+    administrative_financial_manager: "",
+    program_coordinator_president: "",
   });
 
   const canManage = hasRole(profile?.role, ["ADMIN_N1", "ADMIN_SITE", "RAF"]);
@@ -46,6 +48,8 @@ export default function ParametresProjetPage() {
       requested_by: project.requested_by ?? "",
       reviewed_by: project.reviewed_by ?? "",
       authorized_by: project.authorized_by ?? "",
+      administrative_financial_manager: project.administrative_financial_manager ?? "",
+      program_coordinator_president: project.program_coordinator_president ?? "",
     });
 
     supabase
@@ -99,6 +103,8 @@ export default function ParametresProjetPage() {
         requested_by: form.requested_by.trim() || null,
         reviewed_by: form.reviewed_by.trim() || null,
         authorized_by: form.authorized_by.trim() || null,
+        administrative_financial_manager: form.administrative_financial_manager.trim() || null,
+        program_coordinator_president: form.program_coordinator_president.trim() || null,
       })
       .eq("id", project.id);
 
@@ -213,6 +219,20 @@ export default function ParametresProjetPage() {
             label={t.infoProjet.authorizedBy}
             value={form.authorized_by}
             onChange={(e) => setForm({ ...form, authorized_by: e.target.value })}
+          />
+          <FormField
+            label={t.infoProjet.administrativeFinancialManager}
+            value={form.administrative_financial_manager}
+            onChange={(e) =>
+              setForm({ ...form, administrative_financial_manager: e.target.value })
+            }
+          />
+          <FormField
+            label={t.infoProjet.programCoordinatorPresident}
+            value={form.program_coordinator_president}
+            onChange={(e) =>
+              setForm({ ...form, program_coordinator_president: e.target.value })
+            }
           />
         </div>
 

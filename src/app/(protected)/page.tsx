@@ -162,7 +162,7 @@ export default function DashboardPage() {
 
   const tiles = [
     { key: "saisie", icon: PenLine, label: t.dashboard.tileSaisie, href: "/saisie", color: "teal" as const },
-    { key: "paf", icon: Feather, label: t.dashboard.tilePaf, href: "/paf", color: "teal" as const },
+    { key: "paf", icon: Feather, label: t.dashboard.tilePaf, href: "/fiche-paiement", color: "teal" as const },
     { key: "glivre", icon: BookOpen, label: t.dashboard.tileGLivre, href: "/grand-livre", color: "blue" as const },
     { key: "jdepense", icon: FileSpreadsheet, label: t.dashboard.tileJdepense, href: "/jdepense", color: "blue" as const },
     { key: "erb", icon: Landmark, label: t.dashboard.tileErb, href: "/erb", color: "blue" as const },
