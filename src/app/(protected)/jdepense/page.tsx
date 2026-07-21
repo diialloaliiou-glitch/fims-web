@@ -434,42 +434,88 @@ export default function JdepensePage() {
       <div className="overflow-x-auto rounded-xl border border-border-subtle">
         <table className="min-w-full text-sm">
           <MiniTableHeader
-            columns={[t.jdepense.colDate, t.jdepense.colNPiece, t.jdepense.colNEJ, t.jdepense.colBSLine, t.jdepense.colCompteD, t.jdepense.colCompteC, t.jdepense.colTiers, t.jdepense.colLibelle, t.jdepense.colDebit, t.jdepense.colCredit, t.common.action]}
-            align={["left", "left", "left", "left", "left", "left", "left", "left", "right", "right", "right"]}
+            columns={[
+              t.jdepense.colIndex,
+              t.jdepense.colDate,
+              t.jdepense.colProjectId,
+              t.jdepense.colBudgetLine,
+              t.jdepense.colCategorie,
+              t.jdepense.colTypeOperation,
+              t.jdepense.colBSLine,
+              t.jdepense.colJournal,
+              t.jdepense.colNEJ,
+              t.jdepense.colD,
+              t.jdepense.colC,
+              t.jdepense.colTiers,
+              t.jdepense.colRefFactD,
+              t.jdepense.colNChqOv,
+              t.jdepense.colNLtr,
+              t.jdepense.colNPiece,
+              t.jdepense.colZone,
+              t.jdepense.colMtD,
+              t.jdepense.colMtC,
+              t.jdepense.colLibelle,
+              t.jdepense.colIdc,
+              t.jdepense.colDateHeureSaisie,
+              t.jdepense.colUtilisateur,
+              t.common.action,
+            ]}
+            align={[
+              "right", "left", "left", "left", "left", "left", "left", "left", "left",
+              "left", "left", "left", "left", "left", "left", "left", "left",
+              "right", "right", "left", "left", "left", "left", "right",
+            ]}
           />
           <tbody className="divide-y divide-border-subtle bg-bg-card/60">
             {loading && (
               <tr>
-                <td colSpan={11} className="px-3 py-4 text-center text-text-secondary">
+                <td colSpan={24} className="px-3 py-4 text-center text-text-secondary">
                   {t.common.chargement}
                 </td>
               </tr>
             )}
             {!loading && entries.length === 0 && (
               <tr>
-                <td colSpan={11} className="px-3 py-4 text-center text-text-secondary">
+                <td colSpan={24} className="px-3 py-4 text-center text-text-secondary">
                   {t.jdepense.aucuneEcriture}
                 </td>
               </tr>
             )}
-            {entries.map((e) => (
+            {entries.map((e, idx) => (
               <tr key={e.id} className="text-text-primary">
+                <td className="px-3 py-2 text-right">{idx + 1}</td>
                 <td className="px-3 py-2">
                   {new Date(e.date_operation).toLocaleDateString("fr-FR")}
                 </td>
-                <td className="px-3 py-2">{e.n_piece}</td>
-                <td className="px-3 py-2">{e.n_ecriture_journal}</td>
+                <td className="px-3 py-2">{e.tag_projet_local}</td>
+                <td className="px-3 py-2">{e.budget_line}</td>
+                <td className="px-3 py-2">{e.categorie}</td>
+                <td className="px-3 py-2">{e.type_operation}</td>
                 <td className="px-3 py-2">{e.b_s_line}</td>
+                <td className="px-3 py-2">{e.journal}</td>
+                <td className="px-3 py-2">{e.n_ecriture_journal}</td>
                 <td className="px-3 py-2">{e.compte_debit}</td>
                 <td className="px-3 py-2">{e.compte_credit}</td>
                 <td className="px-3 py-2">{e.tiers}</td>
-                <td className="px-3 py-2">{e.libelle}</td>
+                <td className="px-3 py-2">{e.ref_fact_d}</td>
+                <td className="px-3 py-2">{e.n_cheque_ov}</td>
+                <td className="px-3 py-2">{e.n_lettrage}</td>
+                <td className="px-3 py-2">{e.n_piece}</td>
+                <td className="px-3 py-2">
+                  {e.zone_id != null ? zones.find((z) => z.id === e.zone_id)?.code ?? "" : ""}
+                </td>
                 <td className="px-3 py-2 text-right">
                   {e.montant_debit ? e.montant_debit.toLocaleString("fr-FR") : ""}
                 </td>
                 <td className="px-3 py-2 text-right">
                   {e.montant_credit ? e.montant_credit.toLocaleString("fr-FR") : ""}
                 </td>
+                <td className="px-3 py-2">{e.libelle}</td>
+                <td className="px-3 py-2">{e.idc}</td>
+                <td className="px-3 py-2">
+                  {new Date(e.date_heure_saisie).toLocaleString("fr-FR")}
+                </td>
+                <td className="px-3 py-2">{e.utilisateur}</td>
                 <td className="px-3 py-2 text-right">
                   <button
                     onClick={() => startEdit(e)}

@@ -155,11 +155,6 @@ export default function DashboardPage() {
     setSearching(false);
   }
 
-  function comingSoon(label: string) {
-    setNotice(`${label} : ${t.dashboard.fonctionnaliteAVenir}`);
-    setTimeout(() => setNotice(null), 3500);
-  }
-
   const tiles = [
     { key: "saisie", icon: PenLine, label: t.dashboard.tileSaisie, href: "/saisie", color: "teal" as const },
     { key: "paf", icon: Feather, label: t.dashboard.tilePaf, href: "/fiche-paiement", color: "teal" as const },
@@ -265,7 +260,7 @@ export default function DashboardPage() {
           <Pill icon={Clock} href="/bud-tracker">
             {t.dashboard.voirSuiviBudgetaire}
           </Pill>
-          <Pill icon={Database} onClick={() => comingSoon(t.dashboard.accederBaseDeDonnees)}>
+          <Pill icon={Database} href="/jdepense">
             {t.dashboard.accederBaseDeDonnees}
           </Pill>
         </div>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Fragment, useEffect, useState } from "react";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/lib/auth-context";
@@ -12,13 +12,19 @@ import { StatCard } from "@/components/ui/StatCard";
 import type { BudgetLine } from "@/lib/types";
 
 type Mois = { idc: string; label: string };
+type Trimestre = { mois: Mois[]; label: string };
 
 function todayIso() {
   return new Date().toISOString().slice(0, 10);
 }
 
-function listeMois(debut: string, fin: string): Mois[] {
-  const result: Mois[] = [];
+// Reproduit J4:X4 / J7:X7 de la vraie feuille BUD TRACKER : 12 mois a partir
+// de la date de debut du projet, regroupes par trimestre de 3 (avec une
+// colonne "Total - Tn" apres chaque groupe). Etendu au-dela de 12 mois si le
+// projet dure plus longtemps ou si des ecritures existent apres sa date de
+// fin officielle (sinon leur montant disparaitrait des totaux).
+function listeTrimestres(debut: string, fin: string): Trimestre[] {
+  const mois: Mois[] = [];
   const cursor = new Date(debut);
   const end = new Date(fin);
   cursor.setDate(1);
@@ -26,13 +32,21 @@ function listeMois(debut: string, fin: string): Mois[] {
   while (cursor <= end) {
     const m = cursor.getMonth() + 1;
     const y = cursor.getFullYear();
-    result.push({
+    mois.push({
       idc: `${m}_${y}`,
       label: cursor.toLocaleDateString("fr-FR", { month: "short", year: "2-digit" }),
     });
     cursor.setMonth(cursor.getMonth() + 1);
   }
-  return result;
+
+  const trimestres: Trimestre[] = [];
+  for (let i = 0; i < mois.length; i += 3) {
+    trimestres.push({
+      mois: mois.slice(i, i + 3),
+      label: `Total - T${trimestres.length + 1}`,
+    });
+  }
+  return trimestres;
 }
 
 type LigneCalculee = BudgetLine & {
@@ -40,16 +54,16 @@ type LigneCalculee = BudgetLine & {
   rAvanceAcc: number;
   parMois: Record<string, number>;
   total: number;
-  ecart: number;
-  pctConso: number;
-  pctConsoAvance: number;
+  solde: number;
+  pctConsoB: number;
+  pctConsoA: number;
 };
 
 export default function BudTrackerPage() {
   const { project } = useAuth();
   const { t } = useLanguage();
   const [lignes, setLignes] = useState<LigneCalculee[]>([]);
-  const [mois, setMois] = useState<Mois[]>([]);
+  const [trimestres, setTrimestres] = useState<Trimestre[]>([]);
   const [cumulAvance, setCumulAvance] = useState(0);
   const [loading, setLoading] = useState(true);
   const [erreurDates, setErreurDates] = useState(false);
@@ -65,20 +79,20 @@ export default function BudTrackerPage() {
     setErreurDates(false);
     setLoading(true);
 
-    // Etend la plage jusqu'a aujourd'hui si des ecritures existent apres la
-    // date de fin officielle du projet (sinon leur montant disparaitrait
-    // silencieusement des totaux, faute de colonne mois correspondante).
     const finEffective =
       project.date_fin_projet > todayIso() ? project.date_fin_projet : todayIso();
-    const moisListeCalc = listeMois(project.date_debut_projet, finEffective);
-    setMois(moisListeCalc);
+    const trimestresCalc = listeTrimestres(project.date_debut_projet, finEffective);
+    setTrimestres(trimestresCalc);
+    const moisListeCalc = trimestresCalc.flatMap((tr) => tr.mois);
 
     Promise.all([
+      // La ligne placeholder "52B" est naturellement exclue via BUDGET LINE
+      // = "-" dans le vrai fichier (pas via son code interne "52B").
       supabase
         .from("budget_lines")
         .select("*")
         .eq("project_id", project.id)
-        .neq("our_line_code", "52B")
+        .neq("budget_line", "-")
         .order("code_1"),
       scopeToProjectSpending(
         supabase.from("journal_entries").select("b_s_line, montant_debit, idc"),
@@ -93,19 +107,20 @@ export default function BudTrackerPage() {
 
       const totalBudget = budgetLines.reduce((s, l) => s + (l.total_cost ?? 0), 0);
 
-      // Depense par ligne budgetaire et par mois (IDC), comme les SUMIFS
-      // de BUD TRACKER (JDEPENSE[MT D], JDEPENSE[B-S-LINE], JDEPENSE[IDC]).
+      // Depense par ligne budgetaire (B-S-LINE, sourcee de BUDGET LINE) et
+      // par mois (IDC), comme les SUMIFS de BUD TRACKER (JDEPENSE[MT D],
+      // JDEPENSE[B-S-LINE], JDEPENSE[IDC]).
       const parLigneEtMois = new Map<string, Map<string, number>>();
       entries.forEach((e) => {
         const code = (e.b_s_line ?? "").toUpperCase();
-        if (!code || code === "52B" || !e.idc) return;
+        if (!code || !e.idc) return;
         if (!parLigneEtMois.has(code)) parLigneEtMois.set(code, new Map());
         const parMois = parLigneEtMois.get(code)!;
         parMois.set(e.idc, (parMois.get(e.idc) ?? 0) + e.montant_debit);
       });
 
       const calculees: LigneCalculee[] = budgetLines.map((l) => {
-        const code = (l.our_line_code ?? "").toUpperCase();
+        const code = (l.budget_line ?? "").toUpperCase();
         const parMoisLigne = parLigneEtMois.get(code) ?? new Map();
         const parMois: Record<string, number> = {};
         let total = 0;
@@ -123,9 +138,9 @@ export default function BudTrackerPage() {
           rAvanceAcc,
           parMois,
           total,
-          ecart: budget - total,
-          pctConso: budget > 0 ? total / budget : 0,
-          pctConsoAvance: rAvanceAcc > 0 ? total / rAvanceAcc : 0,
+          solde: budget - total,
+          pctConsoB: budget > 0 ? total / budget : 0,
+          pctConsoA: rAvanceAcc > 0 ? total / rAvanceAcc : 0,
         };
       });
 
@@ -136,10 +151,12 @@ export default function BudTrackerPage() {
   }, [project]);
 
   const totalBudget = lignes.reduce((s, l) => s + (l.total_cost ?? 0), 0);
+  const totalAjustement = lignes.reduce((s, l) => s + (l.ajustement ?? 0), 0);
   const totalDepense = lignes.reduce((s, l) => s + l.total, 0);
-  const totalEcart = totalBudget - totalDepense;
-  const totalPctConso = totalBudget > 0 ? totalDepense / totalBudget : 0;
-  const totalPctConsoAvance = cumulAvance > 0 ? totalDepense / cumulAvance : 0;
+  const totalSolde = totalBudget - totalDepense;
+  const totalPctConsoB = totalBudget > 0 ? totalDepense / totalBudget : 0;
+  const totalPctConsoA = cumulAvance > 0 ? totalDepense / cumulAvance : 0;
+  const nbColMois = trimestres.reduce((s, tr) => s + tr.mois.length + 1, 0);
 
   return (
     <div>
@@ -171,12 +188,12 @@ export default function BudTrackerPage() {
             />
             <StatCard
               label={t.budTracker.tauxConsoBudgetaire}
-              value={`${(totalPctConso * 100).toFixed(1)}%`}
+              value={`${(totalPctConsoB * 100).toFixed(1)}%`}
               valueColor="teal"
             />
             <StatCard
               label={t.budTracker.tauxConsoAvance}
-              value={`${(totalPctConsoAvance * 100).toFixed(1)}%`}
+              value={`${(totalPctConsoA * 100).toFixed(1)}%`}
               valueColor="amber"
             />
           </div>
@@ -185,23 +202,29 @@ export default function BudTrackerPage() {
             <table className="min-w-full text-sm">
               <MiniTableHeader
                 columns={[
+                  t.budTracker.colProjet,
                   t.budTracker.colBSLine,
                   t.budTracker.colDescription,
                   t.budTracker.colBudgetApprouve,
-                  t.budTracker.colPctRepartition,
-                  ...mois.map((m) => m.label),
-                  t.budTracker.colTotal,
-                  t.budTracker.colEcart,
-                  t.budTracker.colPctConso,
+                  t.budTracker.colAjustement,
                   t.budTracker.colRAvanceAcc,
-                  t.budTracker.colPctConsoAvance,
+                  t.budTracker.colPctRepartition,
+                  ...trimestres.flatMap((tr) => [...tr.mois.map((m) => m.label), tr.label]),
+                  t.budTracker.colTotalConso,
+                  t.budTracker.colSolde,
+                  t.budTracker.colPctConsoB,
+                  t.budTracker.colPctConsoA,
+                  t.budTracker.colTotalDevise,
                 ]}
                 align={[
                   "left",
                   "left",
+                  "left",
                   "right",
                   "right",
-                  ...mois.map(() => "right" as const),
+                  "right",
+                  "right",
+                  ...trimestres.flatMap((tr) => [...tr.mois.map(() => "right" as const), "right" as const]),
                   "right",
                   "right",
                   "right",
@@ -212,87 +235,120 @@ export default function BudTrackerPage() {
               <tbody className="divide-y divide-border-subtle bg-bg-card/60">
                 {loading && (
                   <tr>
-                    <td colSpan={9 + mois.length} className="px-3 py-4 text-center text-text-secondary">
+                    <td colSpan={12 + nbColMois} className="px-3 py-4 text-center text-text-secondary">
                       {t.common.chargement}
                     </td>
                   </tr>
                 )}
                 {!loading && lignes.length === 0 && (
                   <tr>
-                    <td colSpan={9 + mois.length} className="px-3 py-4 text-center text-text-secondary">
+                    <td colSpan={12 + nbColMois} className="px-3 py-4 text-center text-text-secondary">
                       {t.budTracker.aucuneLigne}
                     </td>
                   </tr>
                 )}
                 {lignes.map((l) => (
                   <tr key={l.id} className="text-text-primary">
-                    <td className="px-3 py-2">{l.our_line_code}</td>
+                    <td className="px-3 py-2">{project?.code_projet}</td>
+                    <td className="px-3 py-2">{l.budget_line}</td>
                     <td className="px-3 py-2">{l.description}</td>
                     <td className="px-3 py-2 text-right">
                       {(l.total_cost ?? 0).toLocaleString("fr-FR")}
                     </td>
                     <td className="px-3 py-2 text-right">
-                      {(l.parRepartition * 100).toFixed(1)}%
-                    </td>
-                    {mois.map((m) => (
-                      <td key={m.idc} className="px-3 py-2 text-right">
-                        {l.parMois[m.idc] ? l.parMois[m.idc].toLocaleString("fr-FR") : ""}
-                      </td>
-                    ))}
-                    <td className="px-3 py-2 text-right font-medium">
-                      {l.total.toLocaleString("fr-FR")}
-                    </td>
-                    <td className="px-3 py-2 text-right">
-                      {Math.round(l.ecart).toLocaleString("fr-FR")}
-                    </td>
-                    <td
-                      className={`px-3 py-2 text-right ${
-                        l.pctConso > 1 ? "text-accent-red" : ""
-                      }`}
-                    >
-                      {(l.pctConso * 100).toFixed(0)}%
+                      {l.ajustement ? l.ajustement.toLocaleString("fr-FR") : ""}
                     </td>
                     <td className="px-3 py-2 text-right">
                       {Math.round(l.rAvanceAcc).toLocaleString("fr-FR")}
                     </td>
                     <td className="px-3 py-2 text-right">
-                      {(l.pctConsoAvance * 100).toFixed(0)}%
+                      {(l.parRepartition * 100).toFixed(1)}%
                     </td>
+                    {trimestres.map((tr) => {
+                      const totalTrimestre = tr.mois.reduce(
+                        (s, m) => s + (l.parMois[m.idc] ?? 0),
+                        0
+                      );
+                      return (
+                        <Fragment key={tr.label}>
+                          {tr.mois.map((m) => (
+                            <td key={m.idc} className="px-3 py-2 text-right">
+                              {l.parMois[m.idc] ? l.parMois[m.idc].toLocaleString("fr-FR") : ""}
+                            </td>
+                          ))}
+                          <td className="px-3 py-2 text-right font-medium">
+                            {totalTrimestre ? totalTrimestre.toLocaleString("fr-FR") : ""}
+                          </td>
+                        </Fragment>
+                      );
+                    })}
+                    <td className="px-3 py-2 text-right font-medium">
+                      {l.total.toLocaleString("fr-FR")}
+                    </td>
+                    <td className="px-3 py-2 text-right">
+                      {Math.round(l.solde).toLocaleString("fr-FR")}
+                    </td>
+                    <td
+                      className={`px-3 py-2 text-right ${
+                        l.pctConsoB > 1 ? "text-accent-red" : ""
+                      }`}
+                    >
+                      {(l.pctConsoB * 100).toFixed(0)}%
+                    </td>
+                    <td className="px-3 py-2 text-right">{(l.pctConsoA * 100).toFixed(0)}%</td>
+                    <td className="px-3 py-2 text-right text-text-secondary">—</td>
                   </tr>
                 ))}
               </tbody>
               {lignes.length > 0 && (
                 <tfoot className="bg-bg-card font-semibold text-text-primary">
                   <tr>
-                    <td className="px-3 py-2" colSpan={2}>
+                    <td className="px-3 py-2" colSpan={3}>
                       {t.budTracker.totalGeneral}
                     </td>
                     <td className="px-3 py-2 text-right">
                       {Math.round(totalBudget).toLocaleString("fr-FR")}
                     </td>
-                    <td className="px-3 py-2 text-right">100%</td>
-                    {mois.map((m) => (
-                      <td key={m.idc} className="px-3 py-2 text-right">
-                        {lignes
-                          .reduce((s, l) => s + (l.parMois[m.idc] ?? 0), 0)
-                          .toLocaleString("fr-FR")}
-                      </td>
-                    ))}
                     <td className="px-3 py-2 text-right">
-                      {totalDepense.toLocaleString("fr-FR")}
-                    </td>
-                    <td className="px-3 py-2 text-right">
-                      {Math.round(totalEcart).toLocaleString("fr-FR")}
-                    </td>
-                    <td className="px-3 py-2 text-right">
-                      {(totalPctConso * 100).toFixed(0)}%
+                      {totalAjustement ? totalAjustement.toLocaleString("fr-FR") : ""}
                     </td>
                     <td className="px-3 py-2 text-right">
                       {Math.round(cumulAvance).toLocaleString("fr-FR")}
                     </td>
+                    <td className="px-3 py-2 text-right">100%</td>
+                    {trimestres.map((tr) => {
+                      const totalTrimestre = lignes.reduce(
+                        (s, l) => s + tr.mois.reduce((s2, m) => s2 + (l.parMois[m.idc] ?? 0), 0),
+                        0
+                      );
+                      return (
+                        <Fragment key={tr.label}>
+                          {tr.mois.map((m) => (
+                            <td key={m.idc} className="px-3 py-2 text-right">
+                              {lignes
+                                .reduce((s, l) => s + (l.parMois[m.idc] ?? 0), 0)
+                                .toLocaleString("fr-FR")}
+                            </td>
+                          ))}
+                          <td className="px-3 py-2 text-right">
+                            {totalTrimestre.toLocaleString("fr-FR")}
+                          </td>
+                        </Fragment>
+                      );
+                    })}
                     <td className="px-3 py-2 text-right">
-                      {(totalPctConsoAvance * 100).toFixed(0)}%
+                      {totalDepense.toLocaleString("fr-FR")}
                     </td>
+                    <td className="px-3 py-2 text-right">
+                      {Math.round(totalSolde).toLocaleString("fr-FR")}
+                    </td>
+                    <td className="px-3 py-2 text-right">
+                      {(totalPctConsoB * 100).toFixed(0)}%
+                    </td>
+                    <td className="px-3 py-2 text-right">
+                      {(totalPctConsoA * 100).toFixed(0)}%
+                    </td>
+                    <td className="px-3 py-2 text-right text-text-secondary">—</td>
                   </tr>
                 </tfoot>
               )}
