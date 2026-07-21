@@ -21,6 +21,7 @@ export type Project = {
   reviewed_by: string | null;
   authorized_by: string | null;
   country: string | null;
+  is_template: boolean;
 };
 
 export type Organization = {
