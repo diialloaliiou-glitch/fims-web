@@ -17,6 +17,10 @@ export default function ParametresProjetPage() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  const [nouveauBailleurMode, setNouveauBailleurMode] = useState(false);
+  const [nouveauBailleurNom, setNouveauBailleurNom] = useState("");
+  const [savingBailleur, setSavingBailleur] = useState(false);
+  const [erreurBailleur, setErreurBailleur] = useState<string | null>(null);
 
   const [form, setForm] = useState({
     nom_projet: "",
@@ -52,16 +56,49 @@ export default function ParametresProjetPage() {
       program_coordinator_president: project.program_coordinator_president ?? "",
     });
 
-    supabase
+    loadDonors();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [project, profile]);
+
+  async function loadDonors() {
+    if (!profile) return;
+    const { data } = await supabase
       .from("donors")
       .select("*")
       .eq("organization_id", profile.organization_id)
-      .order("nom")
-      .then(({ data }) => {
-        setDonors((data as Donor[]) ?? []);
-        setLoading(false);
-      });
-  }, [project, profile]);
+      .order("nom");
+    setDonors((data as Donor[]) ?? []);
+    setLoading(false);
+  }
+
+  async function handleAjouterBailleur() {
+    setErreurBailleur(null);
+
+    const nom = nouveauBailleurNom.trim();
+    if (!nom) {
+      setErreurBailleur(t.infoProjet.erreurNomBailleurObligatoire);
+      return;
+    }
+    if (!profile) return;
+
+    setSavingBailleur(true);
+    const { data, error: insertError } = await supabase
+      .from("donors")
+      .insert({ organization_id: profile.organization_id, nom })
+      .select("*")
+      .single();
+    setSavingBailleur(false);
+
+    if (insertError) {
+      setErreurBailleur(`Erreur : ${insertError.message}`);
+      return;
+    }
+
+    await loadDonors();
+    setForm((f) => ({ ...f, donor_id: String((data as Donor).id) }));
+    setNouveauBailleurNom("");
+    setNouveauBailleurMode(false);
+  }
 
   // Reproduit =DATEDIF(C15,C16,"m")+1 de la feuille INFO PROJET Excel.
   const nbMois =
@@ -168,20 +205,63 @@ export default function ParametresProjetPage() {
             value={form.code_projet}
             onChange={(e) => setForm({ ...form, code_projet: e.target.value })}
           />
-          <FormField label={t.infoProjet.donors}>
-            <select
-              value={form.donor_id}
-              onChange={(e) => setForm({ ...form, donor_id: e.target.value })}
-              className={fieldControlClass}
-            >
-              <option value="">—</option>
-              {donors.map((d) => (
-                <option key={d.id} value={d.id}>
-                  {d.nom}
-                </option>
-              ))}
-            </select>
-          </FormField>
+          <div>
+            <FormField label={t.infoProjet.donors}>
+              <select
+                value={form.donor_id}
+                onChange={(e) => setForm({ ...form, donor_id: e.target.value })}
+                className={fieldControlClass}
+              >
+                <option value="">—</option>
+                {donors.map((d) => (
+                  <option key={d.id} value={d.id}>
+                    {d.nom}
+                  </option>
+                ))}
+              </select>
+            </FormField>
+            {!nouveauBailleurMode ? (
+              <button
+                type="button"
+                onClick={() => setNouveauBailleurMode(true)}
+                className="mt-1 text-xs text-accent-blue hover:underline"
+              >
+                {t.infoProjet.nouveauBailleur}
+              </button>
+            ) : (
+              <div className="mt-2 flex items-end gap-2">
+                <div className="flex-1">
+                  <FormField
+                    label={t.infoProjet.nomDuBailleur}
+                    value={nouveauBailleurNom}
+                    onChange={(e) => setNouveauBailleurNom(e.target.value)}
+                  />
+                </div>
+                <button
+                  type="button"
+                  onClick={handleAjouterBailleur}
+                  disabled={savingBailleur}
+                  className="rounded-md bg-accent-teal px-3 py-2 text-sm font-medium text-on-accent-light hover:opacity-90 disabled:opacity-60"
+                >
+                  {savingBailleur ? t.common.enregistrement : t.infoProjet.ajouter}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setNouveauBailleurMode(false);
+                    setNouveauBailleurNom("");
+                    setErreurBailleur(null);
+                  }}
+                  className="rounded-md border border-border-subtle px-3 py-2 text-sm text-text-secondary hover:bg-bg-card"
+                >
+                  {t.common.annuler}
+                </button>
+              </div>
+            )}
+            {erreurBailleur && (
+              <p className="mt-1 text-xs text-accent-red">{erreurBailleur}</p>
+            )}
+          </div>
           <FormField
             label={t.infoProjet.country}
             value={form.country}

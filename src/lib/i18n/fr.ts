@@ -504,6 +504,10 @@ export const fr = {
     programCoordinatorPresident: "Program Coordinator/President",
     erreurChampsObligatoires: "Titre et code du projet sont obligatoires.",
     infosEnregistrees: "Informations du projet enregistrées.",
+    nouveauBailleur: "+ Nouveau bailleur",
+    nomDuBailleur: "Nom du nouveau bailleur",
+    ajouter: "Ajouter",
+    erreurNomBailleurObligatoire: "Le nom du bailleur est obligatoire.",
   },
   budTracker: {
     titre: "BUD TRACKER",

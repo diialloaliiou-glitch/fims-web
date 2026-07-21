@@ -508,6 +508,10 @@ export const en: typeof fr = {
     programCoordinatorPresident: "Program Coordinator/President",
     erreurChampsObligatoires: "Project title and code are required.",
     infosEnregistrees: "Project information saved.",
+    nouveauBailleur: "+ New donor",
+    nomDuBailleur: "New donor name",
+    ajouter: "Add",
+    erreurNomBailleurObligatoire: "The donor name is required.",
   },
   budTracker: {
     titre: "BUD TRACKER",
