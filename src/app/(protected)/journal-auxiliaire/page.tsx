@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/lib/auth-context";
+import { useLanguage } from "@/lib/language-context";
 import { exporterCsv } from "@/lib/export-csv";
 import { FormField, fieldControlClass } from "@/components/ui/FormField";
 import { MiniTableHeader } from "@/components/ui/MiniTableHeader";
@@ -24,6 +25,7 @@ function todayIso() {
 // "journal auxiliaire de banque"), avec "*" pour voir tous les journaux.
 export default function JournalAuxiliairePage() {
   const { project } = useAuth();
+  const { t } = useLanguage();
   const [journaux, setJournaux] = useState<BankJournal[]>([]);
   const [journal, setJournal] = useState("*");
   const [dateDebut, setDateDebut] = useState(firstOfMonthIso());
@@ -70,14 +72,14 @@ export default function JournalAuxiliairePage() {
     <div>
       <div className="mb-6 flex items-center justify-between">
         <h1 className="text-2xl font-semibold text-text-primary">
-          Journal Auxiliaire
+          {t.journalAuxiliaire.titre}
         </h1>
         <div className="flex gap-2 print:hidden">
           <Pill
             onClick={() =>
               exporterCsv(
                 "JournalAuxiliaire",
-                ["N°E-J", "B-S-Line", "Référence", "Date", "D", "C", "Libellé", "M_Débit", "M_Crédit", "N°Pièce"],
+                [t.journalAuxiliaire.colNEJ, t.journalAuxiliaire.colBSLine, t.journalAuxiliaire.colReference, t.common.date, t.journalAuxiliaire.colD, t.journalAuxiliaire.colC, t.common.libelle, t.journalAuxiliaire.colMDebit, t.journalAuxiliaire.colMCredit, t.journalAuxiliaire.colNPiece],
                 entries.map((e) => [
                   e.n_ecriture_journal,
                   e.b_s_line,
@@ -93,23 +95,23 @@ export default function JournalAuxiliairePage() {
               )
             }
           >
-            Export Excel
+            {t.common.exportExcel}
           </Pill>
-          <Pill onClick={() => window.print()}>Export PDF</Pill>
+          <Pill onClick={() => window.print()}>{t.common.exportPdf}</Pill>
           <Pill solid onClick={() => window.print()}>
-            Imprimer
+            {t.common.imprimer}
           </Pill>
         </div>
       </div>
 
       <div className="mb-6 flex flex-wrap gap-4 rounded-xl border border-border-subtle bg-bg-card p-4 print:hidden">
-        <FormField label="Journal">
+        <FormField label={t.journalAuxiliaire.journal}>
           <select
             value={journal}
             onChange={(e) => setJournal(e.target.value)}
             className={`min-w-[160px] ${fieldControlClass}`}
           >
-            <option value="*">Tous les journaux (*)</option>
+            <option value="*">{t.journalAuxiliaire.tousLesJournaux}</option>
             {journaux.map((j) => (
               <option key={j.id} value={j.code}>
                 {j.code}
@@ -118,13 +120,13 @@ export default function JournalAuxiliairePage() {
           </select>
         </FormField>
         <FormField
-          label="Du"
+          label={t.common.du}
           type="date"
           value={dateDebut}
           onChange={(e) => setDateDebut(e.target.value)}
         />
         <FormField
-          label="Au"
+          label={t.common.au}
           type="date"
           value={dateFin}
           onChange={(e) => setDateFin(e.target.value)}
@@ -134,21 +136,21 @@ export default function JournalAuxiliairePage() {
       <div className="overflow-x-auto rounded-xl border border-border-subtle">
         <table className="min-w-full text-sm">
           <MiniTableHeader
-            columns={["N°E-J", "B-S-Line", "Référence", "Date", "D", "C", "Libellé", "M_Débit", "M_Crédit", "N°Pièce"]}
+            columns={[t.journalAuxiliaire.colNEJ, t.journalAuxiliaire.colBSLine, t.journalAuxiliaire.colReference, t.common.date, t.journalAuxiliaire.colD, t.journalAuxiliaire.colC, t.common.libelle, t.journalAuxiliaire.colMDebit, t.journalAuxiliaire.colMCredit, t.journalAuxiliaire.colNPiece]}
             align={["left", "left", "left", "left", "left", "left", "left", "right", "right", "left"]}
           />
           <tbody className="divide-y divide-border-subtle bg-bg-card/60">
             {loading && (
               <tr>
                 <td colSpan={10} className="px-3 py-4 text-center text-text-secondary">
-                  Chargement...
+                  {t.common.chargement}
                 </td>
               </tr>
             )}
             {!loading && entries.length === 0 && (
               <tr>
                 <td colSpan={10} className="px-3 py-4 text-center text-text-secondary">
-                  Aucune écriture sur cette période.
+                  {t.journalAuxiliaire.aucuneEcriture}
                 </td>
               </tr>
             )}
@@ -177,7 +179,7 @@ export default function JournalAuxiliairePage() {
             <tfoot className="bg-bg-card font-semibold text-text-primary">
               <tr>
                 <td className="px-3 py-2" colSpan={7}>
-                  TOTAL
+                  {t.common.total}
                 </td>
                 <td className="px-3 py-2 text-right">
                   {totalDebit.toLocaleString("fr-FR")}

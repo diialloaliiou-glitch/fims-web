@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/lib/auth-context";
+import { useLanguage } from "@/lib/language-context";
 import { exporterCsv } from "@/lib/export-csv";
 import { FormField } from "@/components/ui/FormField";
 import { MiniTableHeader } from "@/components/ui/MiniTableHeader";
@@ -62,6 +63,7 @@ type ReportRow = BudgetLine & {
 
 export default function FinancialReportPage() {
   const { project } = useAuth();
+  const { t } = useLanguage();
   const [lines, setLines] = useState<BudgetLine[]>([]);
   const [entries, setEntries] = useState<JournalEntry[]>([]);
   const [donor, setDonor] = useState<Donor | null>(null);
@@ -147,32 +149,32 @@ export default function FinancialReportPage() {
     <div>
       <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
         <h1 className="text-2xl font-semibold text-text-primary">
-          Financial Report
+          {t.financialReport.titre}
         </h1>
         <div className="flex gap-4 print:hidden">
           <Link href="/reporting" className="text-sm text-accent-blue hover:underline">
-            Voir le Reporting →
+            {t.financialReport.voirReporting}
           </Link>
           <Link href="/budget/staging" className="text-sm text-accent-blue hover:underline">
-            Gérer les propositions budgétaires →
+            {t.financialReport.gererPropositions}
           </Link>
           <Pill
             onClick={() =>
               exporterCsv(
                 "FinancialReport",
                 [
-                  "Code",
-                  "Description",
-                  "Unit",
-                  "Qty",
-                  "Freq.",
-                  "% TO PROJECT",
-                  "Budget",
-                  "Prior Exp.",
-                  "Period Exp.",
-                  "Period Exp. (USD)",
-                  "Variance",
-                  "Burn Rate",
+                  t.financialReport.colCode,
+                  t.financialReport.colDescription,
+                  t.financialReport.colUnit,
+                  t.financialReport.colQty,
+                  t.financialReport.colFreq,
+                  t.financialReport.colPctProject,
+                  t.financialReport.colBudget,
+                  t.financialReport.colPriorExp,
+                  t.financialReport.colPeriodExp,
+                  t.financialReport.colPeriodExpUsd,
+                  t.financialReport.colVariance,
+                  t.financialReport.colBurnRate,
                 ],
                 rows.map((r) => [
                   r.our_line_code,
@@ -191,39 +193,39 @@ export default function FinancialReportPage() {
               )
             }
           >
-            Export Excel
+            {t.common.exportExcel}
           </Pill>
-          <Pill onClick={() => window.print()}>Export PDF</Pill>
+          <Pill onClick={() => window.print()}>{t.common.exportPdf}</Pill>
           <Pill solid onClick={() => window.print()}>
-            Imprimer
+            {t.common.imprimer}
           </Pill>
         </div>
       </div>
 
       <div className="mb-6 grid grid-cols-1 gap-4 rounded-xl border border-border-subtle bg-bg-card p-4 sm:grid-cols-3">
         <p className="text-sm text-text-secondary">
-          Project Name : <span className="font-medium">{project?.nom_projet}</span>
+          {t.financialReport.projectName} <span className="font-medium">{project?.nom_projet}</span>
         </p>
         <p className="text-sm text-text-secondary">
-          Partner Name : <span className="font-medium">{donor?.nom ?? "—"}</span>
+          {t.financialReport.partnerName} <span className="font-medium">{donor?.nom ?? "—"}</span>
         </p>
         <p className="text-sm text-text-secondary">
-          Project Code : <span className="font-medium">{project?.code_projet}</span>
+          {t.financialReport.projectCode} <span className="font-medium">{project?.code_projet}</span>
         </p>
         <FormField
-          label="Period From"
+          label={t.financialReport.periodFrom}
           type="date"
           value={periodeDebut}
           onChange={(e) => setPeriodeDebut(e.target.value)}
         />
         <FormField
-          label="Period To"
+          label={t.financialReport.periodTo}
           type="date"
           value={periodeFin}
           onChange={(e) => setPeriodeFin(e.target.value)}
         />
         <FormField
-          label="Exchange Rate (FCFA → USD)"
+          label={t.financialReport.exchangeRate}
           type="number"
           step="0.01"
           value={tauxChange}
@@ -232,42 +234,39 @@ export default function FinancialReportPage() {
       </div>
 
       <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-4">
-        <StatCard label="Budget" value={Math.round(totalBudget).toLocaleString("fr-FR")} />
+        <StatCard label={t.financialReport.budget} value={Math.round(totalBudget).toLocaleString("fr-FR")} />
         <StatCard
-          label="Prior + Period Exp."
+          label={t.financialReport.priorPeriodExp}
           value={Math.round(totalPrior + totalPeriod).toLocaleString("fr-FR")}
           valueColor="amber"
         />
         <StatCard
-          label="Variance"
+          label={t.financialReport.variance}
           value={Math.round(totalBudget - totalPrior - totalPeriod).toLocaleString("fr-FR")}
           valueColor="teal"
         />
         <StatCard
-          label="GLOBAL BURN RATE"
+          label={t.financialReport.globalBurnRate}
           value={`${(globalBurnRate * 100).toFixed(1)}%`}
           valueColor="blue"
         />
       </div>
 
       <p className="mb-3 text-xs text-text-secondary">
-        Report Currency : FCFA · Exchange Currency : USD. "Prior Exp." = dépenses
-        depuis le début du projet ({dateDebutProjet}) jusqu&apos;à la veille de
-        "Period From". Même méthodologie que Reporting (b_s_line = our_line_code,
-        hors comptes 5xxxxx/411xxx, débit uniquement).
+        {t.financialReport.methodologie.replace("{date}", dateDebutProjet)}
       </p>
 
       <div className="overflow-x-auto rounded-xl border border-border-subtle">
         <table className="min-w-full text-sm">
           <MiniTableHeader
-            columns={["Code", "Description", "Unit", "Qty", "Freq.", "% TO PROJECT", "Budget", "Prior Exp.", "Period Exp.", "Period Exp. (USD)", "Variance", "Burn Rate"]}
+            columns={[t.financialReport.colCode, t.financialReport.colDescription, t.financialReport.colUnit, t.financialReport.colQty, t.financialReport.colFreq, t.financialReport.colPctProject, t.financialReport.colBudget, t.financialReport.colPriorExp, t.financialReport.colPeriodExp, t.financialReport.colPeriodExpUsd, t.financialReport.colVariance, t.financialReport.colBurnRate]}
             align={["left", "left", "left", "right", "right", "right", "right", "right", "right", "right", "right", "right"]}
           />
           <tbody className="divide-y divide-border-subtle bg-bg-card/60">
             {loading && (
               <tr>
                 <td colSpan={12} className="px-3 py-4 text-center text-text-secondary">
-                  Chargement...
+                  {t.common.chargement}
                 </td>
               </tr>
             )}
@@ -311,7 +310,7 @@ export default function FinancialReportPage() {
             <tfoot className="bg-bg-card font-semibold text-text-primary">
               <tr>
                 <td className="px-3 py-2" colSpan={6}>
-                  TOTAL
+                  {t.common.total}
                 </td>
                 <td className="px-3 py-2 text-right">
                   {Math.round(totalBudget).toLocaleString("fr-FR")}

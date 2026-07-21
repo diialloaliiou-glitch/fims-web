@@ -140,6 +140,8 @@ export const en: typeof fr = {
     ecritureEnregistree: "Entry",
     enregistreeNLignes: "saved",
     lignesLabel: "lines",
+    retirer: "remove",
+    reglement: "Payment",
   },
   grandLivre: {
     titre: "General Ledger",

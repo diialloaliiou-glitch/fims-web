@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/lib/auth-context";
+import { useLanguage } from "@/lib/language-context";
 import { exporterCsv } from "@/lib/export-csv";
 import { FormField, fieldControlClass } from "@/components/ui/FormField";
 import { MiniTableHeader } from "@/components/ui/MiniTableHeader";
@@ -20,6 +21,7 @@ function todayIso() {
 
 export default function GrandLivrePage() {
   const { project } = useAuth();
+  const { t } = useLanguage();
   const [accounts, setAccounts] = useState<ChartOfAccount[]>([]);
   const [compte, setCompte] = useState("");
   const [dateDebut, setDateDebut] = useState(firstOfMonthIso());
@@ -64,14 +66,14 @@ export default function GrandLivrePage() {
   return (
     <div>
       <div className="mb-6 flex items-center justify-between">
-        <h1 className="text-2xl font-semibold text-text-primary">Grand Livre</h1>
+        <h1 className="text-2xl font-semibold text-text-primary">{t.grandLivre.titre}</h1>
         <div className="flex gap-2 print:hidden">
           <Pill
             onClick={() => {
               let s = 0;
               exporterCsv(
                 "GrandLivre",
-                ["Date", "Pièce", "Compte D", "Compte C", "Libellé", "Débit", "Crédit", "Solde cumulé"],
+                [t.common.date, t.grandLivre.colPiece, t.grandLivre.colCompteD, t.grandLivre.colCompteC, t.common.libelle, t.common.debit, t.common.credit, t.grandLivre.colSoldeCumule],
                 entries.map((e) => {
                   s += e.montant_debit - e.montant_credit;
                   return [
@@ -88,23 +90,23 @@ export default function GrandLivrePage() {
               );
             }}
           >
-            Export Excel
+            {t.common.exportExcel}
           </Pill>
-          <Pill onClick={() => window.print()}>Export PDF</Pill>
+          <Pill onClick={() => window.print()}>{t.common.exportPdf}</Pill>
           <Pill solid onClick={() => window.print()}>
-            Imprimer
+            {t.common.imprimer}
           </Pill>
         </div>
       </div>
 
       <div className="mb-6 flex flex-wrap gap-4 rounded-xl border border-border-subtle bg-bg-card p-4 print:hidden">
-        <FormField label="Compte">
+        <FormField label={t.common.compte}>
           <select
             value={compte}
             onChange={(e) => setCompte(e.target.value)}
             className={fieldControlClass}
           >
-            <option value="">Tous les comptes</option>
+            <option value="">{t.grandLivre.tousLesComptes}</option>
             {accounts.map((a) => (
               <option key={a.id} value={a.ccompte}>
                 {a.ccompte} - {a.libelle}
@@ -113,13 +115,13 @@ export default function GrandLivrePage() {
           </select>
         </FormField>
         <FormField
-          label="Du"
+          label={t.common.du}
           type="date"
           value={dateDebut}
           onChange={(e) => setDateDebut(e.target.value)}
         />
         <FormField
-          label="Au"
+          label={t.common.au}
           type="date"
           value={dateFin}
           onChange={(e) => setDateFin(e.target.value)}
@@ -129,21 +131,21 @@ export default function GrandLivrePage() {
       <div className="overflow-x-auto rounded-xl border border-border-subtle">
         <table className="min-w-full text-sm">
           <MiniTableHeader
-            columns={["Date", "Pièce", "Compte D", "Compte C", "Libellé", "Débit", "Crédit", "Solde cumulé"]}
+            columns={[t.common.date, t.grandLivre.colPiece, t.grandLivre.colCompteD, t.grandLivre.colCompteC, t.common.libelle, t.common.debit, t.common.credit, t.grandLivre.colSoldeCumule]}
             align={["left", "left", "left", "left", "left", "right", "right", "right"]}
           />
           <tbody className="divide-y divide-border-subtle bg-bg-card/60">
             {loading && (
               <tr>
                 <td colSpan={8} className="px-3 py-4 text-center text-text-secondary">
-                  Chargement...
+                  {t.common.chargement}
                 </td>
               </tr>
             )}
             {!loading && entries.length === 0 && (
               <tr>
                 <td colSpan={8} className="px-3 py-4 text-center text-text-secondary">
-                  Aucune écriture sur cette période.
+                  {t.grandLivre.aucuneEcriture}
                 </td>
               </tr>
             )}

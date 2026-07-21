@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/lib/auth-context";
+import { useLanguage } from "@/lib/language-context";
 import { periodeCouranteFermee } from "@/lib/period-closure";
 import { FormField, fieldControlClass } from "@/components/ui/FormField";
 import { IconButton } from "@/components/ui/IconButton";
@@ -12,6 +13,8 @@ import { Pill } from "@/components/ui/Pill";
 import { Cloud } from "lucide-react";
 import type { ChartOfAccount, ThirdParty, Zone } from "@/lib/types";
 
+// Codes canoniques (valeurs stockees en base) - jamais traduits, seuls les
+// libelles de champs/boutons autour le sont.
 const JOURNAUX = ["AC", "BQ", "OD", "SA"];
 const TYPES_OPERATION = [
   "AVANCE et REGU",
@@ -59,6 +62,7 @@ let ligneIdCounter = 1;
 
 export default function SaisiePage() {
   const { profile, project } = useAuth();
+  const { t } = useLanguage();
 
   const [accounts, setAccounts] = useState<ChartOfAccount[]>([]);
   const [thirdParties, setThirdParties] = useState<ThirdParty[]>([]);
@@ -133,16 +137,16 @@ export default function SaisiePage() {
   function ajouterLigne() {
     setError(null);
     if (!compte.trim()) {
-      setError("Le N° de compte est obligatoire.");
+      setError(t.saisie.erreurCompteObligatoire);
       return;
     }
     const montantNum = parseFloat(montant);
     if (!montantNum || montantNum <= 0) {
-      setError("Le montant doit être supérieur à zéro.");
+      setError(t.saisie.erreurMontantPositif);
       return;
     }
     if (!libelle.trim()) {
-      setError("Le libellé est obligatoire.");
+      setError(t.saisie.erreurLibelleObligatoire);
       return;
     }
 
@@ -168,7 +172,7 @@ export default function SaisiePage() {
   function genererLeReglement() {
     const ecart = totalDebit - totalCredit;
     if (ecart === 0) {
-      afficherNotice("Les lignes sont déjà équilibrées.");
+      afficherNotice(t.saisie.lignesDejaEquilibrees);
       return;
     }
     const compteTresorerie = accounts.find((a) => a.ccompte.startsWith("521"))?.ccompte ?? "521100";
@@ -184,7 +188,7 @@ export default function SaisiePage() {
         id: ligneIdCounter++,
         compte: compteReglement,
         sens: ecart > 0 ? "credit" : "debit",
-        libelle: libelle.trim() || "Règlement",
+        libelle: libelle.trim() || t.saisie.reglement,
         montant: Math.abs(ecart),
       },
     ]);
@@ -195,17 +199,17 @@ export default function SaisiePage() {
     setSuccess(null);
 
     if (lignes.length < 2) {
-      setError("Ajoute au moins 2 lignes (une au débit, une au crédit) avant de valider.");
+      setError(t.saisie.erreurMinDeuxLignes);
       return;
     }
     if (totalDebit !== totalCredit) {
       setError(
-        `Le total débit (${totalDebit.toLocaleString("fr-FR")}) doit être égal au total crédit (${totalCredit.toLocaleString("fr-FR")}).`
+        `${t.saisie.totalDebit} (${totalDebit.toLocaleString("fr-FR")}) ${t.saisie.erreurTotauxDifferents} (${totalCredit.toLocaleString("fr-FR")}).`
       );
       return;
     }
     if (!project || !profile) {
-      setError("Projet ou profil introuvable.");
+      setError(t.saisie.erreurProjetProfil);
       return;
     }
 
@@ -251,11 +255,11 @@ export default function SaisiePage() {
     setSubmitting(false);
 
     if (insertError) {
-      setError(`Erreur d'enregistrement : ${insertError.message}`);
+      setError(`${t.saisie.erreurEnregistrement} ${insertError.message}`);
       return;
     }
 
-    setSuccess(`Écriture ${nej} enregistrée (${rows.length} lignes).`);
+    setSuccess(`${t.saisie.ecritureEnregistree} ${nej} ${t.saisie.enregistreeNLignes} (${rows.length} ${t.saisie.lignesLabel}).`);
     setLignes([]);
     setCompte("");
     setMontant("");
@@ -271,27 +275,27 @@ export default function SaisiePage() {
   return (
     <div className="flex gap-6">
       <div className="hidden w-32 shrink-0 flex-col gap-3 sm:flex">
-        <Pill href="/lettrage">Lettrage</Pill>
-        <Pill href="/lettrage">Délettrage</Pill>
+        <Pill href="/lettrage">{t.saisie.lettrage}</Pill>
+        <Pill href="/lettrage">{t.saisie.delettrage}</Pill>
       </div>
 
       <div className="flex-1">
         <div className="mb-6 flex items-center justify-between gap-3">
           <p className="text-sm text-text-secondary">
-            <span className="hidden sm:inline">DATE COMPTABLE : </span>
+            <span className="hidden sm:inline">{t.saisie.dateComptable} </span>
             {new Date().toLocaleString("fr-FR")}
           </p>
           <p className="text-center text-sm font-medium text-text-secondary">
-            Financial Information Management System
+            {t.login.sousTitre}
           </p>
-          <Pill onClick={() => afficherNotice("Journal intermédiaire : fonctionnalité à venir.")}>
-            Accéder au journal intermédiaire
+          <Pill onClick={() => afficherNotice(t.saisie.journalIntermediaireBientot)}>
+            {t.saisie.accederJournalIntermediaire}
           </Pill>
         </div>
 
         <div className="mb-6 flex flex-col items-center gap-2 rounded-xl border border-border-subtle bg-bg-card py-4">
           <Cloud className="h-8 w-8 text-accent-teal" strokeWidth={1.6} />
-          <p className="text-xs text-text-secondary">N° JOURNAL</p>
+          <p className="text-xs text-text-secondary">{t.saisie.nJournal}</p>
           <p className="text-lg font-bold text-accent-teal">{nEcritureJournal || "—"}</p>
         </div>
 
@@ -303,27 +307,27 @@ export default function SaisiePage() {
 
         <div className="mb-4 grid grid-cols-1 gap-4 sm:grid-cols-5">
           <FormField
-            label="Date de la pièce"
+            label={t.saisie.dateDeLaPiece}
             required
             type="date"
             value={dateOperation}
             onChange={(e) => setDateOperation(e.target.value)}
           />
-          <FormField label="N°Pièce" value={nPiece} onChange={(e) => setNPiece(e.target.value)} />
-          <FormField label="Type d'opération" required>
+          <FormField label={t.saisie.nPiece} value={nPiece} onChange={(e) => setNPiece(e.target.value)} />
+          <FormField label={t.saisie.typeOperation} required>
             <select
               value={typeOperation}
               onChange={(e) => setTypeOperation(e.target.value)}
               className={fieldControlClass}
             >
-              {TYPES_OPERATION.map((t) => (
-                <option key={t} value={t}>
-                  {t}
+              {TYPES_OPERATION.map((op) => (
+                <option key={op} value={op}>
+                  {op}
                 </option>
               ))}
             </select>
           </FormField>
-          <FormField label="Journal" required>
+          <FormField label={t.saisie.journal} required>
             <select
               value={journal}
               onChange={(e) => setJournal(e.target.value)}
@@ -336,11 +340,11 @@ export default function SaisiePage() {
               ))}
             </select>
           </FormField>
-          <FormField label="B-S-Line" value={bSLine} onChange={(e) => setBSLine(e.target.value)} />
+          <FormField label={t.saisie.bSLine} value={bSLine} onChange={(e) => setBSLine(e.target.value)} />
         </div>
 
         <div className="mb-4 grid grid-cols-1 gap-4 sm:grid-cols-5">
-          <FormField label="Zone" required>
+          <FormField label={t.saisie.zone} required>
             <select
               value={zoneId}
               onChange={(e) => setZoneId(e.target.value)}
@@ -354,7 +358,7 @@ export default function SaisiePage() {
               ))}
             </select>
           </FormField>
-          <FormField label="Tiers" required>
+          <FormField label={t.saisie.tiers} required>
             <input
               list="tiers-list"
               type="text"
@@ -363,18 +367,18 @@ export default function SaisiePage() {
               className={fieldControlClass}
             />
             <datalist id="tiers-list">
-              {thirdParties.map((t) => (
-                <option key={t.id} value={t.nom_tiers} />
+              {thirdParties.map((tp) => (
+                <option key={tp.id} value={tp.nom_tiers} />
               ))}
             </datalist>
           </FormField>
-          <FormField label="N° Compte" required>
+          <FormField label={t.saisie.nCompte} required>
             <input
               list="comptes-list"
               type="text"
               value={compte}
               onChange={(e) => setCompte(e.target.value)}
-              placeholder="Rechercher un compte..."
+              placeholder={t.saisie.rechercherCompte}
               className={fieldControlClass}
             />
             <datalist id="comptes-list">
@@ -385,7 +389,7 @@ export default function SaisiePage() {
               ))}
             </datalist>
           </FormField>
-          <FormField label="Sens" required>
+          <FormField label={t.saisie.sens} required>
             <div className="flex h-[42px] items-center gap-4">
               <label className="flex items-center gap-1.5 text-sm text-text-primary">
                 <input
@@ -393,7 +397,7 @@ export default function SaisiePage() {
                   checked={sens === "debit"}
                   onChange={() => setSens("debit")}
                 />
-                Débit
+                {t.saisie.debit}
               </label>
               <label className="flex items-center gap-1.5 text-sm text-text-primary">
                 <input
@@ -401,18 +405,18 @@ export default function SaisiePage() {
                   checked={sens === "credit"}
                   onChange={() => setSens("credit")}
                 />
-                Crédit
+                {t.saisie.credit}
               </label>
             </div>
           </FormField>
         </div>
 
         <div className="mb-4 grid grid-cols-1 gap-4 sm:grid-cols-5">
-          <FormField label="Réf. Fact/D..." required value={refFactD} onChange={(e) => setRefFactD(e.target.value)} />
+          <FormField label={t.saisie.refFactD} required value={refFactD} onChange={(e) => setRefFactD(e.target.value)} />
           <div className="sm:col-span-2">
-            <FormField label="Libellé" required value={libelle} onChange={(e) => setLibelle(e.target.value)} />
+            <FormField label={t.saisie.libelle} required value={libelle} onChange={(e) => setLibelle(e.target.value)} />
           </div>
-          <FormField label="Montant" required>
+          <FormField label={t.saisie.montant} required>
             <input
               type="number"
               step="0.01"
@@ -422,8 +426,8 @@ export default function SaisiePage() {
             />
           </FormField>
           <div className="flex items-end gap-2">
-            <IconButton variant="confirm" ariaLabel="Ajouter la ligne" onClick={ajouterLigne} rounded="md" />
-            <IconButton variant="cancel" ariaLabel="Annuler la ligne" onClick={annulerLigne} rounded="md" />
+            <IconButton variant="confirm" ariaLabel={t.saisie.ajouterLigne} onClick={ajouterLigne} rounded="md" />
+            <IconButton variant="cancel" ariaLabel={t.saisie.annulerLigne} onClick={annulerLigne} rounded="md" />
           </div>
         </div>
 
@@ -431,16 +435,16 @@ export default function SaisiePage() {
         {success && <p className="mb-3 text-sm text-accent-teal">{success}</p>}
 
         <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-3 sm:items-end">
-          <FormField label="N°/Chq/OV" required value={nChequeOv} onChange={(e) => setNChequeOv(e.target.value)} />
+          <FormField label={t.saisie.nChqOv} required value={nChequeOv} onChange={(e) => setNChequeOv(e.target.value)} />
           <Pill icon={undefined} onClick={genererLeReglement}>
-            ✨ Générer Le Règlement
+            {t.saisie.genererLeReglement}
           </Pill>
           <div className="flex items-center justify-end gap-3">
             <p className="text-xs text-accent-amber">
-              Cliquez ici pour Enregistrer votre transaction !
+              {t.saisie.cliquezPourEnregistrer}
             </p>
             <PrimaryButton onClick={handleValider} disabled={submitting}>
-              {submitting ? "..." : "Validez"}
+              {submitting ? "..." : t.saisie.validez}
             </PrimaryButton>
           </div>
         </div>
@@ -448,14 +452,14 @@ export default function SaisiePage() {
         <div className="overflow-x-auto rounded-xl border border-border-subtle">
           <table className="min-w-full text-sm">
             <MiniTableHeader
-              columns={["N° Compte - D", "N° Compte - C", "Libelle", "Montant - D", "Montant - C", ""]}
+              columns={[t.saisie.colNCompteD, t.saisie.colNCompteC, t.common.libelle, t.saisie.colMontantD, t.saisie.colMontantC, ""]}
               align={["left", "left", "left", "right", "right", "left"]}
             />
             <tbody className="divide-y divide-border-subtle bg-bg-card/60">
               {lignes.length === 0 && (
                 <tr>
                   <td colSpan={6} className="px-3 py-4 text-center text-text-secondary">
-                    Aucune ligne — utilise le bouton ✓ pour en ajouter.
+                    {t.saisie.aucuneLigne}
                   </td>
                 </tr>
               )}
@@ -475,7 +479,7 @@ export default function SaisiePage() {
                       onClick={() => supprimerLigne(l.id)}
                       className="text-accent-red hover:underline"
                     >
-                      retirer
+                      {t.saisie.retirer}
                     </button>
                   </td>
                 </tr>
@@ -485,7 +489,7 @@ export default function SaisiePage() {
               <tfoot className="bg-bg-card font-semibold text-text-primary">
                 <tr>
                   <td className="px-3 py-2" colSpan={3}>
-                    TOTAUX
+                    {t.saisie.totaux}
                   </td>
                   <td className="px-3 py-2 text-right">
                     {totalDebit.toLocaleString("fr-FR")}

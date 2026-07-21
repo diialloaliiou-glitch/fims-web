@@ -136,6 +136,8 @@ export const fr = {
     ecritureEnregistree: "Écriture",
     enregistreeNLignes: "enregistrée",
     lignesLabel: "lignes",
+    retirer: "retirer",
+    reglement: "Règlement",
   },
   grandLivre: {
     titre: "Grand Livre",

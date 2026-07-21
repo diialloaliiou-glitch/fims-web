@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/lib/auth-context";
+import { useLanguage } from "@/lib/language-context";
 import { exporterCsv } from "@/lib/export-csv";
 import { FormField } from "@/components/ui/FormField";
 import { MiniTableHeader } from "@/components/ui/MiniTableHeader";
@@ -74,6 +75,7 @@ function calculerReporting(
 
 export default function ReportingPage() {
   const { project } = useAuth();
+  const { t } = useLanguage();
   const [dateDebut, setDateDebut] = useState(firstOfMonthIso());
   const [dateFin, setDateFin] = useState(todayIso());
   const [rows, setRows] = useState<ReportRow[]>([]);
@@ -125,27 +127,27 @@ export default function ReportingPage() {
   return (
     <div>
       <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
-        <h1 className="text-2xl font-semibold text-text-primary">Reporting</h1>
+        <h1 className="text-2xl font-semibold text-text-primary">{t.reporting.titre}</h1>
         <div className="flex items-center gap-4 print:hidden">
           <Link href="/budget" className="text-sm text-accent-blue hover:underline">
-            Voir le Financial Report →
+            {t.reporting.voirFinancialReport}
           </Link>
           <Pill
             onClick={() =>
               exporterCsv(
                 "Reporting",
                 [
-                  "Date",
-                  "Part_Code",
-                  "Part_C_Code",
-                  "Our Line Code",
-                  "Journal",
-                  "N°Compte",
-                  "Libellé",
-                  "N°CHQ/OV",
-                  "Zone",
-                  "Montant",
-                  "N°Pièce",
+                  t.common.date,
+                  t.reporting.colPartCode,
+                  t.reporting.colPartCCode,
+                  t.reporting.colOurLineCode,
+                  t.reporting.colJournal,
+                  t.reporting.colNCompte,
+                  t.common.libelle,
+                  t.reporting.colNChqOv,
+                  t.reporting.colZone,
+                  t.reporting.colMontant,
+                  t.reporting.colNPiece,
                 ],
                 rows.map((r) => [
                   r.date,
@@ -163,30 +165,30 @@ export default function ReportingPage() {
               )
             }
           >
-            Export Excel
+            {t.common.exportExcel}
           </Pill>
-          <Pill onClick={() => window.print()}>Export PDF</Pill>
+          <Pill onClick={() => window.print()}>{t.common.exportPdf}</Pill>
           <Pill solid onClick={() => window.print()}>
-            Imprimer
+            {t.common.imprimer}
           </Pill>
         </div>
       </div>
 
       <div className="mb-6 flex flex-wrap items-end gap-4 rounded-xl border border-border-subtle bg-bg-card p-4 print:hidden">
         <FormField
-          label="Date de début"
+          label={t.reporting.dateDebut}
           type="date"
           value={dateDebut}
           onChange={(e) => setDateDebut(e.target.value)}
         />
         <FormField
-          label="Date de fin"
+          label={t.reporting.dateFin}
           type="date"
           value={dateFin}
           onChange={(e) => setDateFin(e.target.value)}
         />
         <StatCard
-          label="Total dépenses"
+          label={t.reporting.totalDepenses}
           value={totalDepenses.toLocaleString("fr-FR")}
           valueColor="amber"
         />
@@ -195,21 +197,21 @@ export default function ReportingPage() {
       <div className="overflow-x-auto rounded-xl border border-border-subtle">
         <table className="min-w-full text-sm">
           <MiniTableHeader
-            columns={["Date", "Part_Code", "Part_C_Code", "Our Line Code", "Journal", "N°Compte", "Libellé", "N°CHQ/OV", "Zone", "Montant", "N°Pièce"]}
+            columns={[t.common.date, t.reporting.colPartCode, t.reporting.colPartCCode, t.reporting.colOurLineCode, t.reporting.colJournal, t.reporting.colNCompte, t.common.libelle, t.reporting.colNChqOv, t.reporting.colZone, t.reporting.colMontant, t.reporting.colNPiece]}
             align={["left", "left", "left", "left", "left", "left", "left", "left", "left", "right", "left"]}
           />
           <tbody className="divide-y divide-border-subtle bg-bg-card/60">
             {loading && (
               <tr>
                 <td colSpan={11} className="px-3 py-4 text-center text-text-secondary">
-                  Chargement...
+                  {t.common.chargement}
                 </td>
               </tr>
             )}
             {!loading && rows.length === 0 && (
               <tr>
                 <td colSpan={11} className="px-3 py-4 text-center text-text-secondary">
-                  Aucune dépense sur cette période.
+                  {t.reporting.aucuneDepense}
                 </td>
               </tr>
             )}
@@ -237,7 +239,7 @@ export default function ReportingPage() {
             <tfoot className="bg-bg-card font-semibold text-text-primary">
               <tr>
                 <td className="px-3 py-2" colSpan={9}>
-                  TOTAL
+                  {t.common.total}
                 </td>
                 <td className="px-3 py-2 text-right">
                   {totalDepenses.toLocaleString("fr-FR")}

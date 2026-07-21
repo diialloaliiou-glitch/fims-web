@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/lib/auth-context";
+import { useLanguage } from "@/lib/language-context";
 import { exporterCsv } from "@/lib/export-csv";
 import { FormField, fieldControlClass } from "@/components/ui/FormField";
 import { MiniTableHeader } from "@/components/ui/MiniTableHeader";
@@ -94,6 +95,7 @@ function calculerBalance(
 
 export default function BalancePage() {
   const { project } = useAuth();
+  const { t } = useLanguage();
   const [mode, setMode] = useState<"GENERAL" | "AUXILIAIRE">("GENERAL");
   const [filtreAux, setFiltreAux] = useState("40");
   const [dateDebut, setDateDebut] = useState(firstOfMonthIso());
@@ -136,20 +138,20 @@ export default function BalancePage() {
   return (
     <div>
       <div className="mb-6 flex items-center justify-between">
-        <h1 className="text-2xl font-semibold text-text-primary">Balance</h1>
+        <h1 className="text-2xl font-semibold text-text-primary">{t.balance.titre}</h1>
         <div className="flex gap-2 print:hidden">
           <Pill
             onClick={() =>
               exporterCsv(
                 "Balance",
                 [
-                  "N°Compte",
-                  "Intitulé",
-                  "Solde d'ouverture",
-                  "Débit",
-                  "Crédit",
-                  "Solde débiteur",
-                  "Solde créditeur",
+                  t.balance.colNCompte,
+                  t.balance.colIntituleCompte,
+                  t.balance.colSoldeOuverture,
+                  t.common.debit,
+                  t.common.credit,
+                  t.balance.colSoldeDebiteur,
+                  t.balance.colSoldeCrediteur,
                 ],
                 rows.map((r) => [
                   r.compte,
@@ -163,41 +165,41 @@ export default function BalancePage() {
               )
             }
           >
-            Export Excel
+            {t.common.exportExcel}
           </Pill>
-          <Pill onClick={() => window.print()}>Export PDF</Pill>
+          <Pill onClick={() => window.print()}>{t.common.exportPdf}</Pill>
           <Pill solid onClick={() => window.print()}>
-            Imprimer
+            {t.common.imprimer}
           </Pill>
         </div>
       </div>
 
       <div className="mb-6 flex flex-wrap items-end gap-4 rounded-xl border border-border-subtle bg-bg-card p-4 print:hidden">
-        <FormField label="Type de balance">
+        <FormField label={t.balance.typeDeBalance}>
           <select
             value={mode}
             onChange={(e) => setMode(e.target.value as "GENERAL" | "AUXILIAIRE")}
             className={fieldControlClass}
           >
-            <option value="GENERAL">Balance générale</option>
-            <option value="AUXILIAIRE">Balance auxiliaire</option>
+            <option value="GENERAL">{t.balance.balanceGenerale}</option>
+            <option value="AUXILIAIRE">{t.balance.balanceAuxiliaire}</option>
           </select>
         </FormField>
         {mode === "AUXILIAIRE" && (
           <FormField
-            label="Préfixe compte tiers (ex: 40, 401)"
+            label={t.balance.prefixeCompteTiers}
             value={filtreAux}
             onChange={(e) => setFiltreAux(e.target.value)}
           />
         )}
         <FormField
-          label="Du"
+          label={t.common.du}
           type="date"
           value={dateDebut}
           onChange={(e) => setDateDebut(e.target.value)}
         />
         <FormField
-          label="Au"
+          label={t.common.au}
           type="date"
           value={dateFin}
           onChange={(e) => setDateFin(e.target.value)}
@@ -207,21 +209,21 @@ export default function BalancePage() {
       <div className="overflow-x-auto rounded-xl border border-border-subtle">
         <table className="min-w-full text-sm">
           <MiniTableHeader
-            columns={["N°Compte", "Intitulé de compte", "Solde d'ouverture", "Débit", "Crédit", "Solde débiteur", "Solde créditeur"]}
+            columns={[t.balance.colNCompte, t.balance.colIntituleCompte, t.balance.colSoldeOuverture, t.common.debit, t.common.credit, t.balance.colSoldeDebiteur, t.balance.colSoldeCrediteur]}
             align={["left", "left", "right", "right", "right", "right", "right"]}
           />
           <tbody className="divide-y divide-border-subtle bg-bg-card/60">
             {loading && (
               <tr>
                 <td colSpan={7} className="px-3 py-4 text-center text-text-secondary">
-                  Chargement...
+                  {t.common.chargement}
                 </td>
               </tr>
             )}
             {!loading && rows.length === 0 && (
               <tr>
                 <td colSpan={7} className="px-3 py-4 text-center text-text-secondary">
-                  Aucun mouvement sur cette période.
+                  {t.balance.aucunMouvement}
                 </td>
               </tr>
             )}
@@ -251,7 +253,7 @@ export default function BalancePage() {
             <tfoot className="bg-bg-card font-semibold text-text-primary">
               <tr>
                 <td className="px-3 py-2" colSpan={2}>
-                  TOTAL
+                  {t.common.total}
                 </td>
                 <td className="px-3 py-2 text-right">
                   {totals.soldeOuverture.toLocaleString("fr-FR")}

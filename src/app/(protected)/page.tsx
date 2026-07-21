@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/lib/auth-context";
+import { useLanguage } from "@/lib/language-context";
 import { ActionCard } from "@/components/ui/ActionCard";
 import { StatCard } from "@/components/ui/StatCard";
 import { Pill } from "@/components/ui/Pill";
@@ -37,6 +38,7 @@ function formatPrenom(nomUtilisateur: string | undefined) {
 
 export default function DashboardPage() {
   const { profile, project } = useAuth();
+  const { t } = useLanguage();
   const [entryCount, setEntryCount] = useState<number | null>(null);
   const [lastEntry, setLastEntry] = useState<{
     n_ecriture_journal: string | null;
@@ -135,7 +137,7 @@ export default function DashboardPage() {
     e.preventDefault();
     if (!project) return;
     if (!search.trim()) {
-      setNotice("Tape un numéro de pièce ou d'écriture avant de rechercher.");
+      setNotice(t.dashboard.rechercherAlerte);
       setTimeout(() => setNotice(null), 3000);
       return;
     }
@@ -154,21 +156,21 @@ export default function DashboardPage() {
   }
 
   function comingSoon(label: string) {
-    setNotice(`${label} : fonctionnalité à venir dans une prochaine itération.`);
+    setNotice(`${label} : ${t.dashboard.fonctionnaliteAVenir}`);
     setTimeout(() => setNotice(null), 3500);
   }
 
   const tiles = [
-    { key: "saisie", icon: PenLine, label: "Saisie", href: "/saisie", color: "teal" as const },
-    { key: "paf", icon: Feather, label: "PAF", href: "/paf", color: "teal" as const },
-    { key: "glivre", icon: BookOpen, label: "G-Livre", href: "/grand-livre", color: "blue" as const },
-    { key: "jdepense", icon: FileSpreadsheet, label: "JDEPENSE", href: "/jdepense", color: "blue" as const },
-    { key: "erb", icon: Landmark, label: "ERB", href: "/erb", color: "blue" as const },
-    { key: "jaux", icon: BookCopy, label: "J-Auxiliaire", href: "/journal-auxiliaire", color: "blue" as const },
-    { key: "balance", icon: Scale, label: "Balance", href: "/balance", color: "blue" as const },
-    { key: "reporting", icon: BarChart3, label: "Reporting", href: "/reporting", color: "blue" as const },
-    { key: "budtracker", icon: TrendingUp, label: "BUD TRACKER", href: "/bud-tracker", color: "blue" as const },
-    { key: "parametre", icon: Settings, label: "Paramètre", href: "/parametres", color: "muted" as const },
+    { key: "saisie", icon: PenLine, label: t.dashboard.tileSaisie, href: "/saisie", color: "teal" as const },
+    { key: "paf", icon: Feather, label: t.dashboard.tilePaf, href: "/paf", color: "teal" as const },
+    { key: "glivre", icon: BookOpen, label: t.dashboard.tileGLivre, href: "/grand-livre", color: "blue" as const },
+    { key: "jdepense", icon: FileSpreadsheet, label: t.dashboard.tileJdepense, href: "/jdepense", color: "blue" as const },
+    { key: "erb", icon: Landmark, label: t.dashboard.tileErb, href: "/erb", color: "blue" as const },
+    { key: "jaux", icon: BookCopy, label: t.dashboard.tileJAux, href: "/journal-auxiliaire", color: "blue" as const },
+    { key: "balance", icon: Scale, label: t.dashboard.tileBalance, href: "/balance", color: "blue" as const },
+    { key: "reporting", icon: BarChart3, label: t.dashboard.tileReporting, href: "/reporting", color: "blue" as const },
+    { key: "budtracker", icon: TrendingUp, label: t.dashboard.tileBudTracker, href: "/bud-tracker", color: "blue" as const },
+    { key: "parametre", icon: Settings, label: t.dashboard.tileParametre, href: "/parametres", color: "muted" as const },
   ];
 
   return (
@@ -181,7 +183,7 @@ export default function DashboardPage() {
       <div className="relative mb-8 flex flex-col items-center gap-4 px-4 py-8 text-center">
         <div className="flex flex-wrap justify-center gap-3 lg:absolute lg:left-0 lg:top-0 lg:flex-col lg:justify-start">
           <StatCard
-            label="Taux de conso budgétaire"
+            label={t.dashboard.tauxConsoBudgetaire}
             value={
               tauxConsoBudgetaire === null
                 ? "..."
@@ -191,7 +193,7 @@ export default function DashboardPage() {
             icon={Percent}
           />
           <StatCard
-            label="Taux de conso de l'avance reçue"
+            label={t.dashboard.tauxConsoAvance}
             value={
               tauxConsoAvance === null ? "..." : `${(tauxConsoAvance * 100).toFixed(1)}%`
             }
@@ -202,7 +204,7 @@ export default function DashboardPage() {
 
         <div className="lg:absolute lg:right-0 lg:top-0">
           <StatCard
-            label="Solde disponible"
+            label={t.dashboard.soldeDisponible}
             value={
               soldeTresorerie === null
                 ? "..."
@@ -215,12 +217,12 @@ export default function DashboardPage() {
 
         <div className="flex flex-wrap justify-center gap-3 lg:absolute lg:right-0 lg:top-24 lg:flex-col lg:justify-start">
           <StatCard
-            label="Dernière opération"
+            label={t.dashboard.derniereOperation}
             value={lastEntry?.n_ecriture_journal ?? "—"}
             valueColor="blue"
           />
           <StatCard
-            label="Écritures ce mois"
+            label={t.dashboard.ecrituresCeMois}
             value={entriesThisMonth === null ? "..." : entriesThisMonth}
             valueColor="amber"
           />
@@ -231,11 +233,11 @@ export default function DashboardPage() {
           FIMS
         </p>
         <p className="-mt-3 text-xs text-text-secondary">
-          Financial Information Management System
+          {t.login.sousTitre}
         </p>
 
         <h1 className="font-display mt-4 text-3xl font-light tracking-tight text-text-primary">
-          Bienvenue, {formatPrenom(profile?.nom_utilisateur)}
+          {t.dashboard.bienvenue} {formatPrenom(profile?.nom_utilisateur)}
         </h1>
         <p className="text-sm text-text-secondary">
           {project?.nom_projet}
@@ -247,12 +249,12 @@ export default function DashboardPage() {
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="BQ-0015"
+            placeholder={t.dashboard.rechercherPlaceholder}
             className="w-full rounded-full border border-border-subtle bg-bg-card px-4 py-2 text-sm text-text-primary outline-none focus:border-accent-teal"
           />
           <button
             type="submit"
-            aria-label="Rechercher"
+            aria-label={t.dashboard.recherche}
             className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-accent-blue-solid text-on-accent-dark hover:opacity-90"
           >
             <Search className="h-4 w-4" strokeWidth={2} />
@@ -261,10 +263,10 @@ export default function DashboardPage() {
 
         <div className="flex flex-wrap justify-center gap-3 pt-1">
           <Pill icon={Clock} href="/bud-tracker">
-            Voir le suivi budgétaire
+            {t.dashboard.voirSuiviBudgetaire}
           </Pill>
-          <Pill icon={Database} onClick={() => comingSoon("Accès base de données")}>
-            Accéder à la base de données
+          <Pill icon={Database} onClick={() => comingSoon(t.dashboard.accederBaseDeDonnees)}>
+            {t.dashboard.accederBaseDeDonnees}
           </Pill>
         </div>
 
@@ -279,21 +281,21 @@ export default function DashboardPage() {
         <div className="relative mb-8 overflow-x-auto rounded-xl border border-border-subtle">
           <table className="min-w-full text-sm">
             <MiniTableHeader
-              columns={["N° Écriture", "Pièce", "Date", "Libellé", "Débit", "Crédit"]}
+              columns={[t.dashboard.colNEcriture, t.dashboard.colPiece, t.common.date, t.common.libelle, t.common.debit, t.common.credit]}
               align={["left", "left", "left", "left", "right", "right"]}
             />
             <tbody className="divide-y divide-border-subtle bg-bg-card/60">
               {searching && (
                 <tr>
                   <td colSpan={6} className="px-3 py-4 text-center text-text-secondary">
-                    Recherche...
+                    {t.dashboard.recherche}
                   </td>
                 </tr>
               )}
               {!searching && searchResults.length === 0 && (
                 <tr>
                   <td colSpan={6} className="px-3 py-4 text-center text-text-secondary">
-                    Aucun résultat pour &quot;{search}&quot;.
+                    {t.dashboard.aucunResultatPour} &quot;{search}&quot;.
                   </td>
                 </tr>
               )}
@@ -319,13 +321,13 @@ export default function DashboardPage() {
       )}
 
       <div className="relative grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
-        {tiles.map((t) => (
+        {tiles.map((tile) => (
           <ActionCard
-            key={t.key}
-            icon={t.icon}
-            color={t.color}
-            label={t.label}
-            href={t.href}
+            key={tile.key}
+            icon={tile.icon}
+            color={tile.color}
+            label={tile.label}
+            href={tile.href}
           />
         ))}
       </div>
