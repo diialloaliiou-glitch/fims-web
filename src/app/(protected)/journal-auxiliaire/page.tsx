@@ -134,7 +134,7 @@ export default function JournalAuxiliairePage() {
       </div>
 
       <div className="max-h-[65vh] overflow-auto rounded-xl border border-border-subtle print:max-h-none print:overflow-visible">
-        <table className="min-w-full text-sm">
+        <table className="min-w-full table-auto text-sm [&_td]:border-r [&_td]:border-border-subtle [&_th]:border-r [&_th]:border-border-subtle [&_tr>*:last-child]:border-r-0">
           <MiniTableHeader
             columns={[t.journalAuxiliaire.colNEJ, t.journalAuxiliaire.colBSLine, t.journalAuxiliaire.colReference, t.common.date, t.journalAuxiliaire.colD, t.journalAuxiliaire.colC, t.common.libelle, t.journalAuxiliaire.colMDebit, t.journalAuxiliaire.colMCredit, t.journalAuxiliaire.colNPiece]}
             align={["left", "left", "left", "left", "left", "left", "left", "right", "right", "left"]}

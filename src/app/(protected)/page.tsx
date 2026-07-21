@@ -7,7 +7,6 @@ import { useLanguage } from "@/lib/language-context";
 import { ActionCard } from "@/components/ui/ActionCard";
 import { StatCard } from "@/components/ui/StatCard";
 import { MiniTableHeader } from "@/components/ui/MiniTableHeader";
-import { TrendChart } from "@/components/ui/TrendChart";
 import { PREFIXE_COMPTE_BANQUE_PROJET } from "@/lib/solde-banque";
 import { scopeToProjectSpending } from "@/lib/project-scope";
 import type { BudgetLine, JournalEntry } from "@/lib/types";
@@ -46,7 +45,6 @@ export default function DashboardPage() {
   const [entriesThisMonth, setEntriesThisMonth] = useState<number | null>(null);
   const [tauxConsoBudgetaire, setTauxConsoBudgetaire] = useState<number | null>(null);
   const [tauxConsoAvance, setTauxConsoAvance] = useState<number | null>(null);
-  const [depensesParMois, setDepensesParMois] = useState<{ label: string; value: number }[]>([]);
 
   const [search, setSearch] = useState("");
   const [searchResults, setSearchResults] = useState<JournalEntry[] | null>(null);
@@ -99,7 +97,7 @@ export default function DashboardPage() {
     Promise.all([
       supabase.from("budget_lines").select("total_cost").eq("project_id", project.id).neq("our_line_code", "52B"),
       scopeToProjectSpending(
-        supabase.from("journal_entries").select("b_s_line, montant_debit, date_operation"),
+        supabase.from("journal_entries").select("b_s_line, montant_debit"),
         project
       ),
       scopeToProjectSpending(
@@ -112,10 +110,11 @@ export default function DashboardPage() {
         0
       );
       const entries =
-        (entriesRes.data as { b_s_line: string | null; montant_debit: number; date_operation: string }[]) ??
-        [];
-      const depenses = entries.filter((e) => e.b_s_line && e.b_s_line.toUpperCase() !== "52B");
-      const depenseTotale = depenses.reduce((s, e) => s + e.montant_debit, 0);
+        (entriesRes.data as { b_s_line: string | null; montant_debit: number }[]) ?? [];
+      const depenseTotale = entries.reduce(
+        (s, e) => (e.b_s_line && e.b_s_line.toUpperCase() !== "52B" ? s + e.montant_debit : s),
+        0
+      );
       const cumulAvance = (avanceRes.data ?? []).reduce(
         (s: number, e: { montant_credit: number }) => s + e.montant_credit,
         0
@@ -123,38 +122,6 @@ export default function DashboardPage() {
 
       setTauxConsoBudgetaire(budgetTotal > 0 ? depenseTotale / budgetTotal : null);
       setTauxConsoAvance(cumulAvance > 0 ? depenseTotale / cumulAvance : null);
-
-      // Courbe de tendance : depenses reelles (hors 52B) groupees par mois
-      // calendaire, sur les 12 derniers mois ou depuis le debut du projet
-      // si celui-ci est plus recent.
-      const debutFenetre = new Date();
-      debutFenetre.setMonth(debutFenetre.getMonth() - 11);
-      debutFenetre.setDate(1);
-      if (project.date_debut_projet) {
-        const debutProjet = new Date(project.date_debut_projet);
-        if (debutProjet > debutFenetre) debutFenetre.setTime(debutProjet.getTime());
-      }
-      debutFenetre.setDate(1);
-
-      const mois: { idc: string; label: string }[] = [];
-      const cursor = new Date(debutFenetre);
-      const now = new Date();
-      while (cursor <= now) {
-        mois.push({
-          idc: `${cursor.getFullYear()}-${cursor.getMonth()}`,
-          label: cursor.toLocaleDateString("fr-FR", { month: "short", year: "2-digit" }),
-        });
-        cursor.setMonth(cursor.getMonth() + 1);
-      }
-
-      const parMois = new Map<string, number>();
-      depenses.forEach((e) => {
-        const d = new Date(e.date_operation);
-        const idc = `${d.getFullYear()}-${d.getMonth()}`;
-        parMois.set(idc, (parMois.get(idc) ?? 0) + e.montant_debit);
-      });
-
-      setDepensesParMois(mois.map((m) => ({ label: m.label, value: parMois.get(m.idc) ?? 0 })));
     });
   }, [project]);
 
@@ -291,16 +258,9 @@ export default function DashboardPage() {
         />
       </div>
 
-      <div className="relative mb-8 rounded-2xl border border-border-subtle bg-bg-card p-5">
-        <p className="mb-3 text-sm font-semibold text-text-primary">
-          {t.dashboard.depensesMensuelles}
-        </p>
-        <TrendChart data={depensesParMois} />
-      </div>
-
       {searchResults !== null && (
         <div className="relative mb-8 max-h-[65vh] overflow-auto rounded-xl border border-border-subtle print:max-h-none print:overflow-visible">
-          <table className="min-w-full text-sm">
+          <table className="min-w-full table-auto text-sm [&_td]:border-r [&_td]:border-border-subtle [&_th]:border-r [&_th]:border-border-subtle [&_tr>*:last-child]:border-r-0">
             <MiniTableHeader
               columns={[t.dashboard.colNEcriture, t.dashboard.colPiece, t.common.date, t.common.libelle, t.common.debit, t.common.credit]}
               align={["left", "left", "left", "left", "right", "right"]}

@@ -95,7 +95,6 @@ export const en: typeof fr = {
     tileReporting: "Reporting",
     tileBudTracker: "BUD TRACKER",
     tileParametre: "Settings",
-    depensesMensuelles: "Monthly spending",
   },
   saisie: {
     dateComptable: "ACCOUNTING DATE:",

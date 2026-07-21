@@ -257,7 +257,7 @@ export default function FinancialReportPage() {
       </p>
 
       <div className="max-h-[65vh] overflow-auto rounded-xl border border-border-subtle print:max-h-none print:overflow-visible">
-        <table className="min-w-full text-sm">
+        <table className="min-w-full table-auto text-sm [&_td]:border-r [&_td]:border-border-subtle [&_th]:border-r [&_th]:border-border-subtle [&_tr>*:last-child]:border-r-0">
           <MiniTableHeader
             columns={[t.financialReport.colCode, t.financialReport.colDescription, t.financialReport.colUnit, t.financialReport.colQty, t.financialReport.colFreq, t.financialReport.colPctProject, t.financialReport.colBudget, t.financialReport.colPriorExp, t.financialReport.colPeriodExp, t.financialReport.colPeriodExpUsd, t.financialReport.colVariance, t.financialReport.colBurnRate]}
             align={["left", "left", "left", "right", "right", "right", "right", "right", "right", "right", "right", "right"]}

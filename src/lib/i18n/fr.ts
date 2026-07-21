@@ -91,7 +91,6 @@ export const fr = {
     tileReporting: "Reporting",
     tileBudTracker: "BUD TRACKER",
     tileParametre: "Paramètre",
-    depensesMensuelles: "Dépenses mensuelles",
   },
   saisie: {
     dateComptable: "DATE COMPTABLE :",

@@ -221,7 +221,7 @@ export default function BalancePage() {
       )}
 
       <div className="max-h-[65vh] overflow-auto rounded-xl border border-border-subtle print:max-h-none print:overflow-visible">
-        <table className="min-w-full text-sm">
+        <table className="min-w-full table-auto text-sm [&_td]:border-r [&_td]:border-border-subtle [&_th]:border-r [&_th]:border-border-subtle [&_tr>*:last-child]:border-r-0">
           <MiniTableHeader
             columns={[t.balance.colNCompte, t.balance.colIntituleCompte, t.balance.colSoldeOuverture, t.common.debit, t.common.credit, t.balance.colSoldeDebiteur, t.balance.colSoldeCrediteur]}
             align={["left", "left", "right", "right", "right", "right", "right"]}

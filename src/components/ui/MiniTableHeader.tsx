@@ -17,7 +17,7 @@ export function MiniTableHeader({
         {columns.map((col, i) => (
           <th
             key={col + i}
-            className={`bg-bg-card px-3 py-2 text-xs font-semibold uppercase tracking-wide ${
+            className={`whitespace-normal bg-bg-card px-3 py-2 align-top text-xs font-semibold uppercase leading-tight tracking-wide ${
               ALIGN_CLASSES[align?.[i] ?? "center"]
             }`}
           >

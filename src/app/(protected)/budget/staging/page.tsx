@@ -351,7 +351,7 @@ export default function BudgetStagingPage() {
       )}
 
       <div className="max-h-[65vh] overflow-auto rounded-xl border border-border-subtle print:max-h-none print:overflow-visible">
-        <table className="min-w-full text-sm">
+        <table className="min-w-full table-auto text-sm [&_td]:border-r [&_td]:border-border-subtle [&_th]:border-r [&_th]:border-border-subtle [&_tr>*:last-child]:border-r-0">
           <MiniTableHeader
             columns={[t.budgetStaging.colCode, t.budgetStaging.colDescription, t.budgetStaging.colRubrique, t.budgetStaging.colQte, t.common.statut, t.common.action]}
             align={["left", "left", "left", "right", "left", "right"]}
