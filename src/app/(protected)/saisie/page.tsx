@@ -10,8 +10,9 @@ import { IconButton } from "@/components/ui/IconButton";
 import { PrimaryButton } from "@/components/ui/PrimaryButton";
 import { MiniTableHeader } from "@/components/ui/MiniTableHeader";
 import { Pill } from "@/components/ui/Pill";
-import { Cloud } from "lucide-react";
-import type { ChartOfAccount, ThirdParty, Zone } from "@/lib/types";
+import { ModelesEcritureModal, type ResultatModele } from "@/components/ModelesEcritureModal";
+import { Cloud, Wand2 } from "lucide-react";
+import type { BudgetLine, ChartOfAccount, ThirdParty, Zone } from "@/lib/types";
 
 // Codes canoniques (valeurs stockees en base) - jamais traduits, seuls les
 // libelles de champs/boutons autour le sont.
@@ -30,6 +31,11 @@ type Ligne = {
   sens: "debit" | "credit";
   libelle: string;
   montant: number;
+  // Renseignes uniquement par les Modeles d'ecriture (reglement groupe de
+  // plusieurs soldes en attente) : chaque ligne debit garde alors le tiers
+  // et le n_piece de son solde d'origine plutot que ceux de l'en-tete.
+  tiers?: string;
+  nPieceOverride?: string;
 };
 
 function todayIso() {
@@ -67,6 +73,8 @@ export default function SaisiePage() {
   const [accounts, setAccounts] = useState<ChartOfAccount[]>([]);
   const [thirdParties, setThirdParties] = useState<ThirdParty[]>([]);
   const [zones, setZones] = useState<Zone[]>([]);
+  const [budgetLines, setBudgetLines] = useState<BudgetLine[]>([]);
+  const [modelesOuvert, setModelesOuvert] = useState(false);
 
   const [dateOperation, setDateOperation] = useState(todayIso());
   const [journal, setJournal] = useState("BQ");
@@ -113,6 +121,12 @@ export default function SaisiePage() {
       .eq("organization_id", project.organization_id)
       .order("code")
       .then(({ data }) => setZones((data as Zone[]) ?? []));
+
+    supabase
+      .from("budget_lines")
+      .select("*")
+      .eq("project_id", project.id)
+      .then(({ data }) => setBudgetLines((data as BudgetLine[]) ?? []));
 
     nextSequence(project.id, "n_piece", "PC").then(setNPiece);
   }, [project]);
@@ -194,6 +208,30 @@ export default function SaisiePage() {
     ]);
   }
 
+  function appliquerModele(resultat: ResultatModele) {
+    setTypeOperation(resultat.typeOperation);
+    setJournal(resultat.journal);
+    if (resultat.bSLine) setBSLine(resultat.bSLine);
+    if (resultat.zoneId) setZoneId(resultat.zoneId);
+    if (resultat.tiers) setTiers(resultat.tiers);
+    if (resultat.refFactD) setRefFactD(resultat.refFactD);
+    if (resultat.nChequeOv) setNChequeOv(resultat.nChequeOv);
+    if (resultat.nPiece) setNPiece(resultat.nPiece);
+
+    setLignes([
+      ...lignes,
+      ...resultat.lignes.map((l) => ({
+        id: ligneIdCounter++,
+        compte: l.compte,
+        sens: l.sens,
+        libelle: l.libelle,
+        montant: l.montant,
+        tiers: l.tiers,
+        nPieceOverride: l.nPieceOverride,
+      })),
+    ]);
+  }
+
   async function handleValider() {
     setError(null);
     setSuccess(null);
@@ -230,10 +268,8 @@ export default function SaisiePage() {
       type_operation: typeOperation,
       journal,
       n_ecriture_journal: nej,
-      n_piece: nPiece || null,
       b_s_line: bSLine || null,
       zone_id: zoneId ? parseInt(zoneId, 10) : null,
-      tiers: tiers || null,
       ref_fact_d: refFactD || null,
       n_cheque_ov: nChequeOv || null,
       date_heure_saisie: new Date().toISOString(),
@@ -248,6 +284,8 @@ export default function SaisiePage() {
       montant_debit: l.sens === "debit" ? l.montant : 0,
       montant_credit: l.sens === "credit" ? l.montant : 0,
       libelle: l.libelle,
+      n_piece: l.nPieceOverride ?? nPiece ?? null,
+      tiers: l.tiers ?? tiers ?? null,
     }));
 
     const { error: insertError } = await supabase.from("journal_entries").insert(rows);
@@ -290,6 +328,12 @@ export default function SaisiePage() {
           </p>
           <Pill onClick={() => afficherNotice(t.saisie.journalIntermediaireBientot)}>
             {t.saisie.accederJournalIntermediaire}
+          </Pill>
+        </div>
+
+        <div className="mb-6">
+          <Pill icon={Wand2} onClick={() => setModelesOuvert(true)}>
+            {t.saisie.modelesEcriture}
           </Pill>
         </div>
 
@@ -504,6 +548,19 @@ export default function SaisiePage() {
           </table>
         </div>
       </div>
+
+      {modelesOuvert && project && (
+        <ModelesEcritureModal
+          open={modelesOuvert}
+          onClose={() => setModelesOuvert(false)}
+          project={project}
+          accounts={accounts}
+          thirdParties={thirdParties}
+          zones={zones}
+          budgetLines={budgetLines}
+          onGenerer={appliquerModele}
+        />
+      )}
     </div>
   );
 }
