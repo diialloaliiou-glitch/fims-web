@@ -244,7 +244,7 @@ export default function TiersPage() {
         />
       </div>
 
-      <div className="overflow-x-auto rounded-xl border border-border-subtle">
+      <div className="max-h-[65vh] overflow-auto rounded-xl border border-border-subtle print:max-h-none print:overflow-visible">
         <table className="min-w-full text-sm">
           <MiniTableHeader
             columns={[t.tiersPage.colNom, t.tiersPage.colType, t.tiersPage.colContact, t.common.statut, t.common.action]}

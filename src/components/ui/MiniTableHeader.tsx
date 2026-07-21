@@ -12,12 +12,12 @@ export function MiniTableHeader({
   align?: ("left" | "right" | "center")[];
 }) {
   return (
-    <thead className="bg-bg-card text-text-primary">
+    <thead className="sticky top-0 z-10 bg-bg-card text-text-primary">
       <tr>
         {columns.map((col, i) => (
           <th
             key={col + i}
-            className={`px-3 py-2 text-xs font-semibold uppercase tracking-wide ${
+            className={`bg-bg-card px-3 py-2 text-xs font-semibold uppercase tracking-wide ${
               ALIGN_CLASSES[align?.[i] ?? "center"]
             }`}
           >

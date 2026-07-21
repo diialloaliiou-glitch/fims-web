@@ -273,7 +273,7 @@ export default function DashboardPage() {
       </div>
 
       {searchResults !== null && (
-        <div className="relative mb-8 overflow-x-auto rounded-xl border border-border-subtle">
+        <div className="relative mb-8 max-h-[65vh] overflow-auto rounded-xl border border-border-subtle print:max-h-none print:overflow-visible">
           <table className="min-w-full text-sm">
             <MiniTableHeader
               columns={[t.dashboard.colNEcriture, t.dashboard.colPiece, t.common.date, t.common.libelle, t.common.debit, t.common.credit]}

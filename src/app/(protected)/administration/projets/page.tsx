@@ -274,7 +274,7 @@ export default function ProjetsPage() {
       {linkError && <p className="mb-4 text-sm text-accent-red">{linkError}</p>}
       {cloneMessage && <p className="mb-4 text-sm text-accent-teal">{cloneMessage}</p>}
 
-      <div className="overflow-x-auto rounded-xl border border-border-subtle">
+      <div className="max-h-[65vh] overflow-auto rounded-xl border border-border-subtle print:max-h-none print:overflow-visible">
         <table className="min-w-full text-sm">
           <MiniTableHeader
             columns={[t.projets.colCode, t.projets.colNom, t.projets.colStatut, t.projets.colModele, t.projets.colUtilisateursAssignes]}

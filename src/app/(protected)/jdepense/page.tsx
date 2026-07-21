@@ -101,7 +101,12 @@ export default function JdepensePage() {
       .gte("date_operation", dateDebut)
       .lte("date_operation", dateFin)
       .order("date_operation", { ascending: false })
-      .order("id", { ascending: false });
+      .order("n_ecriture_journal", { ascending: false })
+      // A l'interieur d'une meme ecriture, la ligne Debit est toujours
+      // inseree avant la ligne Credit (id plus petit) - trier par id
+      // croissant ici garantit Debit avant Credit, quel que soit l'ordre
+      // choisi entre les ecritures elles-memes.
+      .order("id", { ascending: true });
 
     if (compteFiltre) {
       query = query.or(`compte_debit.eq.${compteFiltre},compte_credit.eq.${compteFiltre}`);
@@ -431,7 +436,7 @@ export default function JdepensePage() {
         </div>
       )}
 
-      <div className="overflow-x-auto rounded-xl border border-border-subtle">
+      <div className="max-h-[65vh] overflow-auto rounded-xl border border-border-subtle print:max-h-none print:overflow-visible">
         <table className="min-w-full text-sm">
           <MiniTableHeader
             columns={[

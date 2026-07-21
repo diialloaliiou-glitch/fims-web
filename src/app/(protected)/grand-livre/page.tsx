@@ -128,7 +128,7 @@ export default function GrandLivrePage() {
         />
       </div>
 
-      <div className="overflow-x-auto rounded-xl border border-border-subtle">
+      <div className="max-h-[65vh] overflow-auto rounded-xl border border-border-subtle print:max-h-none print:overflow-visible">
         <table className="min-w-full text-sm">
           <MiniTableHeader
             columns={[t.common.date, t.grandLivre.colPiece, t.grandLivre.colCompteD, t.grandLivre.colCompteC, t.common.libelle, t.common.debit, t.common.credit, t.grandLivre.colSoldeCumule]}

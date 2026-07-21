@@ -256,7 +256,7 @@ export default function FinancialReportPage() {
         {t.financialReport.methodologie.replace("{date}", dateDebutProjet)}
       </p>
 
-      <div className="overflow-x-auto rounded-xl border border-border-subtle">
+      <div className="max-h-[65vh] overflow-auto rounded-xl border border-border-subtle print:max-h-none print:overflow-visible">
         <table className="min-w-full text-sm">
           <MiniTableHeader
             columns={[t.financialReport.colCode, t.financialReport.colDescription, t.financialReport.colUnit, t.financialReport.colQty, t.financialReport.colFreq, t.financialReport.colPctProject, t.financialReport.colBudget, t.financialReport.colPriorExp, t.financialReport.colPeriodExp, t.financialReport.colPeriodExpUsd, t.financialReport.colVariance, t.financialReport.colBurnRate]}
