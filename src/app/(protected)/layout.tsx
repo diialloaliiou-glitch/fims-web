@@ -56,7 +56,7 @@ export default function ProtectedLayout({
 
   return (
     <div className="flex min-h-full flex-col">
-      <header className="sticky top-0 z-30 flex h-16 items-center border-b border-border-subtle bg-bg-card px-4 print:hidden">
+      <header className="sticky top-0 z-30 flex min-h-16 items-center border-b border-border-subtle bg-bg-card px-4 py-2 print:hidden">
         <div className="mx-auto flex w-full max-w-[1800px] flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-3">
             <Link

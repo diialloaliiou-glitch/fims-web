@@ -69,6 +69,27 @@ body {
   color: var(--text-primary);
 }
 
+/* Barre de defilement fine et discrete plutot que la barre epaisse par
+   defaut du navigateur - s'applique partout ou un defilement existe. */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-subtle) transparent;
+}
+
+*::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+*::-webkit-scrollbar-thumb {
+  background-color: var(--border-subtle);
+  border-radius: 8px;
+}
+
 @media print {
   :root,
   [data-theme="light"],

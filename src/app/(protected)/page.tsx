@@ -6,7 +6,6 @@ import { useAuth } from "@/lib/auth-context";
 import { useLanguage } from "@/lib/language-context";
 import { ActionCard } from "@/components/ui/ActionCard";
 import { StatCard } from "@/components/ui/StatCard";
-import { Pill } from "@/components/ui/Pill";
 import { MiniTableHeader } from "@/components/ui/MiniTableHeader";
 import { PREFIXE_COMPTE_BANQUE_PROJET } from "@/lib/solde-banque";
 import { scopeToProjectSpending } from "@/lib/project-scope";
@@ -15,8 +14,6 @@ import {
   Cloud,
   Wallet,
   Search,
-  Clock,
-  Database,
   PenLine,
   Feather,
   BookOpen,
@@ -239,7 +236,7 @@ export default function DashboardPage() {
           {project ? ` (${project.code_projet})` : ""}
         </p>
 
-        <form onSubmit={handleSearch} className="mt-2 flex w-full max-w-md gap-2">
+        <form onSubmit={handleSearch} className="mt-2 flex w-full max-w-3xl gap-2">
           <input
             type="text"
             value={search}
@@ -255,15 +252,6 @@ export default function DashboardPage() {
             <Search className="h-4 w-4" strokeWidth={2} />
           </button>
         </form>
-
-        <div className="flex flex-wrap justify-center gap-3 pt-1">
-          <Pill icon={Clock} href="/bud-tracker">
-            {t.dashboard.voirSuiviBudgetaire}
-          </Pill>
-          <Pill icon={Database} href="/jdepense">
-            {t.dashboard.accederBaseDeDonnees}
-          </Pill>
-        </div>
 
         {notice && (
           <p className="rounded-md bg-bg-card px-4 py-2 text-sm text-accent-amber">
