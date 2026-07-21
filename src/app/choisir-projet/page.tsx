@@ -4,9 +4,12 @@ import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { FolderKanban } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
+import { useLanguage } from "@/lib/language-context";
+import { LanguageSwitcher } from "@/components/ui/LanguageSwitcher";
 
 export default function ChoisirProjetPage() {
   const router = useRouter();
+  const { t } = useLanguage();
   const {
     session,
     profile,
@@ -34,13 +37,17 @@ export default function ChoisirProjetPage() {
   if (loading || !session || project) {
     return (
       <div className="flex flex-1 items-center justify-center text-text-secondary">
-        Chargement...
+        {t.common.chargement}
       </div>
     );
   }
 
   return (
-    <div className="flex flex-1 items-center justify-center px-4">
+    <div className="relative flex flex-1 items-center justify-center px-4">
+      <div className="absolute right-4 top-4">
+        <LanguageSwitcher />
+      </div>
+
       <div className="w-full max-w-md">
         <div className="mb-8 text-center">
           <h1 className="text-3xl font-bold tracking-tight text-accent-teal">FIMS</h1>
@@ -53,30 +60,27 @@ export default function ChoisirProjetPage() {
           {accountDisabled ? (
             <>
               <p className="mb-4 text-sm font-medium text-accent-red">
-                Ce compte a été désactivé.
+                {t.choisirProjet.compteDesactive}
               </p>
               <p className="mb-4 text-sm text-text-secondary">
-                Contacte un administrateur de ton organisation si tu penses
-                qu&apos;il s&apos;agit d&apos;une erreur.
+                {t.choisirProjet.contacteAdmin}
               </p>
               <button
                 onClick={() => signOut()}
                 className="rounded-md border border-border-subtle px-4 py-2 text-sm text-text-secondary hover:bg-bg-card"
               >
-                Se déconnecter
+                {t.choisirProjet.seDeconnecter}
               </button>
             </>
           ) : (
             <>
               <p className="mb-4 text-sm font-medium text-text-secondary">
-                Choisis le projet sur lequel tu te connectes
+                {t.choisirProjet.choisirProjetSurLequel}
               </p>
 
               {projects.length === 0 ? (
                 <p className="text-sm text-text-secondary">
-                  Aucun projet ne t&apos;est assigné pour le moment. Contacte un
-                  administrateur de ton organisation pour obtenir l&apos;accès
-                  à un projet.
+                  {t.choisirProjet.aucunProjet}
                 </p>
               ) : (
                 <div className="flex flex-col gap-3">

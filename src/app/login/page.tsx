@@ -5,9 +5,12 @@ import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import { FormField } from "@/components/ui/FormField";
 import { PrimaryButton } from "@/components/ui/PrimaryButton";
+import { LanguageSwitcher } from "@/components/ui/LanguageSwitcher";
+import { useLanguage } from "@/lib/language-context";
 
 export default function LoginPage() {
   const router = useRouter();
+  const { t } = useLanguage();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -26,7 +29,7 @@ export default function LoginPage() {
     setLoading(false);
 
     if (error) {
-      setError("Email ou mot de passe incorrect.");
+      setError(t.login.erreurIdentifiants);
       return;
     }
 
@@ -34,15 +37,17 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="flex flex-1 items-center justify-center px-4">
+    <div className="relative flex flex-1 items-center justify-center px-4">
+      <div className="absolute right-4 top-4">
+        <LanguageSwitcher />
+      </div>
+
       <div className="w-full max-w-sm">
         <div className="mb-8 text-center">
           <h1 className="text-3xl font-bold tracking-tight text-accent-teal">
-            FIMS
+            {t.login.titre}
           </h1>
-          <p className="mt-1 text-sm text-text-secondary">
-            Financial Information Management System
-          </p>
+          <p className="mt-1 text-sm text-text-secondary">{t.login.sousTitre}</p>
         </div>
 
         <form
@@ -51,7 +56,7 @@ export default function LoginPage() {
         >
           <div className="mb-4">
             <FormField
-              label="Email"
+              label={t.login.email}
               required
               type="email"
               value={email}
@@ -61,7 +66,7 @@ export default function LoginPage() {
 
           <div className="mb-4">
             <FormField
-              label="Mot de passe"
+              label={t.login.motDePasse}
               required
               type="password"
               value={password}
@@ -74,7 +79,7 @@ export default function LoginPage() {
           )}
 
           <PrimaryButton type="submit" disabled={loading} className="w-full">
-            {loading ? "Connexion..." : "Se connecter"}
+            {loading ? t.login.connexion : t.login.seConnecter}
           </PrimaryButton>
         </form>
       </div>

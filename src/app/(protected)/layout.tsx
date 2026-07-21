@@ -6,7 +6,9 @@ import Link from "next/link";
 import { House, Moon, Sun } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 import { useTheme } from "@/lib/theme-context";
+import { useLanguage } from "@/lib/language-context";
 import { Pill } from "@/components/ui/Pill";
+import { LanguageSwitcher } from "@/components/ui/LanguageSwitcher";
 
 export default function ProtectedLayout({
   children,
@@ -26,6 +28,7 @@ export default function ProtectedLayout({
     signOut,
   } = useAuth();
   const { theme, toggleTheme } = useTheme();
+  const { t } = useLanguage();
 
   useEffect(() => {
     if (!loading && !session) {
@@ -42,7 +45,7 @@ export default function ProtectedLayout({
   if (loading) {
     return (
       <div className="flex flex-1 items-center justify-center text-text-secondary">
-        Chargement...
+        {t.common.chargement}
       </div>
     );
   }
@@ -59,15 +62,15 @@ export default function ProtectedLayout({
             <Link
               href="/"
               className="flex h-8 w-8 items-center justify-center rounded-full bg-bg-card text-text-secondary hover:opacity-80"
-              aria-label="Retour au dashboard"
+              aria-label={t.common.retourDashboard}
             >
               <House className="h-4 w-4" strokeWidth={1.75} />
             </Link>
             <div className="max-w-[160px] truncate rounded-full bg-bg-card px-4 py-1.5 text-sm text-text-secondary sm:max-w-none">
               <span className="sm:hidden">{profile?.nom_utilisateur}</span>
               <span className="hidden sm:inline">
-                Bienvenue, {profile?.nom_utilisateur} | Rôle : {profile?.role} |
-                {" "}Base : {organization?.nom}
+                {t.layout.bienvenue}, {profile?.nom_utilisateur} | {t.layout.role} : {profile?.role} |
+                {" "}{t.layout.base} : {organization?.nom}
               </span>
             </div>
           </div>
@@ -87,7 +90,7 @@ export default function ProtectedLayout({
             )}
             {projects.length === 1 && (
               <span className="hidden text-sm text-text-secondary sm:inline">
-                Projet : {project?.code_projet}
+                {t.layout.projet} : {project?.code_projet}
               </span>
             )}
             {pathname !== "/" && (
@@ -95,12 +98,13 @@ export default function ProtectedLayout({
                 href="/"
                 className="text-sm text-text-secondary hover:text-accent-teal"
               >
-                ← Dashboard
+                {t.common.voirDashboard}
               </Link>
             )}
+            <LanguageSwitcher />
             <button
               onClick={toggleTheme}
-              aria-label="Changer de thème"
+              aria-label={t.common.changerTheme}
               className="flex h-8 w-8 items-center justify-center rounded-full border border-border-subtle text-text-secondary hover:bg-bg-card"
             >
               {theme === "dark" ? (
@@ -109,7 +113,7 @@ export default function ProtectedLayout({
                 <Sun className="h-4 w-4" strokeWidth={1.75} />
               )}
             </button>
-            <Pill onClick={() => signOut()}>Déconnexion</Pill>
+            <Pill onClick={() => signOut()}>{t.common.deconnexion}</Pill>
           </div>
         </div>
       </header>
