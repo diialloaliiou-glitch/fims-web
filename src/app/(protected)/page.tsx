@@ -29,6 +29,12 @@ import {
   TrendingUp,
 } from "lucide-react";
 
+function formatPrenom(nomUtilisateur: string | undefined) {
+  if (!nomUtilisateur) return "";
+  const prenom = nomUtilisateur.trim().split(" ")[0];
+  return prenom.charAt(0).toUpperCase() + prenom.slice(1).toLowerCase();
+}
+
 export default function DashboardPage() {
   const { profile, project } = useAuth();
   const [entryCount, setEntryCount] = useState<number | null>(null);
@@ -229,7 +235,7 @@ export default function DashboardPage() {
         </p>
 
         <h1 className="font-display mt-4 text-3xl font-light tracking-tight text-text-primary">
-          Bienvenu {profile?.nom_utilisateur}
+          Bienvenue, {formatPrenom(profile?.nom_utilisateur)}
         </h1>
         <p className="text-sm text-text-secondary">
           {project?.nom_projet}
