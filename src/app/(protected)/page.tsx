@@ -26,6 +26,7 @@ import {
   Settings,
   FileSpreadsheet,
   Percent,
+  TrendingUp,
 } from "lucide-react";
 
 export default function DashboardPage() {
@@ -160,6 +161,7 @@ export default function DashboardPage() {
     { key: "jaux", icon: BookCopy, label: "J-Auxiliaire", href: "/journal-auxiliaire", color: "blue" as const },
     { key: "balance", icon: Scale, label: "Balance", href: "/balance", color: "blue" as const },
     { key: "reporting", icon: BarChart3, label: "Reporting", href: "/reporting", color: "blue" as const },
+    { key: "budtracker", icon: TrendingUp, label: "BUD TRACKER", href: "/bud-tracker", color: "blue" as const },
     { key: "parametre", icon: Settings, label: "Paramètre", href: "/parametres", color: "muted" as const },
   ];
 
@@ -252,7 +254,7 @@ export default function DashboardPage() {
         </form>
 
         <div className="flex flex-wrap justify-center gap-3 pt-1">
-          <Pill icon={Clock} href="/budget">
+          <Pill icon={Clock} href="/bud-tracker">
             Voir le suivi budgétaire
           </Pill>
           <Pill icon={Database} onClick={() => comingSoon("Accès base de données")}>
