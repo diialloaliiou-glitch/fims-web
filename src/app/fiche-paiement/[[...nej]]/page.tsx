@@ -2,13 +2,20 @@
 
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { Home, Download, Printer } from "lucide-react";
+import { Home, Download, Printer, PenLine, BadgeCheck } from "lucide-react";
 import { QRCodeSVG } from "qrcode.react";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/lib/auth-context";
 import { PREFIXE_COMPTE_BANQUE_PROJET } from "@/lib/solde-banque";
 import { getOrCreateVerificationToken } from "@/lib/verification-piece";
 import type { BudgetLine, JournalEntry } from "@/lib/types";
+
+// Palette propre a ce document imprimable (Fiche de Paiement) : noir/blanc
+// avec quelques accents fixes. Volontairement independante des tokens de
+// theme sombre/clair du reste de l'appli (cette page ne change jamais avec
+// le theme ou la langue).
+const BROWN = "#8B6D4E";
+const DARK_GRAY = "#4B5563";
 
 export default function FichePaiementPage() {
   const params = useParams<{ nej?: string[] }>();
@@ -163,7 +170,7 @@ export default function FichePaiementPage() {
         </button>
       </div>
 
-      <div className="mx-auto w-full max-w-3xl px-8 py-10">
+      <div className="mx-auto my-6 w-full max-w-3xl border border-gray-300 px-8 py-10">
         <div className="mb-2 flex justify-center">
           {verificationToken ? (
             <QRCodeSVG
@@ -174,13 +181,14 @@ export default function FichePaiementPage() {
             <div className="h-14 w-14" />
           )}
         </div>
-        <h1 className="mb-8 text-center text-xl font-semibold tracking-wide">
+        <h1 className="text-center text-xl font-bold tracking-wide text-black">
           PAYMENT AUTHORIZATION FORM
         </h1>
+        <div className="mb-8 mt-2 border-b border-gray-300" />
 
         <div className="mb-8 grid grid-cols-2 gap-y-3 text-sm">
           <div className="flex items-center gap-2">
-            <span className="text-blue-700">Item No. :</span>
+            <span className="font-bold text-black">Item No. :</span>
             <input
               type="text"
               value={numEJInput}
@@ -189,34 +197,45 @@ export default function FichePaiementPage() {
                 if (e.key === "Enter") goToPiece(numEJInput);
               }}
               onBlur={() => goToPiece(numEJInput)}
-              className="w-32 border border-emerald-600 px-2 py-0.5 text-center font-bold text-blue-700 outline-none"
+              style={{ borderColor: "#34E0B0" }}
+              className="w-32 border px-2 py-0.5 text-center font-bold text-blue-700 outline-none"
             />
           </div>
-          <div>
-            <span className="text-gray-600">Date : </span>
-            {premiere ? new Date(premiere.date_operation).toLocaleDateString("en-GB") : ""}
+          <div className="flex items-baseline gap-2">
+            <span className="font-bold text-black">Date :</span>
+            <span className="flex-1 border-b border-gray-300 text-black">
+              {premiere ? new Date(premiere.date_operation).toLocaleDateString("en-GB") : ""}
+            </span>
           </div>
 
-          <div>
-            <span className="text-gray-600">N°chq/ov/bcs : </span>
-            {premiere?.n_cheque_ov}
+          <div className="flex items-baseline gap-2">
+            <span className="font-bold text-black">N°chq/ov/bcs :</span>
+            <span className="flex-1 border-b border-gray-300" style={{ color: DARK_GRAY }}>
+              {premiere?.n_cheque_ov}
+            </span>
           </div>
-          <div>
-            <span className="text-gray-600">Project ID : </span>
-            {project?.code_projet}
+          <div className="flex items-baseline gap-2">
+            <span className="font-bold text-black">Project ID :</span>
+            <span className="flex-1 border-b border-gray-300 text-black">
+              {project?.code_projet}
+            </span>
           </div>
 
-          <div className="col-span-2">
-            <span className="text-gray-600">Beneficiary : </span>
-            {premiere?.tiers}
+          <div className="col-span-2 flex items-baseline gap-2">
+            <span className="font-bold text-black">Beneficiary :</span>
+            <span className="flex-1 border-b border-gray-300" style={{ color: BROWN }}>
+              {premiere?.tiers}
+            </span>
           </div>
-          <div className="col-span-2">
-            <span className="text-gray-600">Organization : </span>
-            {organization?.nom}
+          <div className="col-span-2 flex items-baseline gap-2">
+            <span className="font-bold text-black">Organization :</span>
+            <span className="flex-1 border-b border-gray-300" style={{ color: BROWN }}>
+              {organization?.nom}
+            </span>
           </div>
         </div>
 
-        {loading && <p className="mb-4 text-sm text-gray-500">Loading...</p>}
+        {loading && <p className="mb-4 text-sm text-black">Loading...</p>}
         {error && <p className="mb-4 text-sm text-red-600 print:hidden">{error}</p>}
 
         {premiere && (
@@ -228,133 +247,155 @@ export default function FichePaiementPage() {
               </div>
             ) : (
               <>
-                <table className="mb-8 w-full text-sm">
-                  <tbody>
-                    <tr>
-                      <td className="w-1/2 border border-black bg-gray-100 py-1 text-center font-semibold">
-                        Section
-                      </td>
-                      <td className="w-1/2 border border-black bg-gray-100 py-1 text-center font-semibold">
-                        Budget
-                      </td>
-                    </tr>
-                    <tr>
-                      <td className="border border-black px-3 py-1">Approved Budget :</td>
-                      <td className="border border-black px-3 py-1 text-right">
+                <div className="mb-8 flex text-sm">
+                  <div className="flex-1">
+                    <div
+                      className="border border-gray-400 py-1 text-center font-bold text-black"
+                      style={{ backgroundColor: "#EEEEEE" }}
+                    >
+                      Section
+                    </div>
+                    <div className="px-1 pt-2">
+                      <div className="font-bold text-black">Approved Budget :</div>
+                      <div className="font-bold text-black">Currently available :</div>
+                      <div className="font-bold text-black">This request :</div>
+                      <div className="font-bold text-black">RESTING balance :</div>
+                    </div>
+                  </div>
+                  <div className="flex-1">
+                    <div
+                      className="border border-gray-400 py-1 text-center font-bold text-black"
+                      style={{ backgroundColor: "#EEEEEE" }}
+                    >
+                      Budget
+                    </div>
+                    <div className="border border-t-0 border-gray-400 px-3 py-1">
+                      <div className="text-right text-black">
                         {Math.round(budgetGlobal).toLocaleString("en-US")}
-                      </td>
-                    </tr>
-                    <tr>
-                      <td className="border border-black px-3 py-1">Currently available :</td>
-                      <td className="border border-black px-3 py-1 text-right">
+                      </div>
+                      <div className="text-right text-black">
                         {soldeDisponible !== null
                           ? Math.round(soldeDisponible).toLocaleString("en-US")
                           : "—"}
-                      </td>
-                    </tr>
-                    <tr>
-                      <td className="border border-black px-3 py-1">This request :</td>
-                      <td className="border border-black px-3 py-1 text-right">
+                      </div>
+                      <div className="text-right text-black">
                         {Math.round(montantDemande).toLocaleString("en-US")}
-                      </td>
-                    </tr>
-                    <tr>
-                      <td className="border border-black px-3 py-1">RESTING balance :</td>
-                      <td className="border border-black px-3 py-1 text-right font-semibold text-red-600">
+                      </div>
+                      <div className="text-right font-bold text-red-600">
                         {soldeRestant !== null
                           ? Math.round(soldeRestant).toLocaleString("en-US")
                           : "—"}
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
+                      </div>
+                    </div>
+                  </div>
+                </div>
 
-                <table className="mb-2 w-full text-sm">
+                <table className="mb-0 w-full border-collapse text-sm">
                   <thead>
-                    <tr>
-                      <th className="border border-black bg-gray-100 py-1 font-semibold">
+                    <tr className="border-b border-gray-400">
+                      <th className="border-r border-gray-300 py-1 text-center font-bold text-black">
                         Budget code
                       </th>
-                      <th className="border border-black bg-gray-100 py-1 font-semibold">
+                      <th className="border-r border-gray-300 py-1 text-center font-bold text-black">
                         Account No.
                       </th>
-                      <th className="border border-black bg-gray-100 py-1 font-semibold">
+                      <th className="border-r border-gray-300 py-1 text-center font-bold text-black">
                         Libelle
                       </th>
-                      <th className="border border-black bg-gray-100 py-1 font-semibold">
+                      <th className="border-r border-gray-300 py-1 text-center font-bold text-black">
                         Debit
                       </th>
-                      <th className="border border-black bg-gray-100 py-1 font-semibold">
-                        Credit
-                      </th>
+                      <th className="py-1 text-center font-bold text-black">Credit</th>
                     </tr>
                   </thead>
                   <tbody>
                     {lignes.map((l) => (
                       <tr key={l.id}>
-                        <td className="border border-black px-2 py-1 text-center">
+                        <td className="border-r border-gray-300 px-2 py-1 text-center text-black">
                           {l.b_s_line}
                         </td>
-                        <td className="border border-black px-2 py-1 text-center">
+                        <td className="border-r border-gray-300 px-2 py-1 text-center text-black">
                           {l.montant_debit > 0 ? l.compte_debit : l.compte_credit}
                         </td>
-                        <td className="border border-black px-2 py-1">{l.libelle}</td>
-                        <td className="border border-black px-2 py-1 text-right">
+                        <td className="border-r border-gray-300 px-2 py-1 text-black">
+                          {l.libelle}
+                        </td>
+                        <td className="border-r border-gray-300 px-2 py-1 text-right text-black">
                           {l.montant_debit ? l.montant_debit.toLocaleString("en-US") : ""}
                         </td>
-                        <td className="border border-black px-2 py-1 text-right">
+                        <td className="px-2 py-1 text-right text-black">
                           {l.montant_credit ? l.montant_credit.toLocaleString("en-US") : ""}
                         </td>
                       </tr>
                     ))}
                     {Array.from({ length: Math.max(0, 6 - lignes.length) }).map((_, i) => (
                       <tr key={`blank-${i}`}>
-                        <td className="border border-black px-2 py-3">&nbsp;</td>
-                        <td className="border border-black px-2 py-3">&nbsp;</td>
-                        <td className="border border-black px-2 py-3">&nbsp;</td>
-                        <td className="border border-black px-2 py-3">&nbsp;</td>
-                        <td className="border border-black px-2 py-3">&nbsp;</td>
+                        <td className="border-r border-gray-300 px-2 py-3">&nbsp;</td>
+                        <td className="border-r border-gray-300 px-2 py-3">&nbsp;</td>
+                        <td className="border-r border-gray-300 px-2 py-3">&nbsp;</td>
+                        <td className="border-r border-gray-300 px-2 py-3">&nbsp;</td>
+                        <td className="px-2 py-3">&nbsp;</td>
                       </tr>
                     ))}
                   </tbody>
                 </table>
 
-                <div className="mb-10 flex justify-end gap-6 text-sm font-semibold">
-                  <span>TOTALS ................=</span>
-                  <span className="w-24 text-right">
+                <div className="mb-10 flex justify-end gap-6 border-t border-gray-400 pt-2 text-sm font-bold">
+                  <span className="text-black">TOTALS ................=</span>
+                  <span className="w-24 text-right text-blue-700">
                     {lignes.reduce((s, l) => s + l.montant_debit, 0).toLocaleString("en-US")}
                   </span>
-                  <span className="w-24 text-right">
+                  <span className="w-24 text-right text-blue-700">
                     {lignes.reduce((s, l) => s + l.montant_credit, 0).toLocaleString("en-US")}
                   </span>
                 </div>
               </>
             )}
 
-            <div className="mb-10 grid grid-cols-2 gap-8 text-sm">
-              <div>
-                <p className="mb-1 border-b border-black pb-1 font-semibold">
-                  Prepared by : Administrative &amp; Financial Manager
-                </p>
-                <p className="mb-6 mt-2">{project?.administrative_financial_manager}</p>
-                <p className="text-xs text-gray-600">Date :</p>
-                <p className="mt-1 text-xs text-gray-600">
+            <div className="relative mb-10 grid grid-cols-2 gap-8 text-sm">
+              <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
+                <span className="text-3xl font-bold tracking-widest text-gray-100">FIMS</span>
+              </div>
+              <div className="relative">
+                <div
+                  className="flex items-center gap-1.5 border border-gray-400 px-2 py-1 font-bold text-black"
+                  style={{ backgroundColor: "#EEEEEE" }}
+                >
+                  <PenLine className="h-3.5 w-3.5" strokeWidth={2} />
+                  Checked by : Administrative &amp; Financial Manager
+                </div>
+                <div className="flex h-24 flex-col justify-between border border-t-0 border-gray-400 px-2 py-1">
+                  <p className="text-black">{project?.administrative_financial_manager}</p>
+                  <p className="font-bold text-black">Date :</p>
+                </div>
+                <p className="mt-1 text-xs text-black">
                   By signing, you certify that the entries made are correct.
                 </p>
               </div>
-              <div>
-                <p className="mb-1 border-b border-black pb-1 font-semibold">
+              <div className="relative">
+                <div
+                  className="flex items-center gap-1.5 border border-gray-400 px-2 py-1 font-bold text-black"
+                  style={{ backgroundColor: "#EEEEEE" }}
+                >
+                  <BadgeCheck className="h-3.5 w-3.5" strokeWidth={2} />
                   Approved by : Program Coordinator/President
-                </p>
-                <p className="mb-6 mt-2">{project?.program_coordinator_president}</p>
-                <p className="text-xs text-gray-600">Date :</p>
-                <p className="mt-1 text-xs text-gray-600">
+                </div>
+                <div className="flex h-24 flex-col justify-between border border-t-0 border-gray-400 px-2 py-1">
+                  <p className="text-black">{project?.program_coordinator_president}</p>
+                  <p className="font-bold text-black">Date :</p>
+                </div>
+                <p className="mt-1 text-xs text-black">
                   By signing, you authorise the expenditure for the project.
                 </p>
               </div>
             </div>
 
-            <p className="text-xs text-gray-600">Seized by : {premiere.utilisateur}</p>
+            <p className="text-center text-xs">
+              <span className="font-bold text-black">Seized by : </span>
+              <span className="border-b border-gray-300" style={{ color: BROWN }}>
+                {premiere.utilisateur}
+              </span>
+            </p>
           </>
         )}
       </div>
