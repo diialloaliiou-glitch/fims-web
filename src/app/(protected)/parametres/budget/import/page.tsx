@@ -142,13 +142,31 @@ export default function ImportBudgetPage() {
     setImportError(null);
 
     if (mode === "remplacer") {
-      const { error: deleteError } = await supabase
+      // .select() force la requete a renvoyer les lignes reellement
+      // supprimees : sans ca, une policy RLS qui bloque silencieusement la
+      // suppression (0 ligne affectee, aucune erreur levee par Postgres)
+      // passerait inapercue et on inserterait les nouvelles lignes en
+      // doublon des anciennes au lieu de les remplacer.
+      const { data: deletedRows, error: deleteError } = await supabase
         .from("budget_lines")
         .delete()
-        .eq("project_id", targetProjectId);
+        .eq("project_id", targetProjectId)
+        .select("id");
+
       if (deleteError) {
         setImporting(false);
         setImportError(`Erreur : ${deleteError.message}`);
+        return;
+      }
+
+      const nbSupprimees = deletedRows?.length ?? 0;
+      if (nbSupprimees < ourLineCodesExistants.size) {
+        setImporting(false);
+        setImportError(
+          t.budgetImport.erreurSuppressionIncomplete
+            .replace("{supprimees}", String(nbSupprimees))
+            .replace("{attendues}", String(ourLineCodesExistants.size))
+        );
         return;
       }
     }

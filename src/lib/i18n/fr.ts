@@ -295,6 +295,7 @@ export const fr = {
     ouiRemplacer: "Oui, remplacer",
     erreurColonneManquante: "La colonne OUR LINE CODE est introuvable dans le fichier — vérifie les en-têtes.",
     erreurModeObligatoire: "Choisis un comportement d'import (Ajouter ou Remplacer) avant de continuer.",
+    erreurSuppressionIncomplete: "La suppression des anciennes lignes a échoué ({supprimees}/{attendues} supprimée(s), probablement un problème de permissions serveur) — import annulé, aucune nouvelle ligne n'a été insérée. Vérifie les permissions de suppression sur budget_lines.",
     importReussi: "{count} ligne(s) importée(s) avec succès.",
     voirBudget: "Voir le budget",
     importation: "Importation...",

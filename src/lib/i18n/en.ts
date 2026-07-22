@@ -299,6 +299,7 @@ export const en: typeof fr = {
     ouiRemplacer: "Yes, replace",
     erreurColonneManquante: "The OUR LINE CODE column could not be found in the file — check the headers.",
     erreurModeObligatoire: "Choose an import behavior (Add or Replace) before continuing.",
+    erreurSuppressionIncomplete: "Deleting the old rows failed ({supprimees}/{attendues} deleted, likely a server permissions issue) — import cancelled, no new row was inserted. Check delete permissions on budget_lines.",
     importReussi: "{count} row(s) imported successfully.",
     voirBudget: "View the budget",
     importation: "Importing...",
