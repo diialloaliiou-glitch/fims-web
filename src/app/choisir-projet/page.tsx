@@ -79,9 +79,17 @@ export default function ChoisirProjetPage() {
               </p>
 
               {projects.length === 0 ? (
-                <p className="text-sm text-text-secondary">
-                  {t.choisirProjet.aucunProjet}
-                </p>
+                <>
+                  <p className="mb-4 text-sm text-text-secondary">
+                    {t.choisirProjet.aucunProjet}
+                  </p>
+                  <button
+                    onClick={() => signOut()}
+                    className="rounded-md border border-border-subtle px-4 py-2 text-sm text-text-secondary hover:bg-bg-card"
+                  >
+                    {t.choisirProjet.seDeconnecter}
+                  </button>
+                </>
               ) : (
                 <div className="flex flex-col gap-3">
                   {projects.map((p) => (
