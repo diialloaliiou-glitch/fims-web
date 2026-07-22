@@ -17,6 +17,7 @@ import {
   type BudgetImportKey,
   type BudgetImportRow,
 } from "@/lib/budget-import";
+import { assurerLigne52B } from "@/lib/budget-52b";
 
 type Mode = "ajouter" | "remplacer" | "";
 
@@ -186,6 +187,10 @@ export default function ImportBudgetPage() {
       setImportError(`Erreur : ${insertError.message}`);
       return;
     }
+
+    // 52B doit toujours exister - le mode Remplacer l'a supprimee avec le
+    // reste, et le fichier importe ne la contient pas forcement.
+    await assurerLigne52B(profile.organization_id, targetProjectId);
 
     setImportResult(rowsToInsert.length);
     setParsed(null);

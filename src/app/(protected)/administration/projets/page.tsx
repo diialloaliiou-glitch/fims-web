@@ -5,6 +5,7 @@ import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/lib/auth-context";
 import { useLanguage } from "@/lib/language-context";
 import { hasRole } from "@/lib/roles";
+import { assurerLigne52B } from "@/lib/budget-52b";
 import { FormField } from "@/components/ui/FormField";
 import { MiniTableHeader } from "@/components/ui/MiniTableHeader";
 import { PrimaryButton } from "@/components/ui/PrimaryButton";
@@ -77,12 +78,16 @@ export default function ProjetsPage() {
 
     setSaving(true);
 
-    const { error: insertError } = await supabase.from("projects").insert({
-      organization_id: profile.organization_id,
-      nom_projet: form.nom_projet.trim(),
-      code_projet: form.code_projet.trim(),
-      actif: true,
-    });
+    const { data: created, error: insertError } = await supabase
+      .from("projects")
+      .insert({
+        organization_id: profile.organization_id,
+        nom_projet: form.nom_projet.trim(),
+        code_projet: form.code_projet.trim(),
+        actif: true,
+      })
+      .select("id")
+      .single();
 
     setSaving(false);
 
@@ -90,6 +95,10 @@ export default function ProjetsPage() {
       setError(`Erreur : ${insertError.message}`);
       return;
     }
+
+    // 52B doit exister dans chaque projet - cree automatiquement pour
+    // eviter d'avoir a y penser manuellement a chaque nouveau projet.
+    await assurerLigne52B(profile.organization_id, created.id);
 
     setForm(emptyForm);
     loadAll();
