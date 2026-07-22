@@ -72,7 +72,7 @@ export type BudgetImportRow = {
   errors: string[];
 };
 
-function normaliserEnTete(s: string) {
+export function normaliserEnTete(s: string) {
   return s.trim().toLowerCase().replace(/[\s/_-]+/g, "");
 }
 
@@ -96,10 +96,15 @@ export function estNumeriqueOuVide(v: unknown): boolean {
   return typeof v === "number" || (typeof v === "string" && !isNaN(Number(v.trim())));
 }
 
+// budget_lines.rubrique est contraint par une cle etrangere (organization_id,
+// rubrique) vers la table rubriques - une valeur qui n'y existe pas fait
+// echouer l'insertion entiere avec une erreur de contrainte peu comprehensible.
+// On valide et on normalise vers la valeur exacte de rubriques avant insertion.
 export function validerLignes(
   rawRows: Record<string, unknown>[],
   colonnesTrouvees: BudgetImportKey[],
-  ourLineCodesExistants: Set<string>
+  ourLineCodesExistants: Set<string>,
+  rubriquesValides: Map<string, string> = new Map()
 ): BudgetImportRow[] {
   const vusDansFichier = new Map<string, number>();
 
@@ -141,6 +146,19 @@ export function validerLignes(
       }
       if (ourLineCodesExistants.has(norm)) {
         errors.push(`OUR LINE CODE "${ourLineCode}" existe déjà dans ce projet.`);
+      }
+    }
+
+    const rubriqueBrute = values.rubrique as string | null;
+    if (rubriqueBrute && rubriqueBrute.trim()) {
+      const normRubrique = normaliserEnTete(rubriqueBrute);
+      const canonique = rubriquesValides.get(normRubrique);
+      if (canonique) {
+        values.rubrique = canonique;
+      } else {
+        errors.push(
+          `Rubrique "${rubriqueBrute}" invalide — valeurs autorisées : ${[...new Set(rubriquesValides.values())].join(", ")}.`
+        );
       }
     }
 

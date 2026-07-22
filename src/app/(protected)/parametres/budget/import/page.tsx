@@ -13,6 +13,7 @@ import {
   BUDGET_IMPORT_COLUMNS,
   BUDGET_EXAMPLE_ROW,
   mapperEntetes,
+  normaliserEnTete,
   validerLignes,
   type BudgetImportKey,
   type BudgetImportRow,
@@ -34,6 +35,7 @@ export default function ImportBudgetPage() {
     colonnesTrouvees: BudgetImportKey[];
   } | null>(null);
   const [ourLineCodesExistants, setOurLineCodesExistants] = useState<Set<string>>(new Set());
+  const [rubriquesValides, setRubriquesValides] = useState<Map<string, string>>(new Map());
   const [erreurFichier, setErreurFichier] = useState<string | null>(null);
   const [confirmingReplace, setConfirmingReplace] = useState(false);
   const [importing, setImporting] = useState(false);
@@ -44,6 +46,21 @@ export default function ImportBudgetPage() {
     if (project?.id) chargerCodesExistants(project.id);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [project?.id]);
+
+  useEffect(() => {
+    if (!profile?.organization_id) return;
+    supabase
+      .from("rubriques")
+      .select("rubrique")
+      .eq("organization_id", profile.organization_id)
+      .then(({ data }) => {
+        const map = new Map<string, string>();
+        ((data ?? []) as { rubrique: string }[]).forEach((r) => {
+          map.set(normaliserEnTete(r.rubrique), r.rubrique);
+        });
+        setRubriquesValides(map);
+      });
+  }, [profile?.organization_id]);
 
   async function chargerCodesExistants(projectId: string) {
     const { data } = await supabase
@@ -130,9 +147,10 @@ export default function ImportBudgetPage() {
     return validerLignes(
       parsed.rawObjects,
       parsed.colonnesTrouvees,
-      mode === "remplacer" ? new Set() : ourLineCodesExistants
+      mode === "remplacer" ? new Set() : ourLineCodesExistants,
+      rubriquesValides
     );
-  }, [parsed, mode, ourLineCodesExistants]);
+  }, [parsed, mode, ourLineCodesExistants, rubriquesValides]);
 
   const nbErreurs = lignes.filter((l) => l.errors.length > 0).length;
   const peutImporter = lignes.length > 0 && nbErreurs === 0 && mode !== "" && !!targetProjectId;
