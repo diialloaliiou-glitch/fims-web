@@ -2,6 +2,7 @@
 
 import { BookText, Users, UserSquare2, UserCog, FolderKanban, Info, KeyRound, Table2, Building2, Tags, Target } from "lucide-react";
 import { ActionCard } from "@/components/ui/ActionCard";
+import { NavigationSecondaire } from "@/components/ui/NavigationSecondaire";
 import { useAuth } from "@/lib/auth-context";
 import { useLanguage } from "@/lib/language-context";
 import { hasRole } from "@/lib/roles";
@@ -36,6 +37,8 @@ export default function ParametresPage() {
 
   return (
     <div>
+      <NavigationSecondaire actuel="parametre" />
+
       <h1 className="mb-6 text-2xl font-semibold text-text-primary">{t.parametres.titre}</h1>
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
         {cards.map((c) => (

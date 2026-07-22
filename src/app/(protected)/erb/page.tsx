@@ -7,6 +7,7 @@ import { useLanguage } from "@/lib/language-context";
 import { FormField, fieldControlClass } from "@/components/ui/FormField";
 import { MiniTableHeader } from "@/components/ui/MiniTableHeader";
 import { PrimaryButton } from "@/components/ui/PrimaryButton";
+import { NavigationSecondaire } from "@/components/ui/NavigationSecondaire";
 import type { ErbLine } from "@/lib/types";
 
 type Cote = "CHEZ_MOI" | "CHEZ_BANQUE";
@@ -257,6 +258,8 @@ export default function ErbPage() {
 
   return (
     <div>
+      <NavigationSecondaire actuel="erb" />
+
       <h1 className="mb-2 text-2xl font-semibold text-text-primary">
         {t.erb.titre}
       </h1>

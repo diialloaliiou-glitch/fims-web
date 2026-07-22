@@ -8,6 +8,7 @@ import { exporterCsv } from "@/lib/export-csv";
 import { FormField, fieldControlClass } from "@/components/ui/FormField";
 import { MiniTableHeader } from "@/components/ui/MiniTableHeader";
 import { Pill } from "@/components/ui/Pill";
+import { NavigationSecondaire } from "@/components/ui/NavigationSecondaire";
 import type { BankJournal, JournalEntry } from "@/lib/types";
 
 function firstOfMonthIso() {
@@ -70,6 +71,8 @@ export default function JournalAuxiliairePage() {
 
   return (
     <div>
+      <NavigationSecondaire actuel="jaux" />
+
       <div className="mb-6 flex items-center justify-between">
         <h1 className="text-2xl font-semibold text-text-primary">
           {t.journalAuxiliaire.titre}
