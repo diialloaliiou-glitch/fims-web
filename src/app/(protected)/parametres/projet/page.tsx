@@ -9,6 +9,10 @@ import { FormField, fieldControlClass } from "@/components/ui/FormField";
 import { PrimaryButton } from "@/components/ui/PrimaryButton";
 import type { Donor } from "@/lib/types";
 
+function estNumerique(v: string) {
+  return v.trim() !== "" && !isNaN(Number(v.trim()));
+}
+
 export default function ParametresProjetPage() {
   const { profile, project } = useAuth();
   const { t } = useLanguage();
@@ -35,6 +39,8 @@ export default function ParametresProjetPage() {
     authorized_by: "",
     administrative_financial_manager: "",
     program_coordinator_president: "",
+    devise: "",
+    taux_conversion: "",
   });
 
   const canManage = hasRole(profile?.role, ["ADMIN_N1", "ADMIN_SITE", "RAF"]);
@@ -54,6 +60,8 @@ export default function ParametresProjetPage() {
       authorized_by: project.authorized_by ?? "",
       administrative_financial_manager: project.administrative_financial_manager ?? "",
       program_coordinator_president: project.program_coordinator_president ?? "",
+      devise: project.devise ?? "",
+      taux_conversion: project.taux_conversion != null ? String(project.taux_conversion) : "",
     });
 
     loadDonors();
@@ -123,6 +131,10 @@ export default function ParametresProjetPage() {
       setError(t.infoProjet.erreurChampsObligatoires);
       return;
     }
+    if (form.taux_conversion.trim() && !estNumerique(form.taux_conversion)) {
+      setError(t.infoProjet.erreurTauxNumerique);
+      return;
+    }
     if (!project) return;
 
     setSaving(true);
@@ -142,6 +154,8 @@ export default function ParametresProjetPage() {
         authorized_by: form.authorized_by.trim() || null,
         administrative_financial_manager: form.administrative_financial_manager.trim() || null,
         program_coordinator_president: form.program_coordinator_president.trim() || null,
+        devise: form.devise.trim() || null,
+        taux_conversion: form.taux_conversion.trim() ? Number(form.taux_conversion) : null,
       })
       .eq("id", project.id);
 
@@ -271,6 +285,18 @@ export default function ParametresProjetPage() {
             label={t.infoProjet.bankAccountNo}
             value={form.bank_account_number}
             onChange={(e) => setForm({ ...form, bank_account_number: e.target.value })}
+          />
+          <FormField
+            label={t.infoProjet.devise}
+            placeholder={t.infoProjet.devisePlaceholder}
+            value={form.devise}
+            onChange={(e) => setForm({ ...form, devise: e.target.value })}
+          />
+          <FormField
+            label={t.infoProjet.tauxConversion}
+            placeholder={t.infoProjet.tauxConversionPlaceholder}
+            value={form.taux_conversion}
+            onChange={(e) => setForm({ ...form, taux_conversion: e.target.value })}
           />
           <FormField
             label={t.infoProjet.startingDate}

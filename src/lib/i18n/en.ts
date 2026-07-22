@@ -561,6 +561,11 @@ export const en: typeof fr = {
     nomDuBailleur: "New donor name",
     ajouter: "Add",
     erreurNomBailleurObligatoire: "The donor name is required.",
+    devise: "Currency",
+    devisePlaceholder: "E.g. EURO",
+    tauxConversion: "Conversion rate",
+    tauxConversionPlaceholder: "E.g. 655.957",
+    erreurTauxNumerique: "The conversion rate must be a number.",
   },
   budTracker: {
     titre: "BUD TRACKER",

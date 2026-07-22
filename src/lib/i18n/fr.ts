@@ -557,6 +557,11 @@ export const fr = {
     nomDuBailleur: "Nom du nouveau bailleur",
     ajouter: "Ajouter",
     erreurNomBailleurObligatoire: "Le nom du bailleur est obligatoire.",
+    devise: "Devise",
+    devisePlaceholder: "Ex: EURO",
+    tauxConversion: "Taux de conversion",
+    tauxConversionPlaceholder: "Ex: 655.957",
+    erreurTauxNumerique: "Le taux de conversion doit être un nombre.",
   },
   budTracker: {
     titre: "BUD TRACKER",

@@ -296,7 +296,13 @@ export default function BudTrackerPage() {
                       {(l.pctConsoB * 100).toFixed(0)}%
                     </td>
                     <td className="px-3 py-2 text-right">{(l.pctConsoA * 100).toFixed(0)}%</td>
-                    <td className="px-3 py-2 text-right text-text-secondary">—</td>
+                    <td className="px-3 py-2 text-right text-text-secondary">
+                      {project?.taux_conversion
+                        ? (l.total / project.taux_conversion).toLocaleString("fr-FR", {
+                            maximumFractionDigits: 2,
+                          })
+                        : "—"}
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -348,7 +354,13 @@ export default function BudTrackerPage() {
                     <td className="px-3 py-2 text-right">
                       {(totalPctConsoA * 100).toFixed(0)}%
                     </td>
-                    <td className="px-3 py-2 text-right text-text-secondary">—</td>
+                    <td className="px-3 py-2 text-right text-text-secondary">
+                      {project?.taux_conversion
+                        ? (totalDepense / project.taux_conversion).toLocaleString("fr-FR", {
+                            maximumFractionDigits: 2,
+                          })
+                        : "—"}
+                    </td>
                   </tr>
                 </tfoot>
               )}

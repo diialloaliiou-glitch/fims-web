@@ -24,6 +24,8 @@ export type Project = {
   is_template: boolean;
   administrative_financial_manager: string | null;
   program_coordinator_president: string | null;
+  devise: string | null;
+  taux_conversion: number | null;
 };
 
 export type Organization = {
