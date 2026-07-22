@@ -422,6 +422,7 @@ export const en: typeof fr = {
     solde: "BALANCE",
     erreurOperationObligatoire: "The operation is required.",
     erreurMontantPositif: "The amount must be greater than zero.",
+    erreurSuppressionBloquee: "Deletion was blocked (server permission issue) — the line was not deleted.",
   },
   cloture: {
     titre: "Period Closing",

@@ -418,6 +418,7 @@ export const fr = {
     solde: "SOLDE",
     erreurOperationObligatoire: "L'opération est obligatoire.",
     erreurMontantPositif: "Le montant doit être supérieur à zéro.",
+    erreurSuppressionBloquee: "La suppression a été bloquée (problème de permissions serveur) — la ligne n'a pas été supprimée.",
   },
   cloture: {
     titre: "Clôture de période",

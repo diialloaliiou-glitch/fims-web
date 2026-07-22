@@ -90,6 +90,29 @@ function Colonne({
     onAdded();
   }
 
+  async function handleDelete(l: ErbLine) {
+    setError(null);
+    // .select() force la requete a renvoyer la ligne reellement supprimee -
+    // sans ca, une policy RLS qui bloque silencieusement la suppression (0
+    // ligne affectee, aucune erreur levee par Postgres) passerait inapercue.
+    const { data, error: deleteError } = await supabase
+      .from("erb_lines")
+      .delete()
+      .eq("id", l.id)
+      .select("id");
+
+    if (deleteError) {
+      setError(`Erreur : ${deleteError.message}`);
+      return;
+    }
+    if (!data || data.length === 0) {
+      setError(t.erb.erreurSuppressionBloquee);
+      return;
+    }
+
+    onAdded();
+  }
+
   return (
     <div>
       <p className="mb-3 font-semibold text-text-primary">{titre}</p>
@@ -150,20 +173,20 @@ function Colonne({
           <MiniTableHeader
             columns={
               showPointe
-                ? [t.erb.colDate, t.erb.colReference, t.erb.colOperation, t.erb.colDebit, t.erb.colCredit, t.erb.colC, t.erb.colSolde]
-                : [t.erb.colDate, t.erb.colReference, t.erb.colOperation, t.erb.colDebit, t.erb.colCredit, t.erb.colSolde]
+                ? [t.erb.colDate, t.erb.colReference, t.erb.colOperation, t.erb.colDebit, t.erb.colCredit, t.erb.colC, t.erb.colSolde, t.common.action]
+                : [t.erb.colDate, t.erb.colReference, t.erb.colOperation, t.erb.colDebit, t.erb.colCredit, t.erb.colSolde, t.common.action]
             }
             align={
               showPointe
-                ? ["left", "left", "left", "right", "right", "center", "right"]
-                : ["left", "left", "left", "right", "right", "right"]
+                ? ["left", "left", "left", "right", "right", "center", "right", "right"]
+                : ["left", "left", "left", "right", "right", "right", "right"]
             }
           />
           <tbody className="divide-y divide-border-subtle bg-bg-card/60">
             {sorted.length === 0 && (
               <tr>
                 <td
-                  colSpan={showPointe ? 7 : 6}
+                  colSpan={showPointe ? 8 : 7}
                   className="px-2 py-3 text-center text-text-secondary"
                 >
                   {t.erb.aucuneLigne}
@@ -201,6 +224,14 @@ function Colonne({
                   <td className="px-2 py-1.5 text-right font-medium">
                     {solde.toLocaleString("fr-FR")}
                   </td>
+                  <td className="px-2 py-1.5 text-right">
+                    <button
+                      onClick={() => handleDelete(l)}
+                      className="text-accent-red hover:underline"
+                    >
+                      {t.common.supprimer}
+                    </button>
+                  </td>
                 </tr>
               );
             })}
@@ -211,7 +242,7 @@ function Colonne({
                 <td className="px-2 py-1.5" colSpan={showPointe ? 5 : 4}>
                   {t.erb.solde}
                 </td>
-                <td className="px-2 py-1.5 text-right" colSpan={showPointe ? 2 : 2}>
+                <td className="px-2 py-1.5 text-right" colSpan={3}>
                   {solde.toLocaleString("fr-FR")}
                 </td>
               </tr>
