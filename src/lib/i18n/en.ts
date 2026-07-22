@@ -478,6 +478,7 @@ export const en: typeof fr = {
     tileUtilisateurs: "Users",
     tileProjets: "Projects",
     tileLicences: "Licenses",
+    tileOrganisations: "Organizations",
   },
   planComptable: {
     titre: "Chart of Accounts",
@@ -649,6 +650,16 @@ export const en: typeof fr = {
     expireeOuInactive: "Expired / inactive",
     sansExpiration: "No expiration",
     erreurOrganisationObligatoire: "Organization is required.",
+  },
+  organisations: {
+    titre: "Organizations",
+    permissionInfo: "Your role ({role}) does not allow access to organization management — reserved to ADMIN_N1.",
+    creerOrganisation: "Create an organization",
+    nomOrganisation: "Organization name",
+    colNom: "Name",
+    colStatut: "Status",
+    aucuneOrganisation: "No organization recorded.",
+    erreurNomObligatoire: "Organization name is required.",
   },
   verifier: {
     authentique: "Genuine document",

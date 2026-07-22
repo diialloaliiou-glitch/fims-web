@@ -474,6 +474,7 @@ export const fr = {
     tileUtilisateurs: "Utilisateurs",
     tileProjets: "Projets",
     tileLicences: "Licences",
+    tileOrganisations: "Organisations",
   },
   planComptable: {
     titre: "Plan comptable",
@@ -646,6 +647,16 @@ export const fr = {
     expireeOuInactive: "Expirée / inactive",
     sansExpiration: "Sans expiration",
     erreurOrganisationObligatoire: "L'organisation est obligatoire.",
+  },
+  organisations: {
+    titre: "Organisations",
+    permissionInfo: "Ton rôle ({role}) ne permet pas d'accéder à la gestion des organisations — réservée à ADMIN_N1.",
+    creerOrganisation: "Créer une organisation",
+    nomOrganisation: "Nom de l'organisation",
+    colNom: "Nom",
+    colStatut: "Statut",
+    aucuneOrganisation: "Aucune organisation enregistrée.",
+    erreurNomObligatoire: "Le nom de l'organisation est obligatoire.",
   },
   verifier: {
     authentique: "Pièce authentique",
