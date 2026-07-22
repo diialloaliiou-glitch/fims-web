@@ -35,7 +35,10 @@ export default function ImportBudgetPage() {
     colonnesTrouvees: BudgetImportKey[];
   } | null>(null);
   const [ourLineCodesExistants, setOurLineCodesExistants] = useState<Set<string>>(new Set());
-  const [rubriquesValides, setRubriquesValides] = useState<Map<string, string>>(new Map());
+  const [rubriquesInfo, setRubriquesInfo] = useState<Map<string, { rubrique: string; code: string }>>(
+    new Map()
+  );
+  const [outputsInfo, setOutputsInfo] = useState<Map<string, { id: number; code: string }>>(new Map());
   const [erreurFichier, setErreurFichier] = useState<string | null>(null);
   const [confirmingReplace, setConfirmingReplace] = useState(false);
   const [importing, setImporting] = useState(false);
@@ -51,16 +54,31 @@ export default function ImportBudgetPage() {
     if (!profile?.organization_id) return;
     supabase
       .from("rubriques")
-      .select("rubrique")
+      .select("rubrique, code")
       .eq("organization_id", profile.organization_id)
       .then(({ data }) => {
-        const map = new Map<string, string>();
-        ((data ?? []) as { rubrique: string }[]).forEach((r) => {
-          map.set(normaliserEnTete(r.rubrique), r.rubrique);
+        const map = new Map<string, { rubrique: string; code: string }>();
+        ((data ?? []) as { rubrique: string; code: string }[]).forEach((r) => {
+          map.set(normaliserEnTete(r.rubrique), { rubrique: r.rubrique, code: r.code });
         });
-        setRubriquesValides(map);
+        setRubriquesInfo(map);
       });
   }, [profile?.organization_id]);
+
+  useEffect(() => {
+    if (!targetProjectId) return;
+    supabase
+      .from("project_outputs")
+      .select("id, code")
+      .eq("project_id", targetProjectId)
+      .then(({ data }) => {
+        const map = new Map<string, { id: number; code: string }>();
+        ((data ?? []) as { id: number; code: string }[]).forEach((o) => {
+          map.set(normaliserEnTete(o.code), { id: o.id, code: o.code });
+        });
+        setOutputsInfo(map);
+      });
+  }, [targetProjectId]);
 
   async function chargerCodesExistants(projectId: string) {
     const { data } = await supabase
@@ -89,6 +107,8 @@ export default function ImportBudgetPage() {
       ["Instructions"],
       ["- Ne modifie pas les en-têtes de la première ligne."],
       ["- OUR LINE CODE est obligatoire et doit être unique dans le projet."],
+      ["- Rubrique doit correspondre à une valeur existante (voir Paramètres > Rubriques) — Categorie s'en déduit automatiquement, ne la renseigne pas."],
+      ["- Output est optionnel — renseigne le code d'un output existant (voir Paramètres > Outputs) si tu veux classer la ligne par résultat de projet."],
       ["- Quantity, Frequence, Unit Cost, Total Cost, Ajustement, Unit Cost/DEVISE doivent être numériques ou vides."],
       ["- Supprime la ligne d'exemple avant d'importer tes vraies données."],
     ]);
@@ -148,9 +168,10 @@ export default function ImportBudgetPage() {
       parsed.rawObjects,
       parsed.colonnesTrouvees,
       mode === "remplacer" ? new Set() : ourLineCodesExistants,
-      rubriquesValides
+      rubriquesInfo,
+      outputsInfo
     );
-  }, [parsed, mode, ourLineCodesExistants, rubriquesValides]);
+  }, [parsed, mode, ourLineCodesExistants, rubriquesInfo, outputsInfo]);
 
   const nbErreurs = lignes.filter((l) => l.errors.length > 0).length;
   const peutImporter = lignes.length > 0 && nbErreurs === 0 && mode !== "" && !!targetProjectId;
@@ -190,11 +211,16 @@ export default function ImportBudgetPage() {
       }
     }
 
-    const rowsToInsert = lignes.map((l) => ({
-      ...l.values,
-      organization_id: profile.organization_id,
-      project_id: targetProjectId,
-    }));
+    const rowsToInsert = lignes.map((l) => {
+      const { output_code: _outputCode, ...colonnesReelles } = l.values;
+      return {
+        ...colonnesReelles,
+        categorie: l.categorie,
+        output_id: l.outputId,
+        organization_id: profile.organization_id,
+        project_id: targetProjectId,
+      };
+    });
 
     const { error: insertError } = await supabase.from("budget_lines").insert(rowsToInsert);
 

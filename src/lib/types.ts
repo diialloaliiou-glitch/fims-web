@@ -177,6 +177,16 @@ export type BudgetLine = {
   devise: string | null;
   taux_conversion: number | null;
   t_ic: string | null;
+  output_id: number | null;
+};
+
+export type ProjectOutput = {
+  id: number;
+  organization_id: string;
+  project_id: string;
+  code: string;
+  label: string;
+  ordre: number | null;
 };
 
 export type BudgetLineStaging = {

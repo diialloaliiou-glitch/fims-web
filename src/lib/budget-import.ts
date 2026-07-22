@@ -2,7 +2,11 @@
 // de FIMS Excel), verifiees dans le code VBA reel de synchronisation des
 // caches - ne pas inventer d'autres noms/ordre. project_id est resolu
 // automatiquement depuis le projet cible choisi a l'import, jamais lu du
-// fichier Excel.
+// fichier Excel. "categorie" n'est plus lue du fichier : elle est deduite
+// automatiquement de la Rubrique (table de reference rubriques), comme le
+// fait deja budget/staging au moment de la validation d'une proposition -
+// ce n'est pas un champ saisi librement. "output_code" est une colonne
+// optionnelle (axe Output, independant de la Rubrique).
 export type BudgetImportKey =
   | "code_1"
   | "icp"
@@ -10,7 +14,7 @@ export type BudgetImportKey =
   | "our_line_code"
   | "description"
   | "rubrique"
-  | "categorie"
+  | "output_code"
   | "unit"
   | "quantity"
   | "frequence"
@@ -35,7 +39,7 @@ export const BUDGET_IMPORT_COLUMNS: BudgetImportColumn[] = [
   { key: "our_line_code", header: "OUR LINE CODE", type: "text", required: true },
   { key: "description", header: "DESCRIPTION", type: "text" },
   { key: "rubrique", header: "Rubrique", type: "text" },
-  { key: "categorie", header: "Categorie", type: "text" },
+  { key: "output_code", header: "Output", type: "text" },
   { key: "unit", header: "Unit", type: "text" },
   { key: "quantity", header: "Quantity", type: "number" },
   { key: "frequence", header: "Frequence", type: "number" },
@@ -54,7 +58,7 @@ export const BUDGET_EXAMPLE_ROW: Record<BudgetImportKey, string | number> = {
   our_line_code: "A.1",
   description: "Targeting of beneficiary households",
   rubrique: "Activity",
-  categorie: "A",
+  output_code: "",
   unit: "Household",
   quantity: 500,
   frequence: 1,
@@ -69,6 +73,8 @@ export const BUDGET_EXAMPLE_ROW: Record<BudgetImportKey, string | number> = {
 export type BudgetImportRow = {
   rowNumber: number;
   values: Record<BudgetImportKey, string | number | null>;
+  categorie: string | null;
+  outputId: number | null;
   errors: string[];
 };
 
@@ -99,12 +105,15 @@ export function estNumeriqueOuVide(v: unknown): boolean {
 // budget_lines.rubrique est contraint par une cle etrangere (organization_id,
 // rubrique) vers la table rubriques - une valeur qui n'y existe pas fait
 // echouer l'insertion entiere avec une erreur de contrainte peu comprehensible.
-// On valide et on normalise vers la valeur exacte de rubriques avant insertion.
+// On valide et on normalise vers la valeur exacte de rubriques avant insertion,
+// et on en deduit categorie (jamais saisie librement, meme logique que
+// budget/staging).
 export function validerLignes(
   rawRows: Record<string, unknown>[],
   colonnesTrouvees: BudgetImportKey[],
   ourLineCodesExistants: Set<string>,
-  rubriquesValides: Map<string, string> = new Map()
+  rubriquesInfo: Map<string, { rubrique: string; code: string }> = new Map(),
+  outputsInfo: Map<string, { id: number; code: string }> = new Map()
 ): BudgetImportRow[] {
   const vusDansFichier = new Map<string, number>();
 
@@ -149,19 +158,36 @@ export function validerLignes(
       }
     }
 
+    let categorie: string | null = null;
     const rubriqueBrute = values.rubrique as string | null;
     if (rubriqueBrute && rubriqueBrute.trim()) {
       const normRubrique = normaliserEnTete(rubriqueBrute);
-      const canonique = rubriquesValides.get(normRubrique);
-      if (canonique) {
-        values.rubrique = canonique;
+      const match = rubriquesInfo.get(normRubrique);
+      if (match) {
+        values.rubrique = match.rubrique;
+        categorie = match.code;
       } else {
         errors.push(
-          `Rubrique "${rubriqueBrute}" invalide — valeurs autorisées : ${[...new Set(rubriquesValides.values())].join(", ")}.`
+          `Rubrique "${rubriqueBrute}" invalide — valeurs autorisées : ${[...new Set([...rubriquesInfo.values()].map((r) => r.rubrique))].join(", ")}.`
         );
       }
     }
 
-    return { rowNumber, values: values as BudgetImportRow["values"], errors };
+    let outputId: number | null = null;
+    const outputBrut = values.output_code as string | null;
+    if (outputBrut && outputBrut.trim()) {
+      const normOutput = normaliserEnTete(outputBrut);
+      const matchOutput = outputsInfo.get(normOutput);
+      if (matchOutput) {
+        values.output_code = matchOutput.code;
+        outputId = matchOutput.id;
+      } else {
+        errors.push(
+          `Output "${outputBrut}" invalide — codes autorisés : ${[...outputsInfo.values()].map((o) => o.code).join(", ")}.`
+        );
+      }
+    }
+
+    return { rowNumber, values: values as BudgetImportRow["values"], categorie, outputId, errors };
   });
 }

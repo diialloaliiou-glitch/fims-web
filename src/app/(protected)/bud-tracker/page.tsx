@@ -9,7 +9,7 @@ import { scopeToProjectSpending } from "@/lib/project-scope";
 import { cumulAvanceRecue } from "@/lib/avance-recue";
 import { MiniTableHeader } from "@/components/ui/MiniTableHeader";
 import { StatCard } from "@/components/ui/StatCard";
-import type { BudgetLine } from "@/lib/types";
+import type { BudgetLine, ProjectOutput } from "@/lib/types";
 
 type Mois = { idc: string; label: string };
 type Trimestre = { mois: Mois[]; label: string };
@@ -67,6 +67,19 @@ export default function BudTrackerPage() {
   const [cumulAvance, setCumulAvance] = useState(0);
   const [loading, setLoading] = useState(true);
   const [erreurDates, setErreurDates] = useState(false);
+  const [outputs, setOutputs] = useState<ProjectOutput[]>([]);
+  const [outputFilter, setOutputFilter] = useState<string>("");
+
+  useEffect(() => {
+    if (!project) return;
+    supabase
+      .from("project_outputs")
+      .select("*")
+      .eq("project_id", project.id)
+      .order("ordre")
+      .then(({ data }) => setOutputs((data as ProjectOutput[]) ?? []));
+    setOutputFilter("");
+  }, [project]);
 
   useEffect(() => {
     if (!project) return;
@@ -151,12 +164,26 @@ export default function BudTrackerPage() {
   }, [project]);
 
   const totalBudget = lignes.reduce((s, l) => s + (l.total_cost ?? 0), 0);
-  const totalAjustement = lignes.reduce((s, l) => s + (l.ajustement ?? 0), 0);
-  const totalDepense = lignes.reduce((s, l) => s + l.total, 0);
-  const totalSolde = totalBudget - totalDepense;
-  const totalPctConsoB = totalBudget > 0 ? totalDepense / totalBudget : 0;
-  const totalPctConsoA = cumulAvance > 0 ? totalDepense / cumulAvance : 0;
+  const cumulAvanceAffiche = cumulAvance;
+  const totalDepenseGlobal = lignes.reduce((s, l) => s + l.total, 0);
+  const totalPctConsoBGlobal = totalBudget > 0 ? totalDepenseGlobal / totalBudget : 0;
+  const totalPctConsoAGlobal = cumulAvance > 0 ? totalDepenseGlobal / cumulAvance : 0;
   const nbColMois = trimestres.reduce((s, tr) => s + tr.mois.length + 1, 0);
+
+  // Filtre Output : axe d'analyse additionnel, independant de la Rubrique -
+  // filtre uniquement le tableau/totaux de detail, pas les StatCards qui
+  // restent des indicateurs globaux du projet.
+  const lignesAffichees = outputFilter
+    ? lignes.filter((l) => String(l.output_id) === outputFilter)
+    : lignes;
+  const totalBudgetAffiche = lignesAffichees.reduce((s, l) => s + (l.total_cost ?? 0), 0);
+  const totalAjustement = lignesAffichees.reduce((s, l) => s + (l.ajustement ?? 0), 0);
+  const totalRAvanceAccAffiche = lignesAffichees.reduce((s, l) => s + l.rAvanceAcc, 0);
+  const totalPctRepartitionAffiche = lignesAffichees.reduce((s, l) => s + l.parRepartition, 0);
+  const totalDepense = lignesAffichees.reduce((s, l) => s + l.total, 0);
+  const totalSolde = totalBudgetAffiche - totalDepense;
+  const totalPctConsoB = totalBudgetAffiche > 0 ? totalDepense / totalBudgetAffiche : 0;
+  const totalPctConsoA = cumulAvance > 0 ? totalDepense / cumulAvance : 0;
 
   return (
     <div>
@@ -183,20 +210,40 @@ export default function BudTrackerPage() {
             <StatCard label={t.budTracker.budgetApprouve} value={Math.round(totalBudget).toLocaleString("fr-FR")} />
             <StatCard
               label={t.budTracker.cumulAvanceRecue}
-              value={Math.round(cumulAvance).toLocaleString("fr-FR")}
+              value={Math.round(cumulAvanceAffiche).toLocaleString("fr-FR")}
               valueColor="blue"
             />
             <StatCard
               label={t.budTracker.tauxConsoBudgetaire}
-              value={`${(totalPctConsoB * 100).toFixed(1)}%`}
+              value={`${(totalPctConsoBGlobal * 100).toFixed(1)}%`}
               valueColor="teal"
             />
             <StatCard
               label={t.budTracker.tauxConsoAvance}
-              value={`${(totalPctConsoA * 100).toFixed(1)}%`}
+              value={`${(totalPctConsoAGlobal * 100).toFixed(1)}%`}
               valueColor="amber"
             />
           </div>
+
+          {outputs.length > 0 && (
+            <div className="mb-4 flex items-center gap-3">
+              <label className="text-xs font-semibold uppercase tracking-wide text-text-secondary">
+                {t.budTracker.filtrerParOutput}
+              </label>
+              <select
+                value={outputFilter}
+                onChange={(e) => setOutputFilter(e.target.value)}
+                className="rounded-md border border-border-subtle bg-bg-card px-2 py-1.5 text-sm text-text-primary"
+              >
+                <option value="">{t.budTracker.tousLesOutputs}</option>
+                {outputs.map((o) => (
+                  <option key={o.id} value={String(o.id)}>
+                    {o.code} — {o.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
 
           <div className="max-h-[65vh] overflow-auto rounded-xl border border-border-subtle print:max-h-none print:overflow-visible">
             <table className="min-w-full table-auto text-sm [&_td]:border-r [&_td]:border-border-subtle [&_th]:border-r [&_th]:border-border-subtle [&_tr>*:last-child]:border-r-0">
@@ -240,14 +287,14 @@ export default function BudTrackerPage() {
                     </td>
                   </tr>
                 )}
-                {!loading && lignes.length === 0 && (
+                {!loading && lignesAffichees.length === 0 && (
                   <tr>
                     <td colSpan={12 + nbColMois} className="px-3 py-4 text-center text-text-secondary">
                       {t.budTracker.aucuneLigne}
                     </td>
                   </tr>
                 )}
-                {lignes.map((l) => (
+                {lignesAffichees.map((l) => (
                   <tr key={l.id} className="text-text-primary">
                     <td className="px-3 py-2">{project?.code_projet}</td>
                     <td className="px-3 py-2">{l.budget_line}</td>
@@ -306,24 +353,26 @@ export default function BudTrackerPage() {
                   </tr>
                 ))}
               </tbody>
-              {lignes.length > 0 && (
+              {lignesAffichees.length > 0 && (
                 <tfoot className="bg-bg-card font-semibold text-text-primary">
                   <tr>
                     <td className="px-3 py-2" colSpan={3}>
                       {t.budTracker.totalGeneral}
                     </td>
                     <td className="px-3 py-2 text-right">
-                      {Math.round(totalBudget).toLocaleString("fr-FR")}
+                      {Math.round(totalBudgetAffiche).toLocaleString("fr-FR")}
                     </td>
                     <td className="px-3 py-2 text-right">
                       {totalAjustement ? totalAjustement.toLocaleString("fr-FR") : ""}
                     </td>
                     <td className="px-3 py-2 text-right">
-                      {Math.round(cumulAvance).toLocaleString("fr-FR")}
+                      {Math.round(totalRAvanceAccAffiche).toLocaleString("fr-FR")}
                     </td>
-                    <td className="px-3 py-2 text-right">100%</td>
+                    <td className="px-3 py-2 text-right">
+                      {(totalPctRepartitionAffiche * 100).toFixed(1)}%
+                    </td>
                     {trimestres.map((tr) => {
-                      const totalTrimestre = lignes.reduce(
+                      const totalTrimestre = lignesAffichees.reduce(
                         (s, l) => s + tr.mois.reduce((s2, m) => s2 + (l.parMois[m.idc] ?? 0), 0),
                         0
                       );
@@ -331,7 +380,7 @@ export default function BudTrackerPage() {
                         <Fragment key={tr.label}>
                           {tr.mois.map((m) => (
                             <td key={m.idc} className="px-3 py-2 text-right">
-                              {lignes
+                              {lignesAffichees
                                 .reduce((s, l) => s + (l.parMois[m.idc] ?? 0), 0)
                                 .toLocaleString("fr-FR")}
                             </td>
