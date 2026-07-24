@@ -20,6 +20,12 @@ function todayIso() {
   return new Date().toISOString().slice(0, 10);
 }
 
+function veilleIso(dateIso: string) {
+  const d = new Date(dateIso);
+  d.setDate(d.getDate() - 1);
+  return d.toISOString().slice(0, 10);
+}
+
 export default function GrandLivrePage() {
   const { project } = useAuth();
   const { t } = useLanguage();
@@ -28,6 +34,7 @@ export default function GrandLivrePage() {
   const [dateDebut, setDateDebut] = useState(firstOfMonthIso());
   const [dateFin, setDateFin] = useState(todayIso());
   const [entries, setEntries] = useState<JournalEntry[]>([]);
+  const [soldeAnterieur, setSoldeAnterieur] = useState(0);
   const [loading, setLoading] = useState(false);
   const [erreur, setErreur] = useState<string | null>(null);
 
@@ -56,26 +63,57 @@ export default function GrandLivrePage() {
     setErreur(null);
     setLoading(true);
 
-    const { data } = await supabase
-      .from("journal_entries")
-      .select("*")
-      .eq("project_id", project.id)
-      .gte("date_operation", dateDebut)
-      .lte("date_operation", dateFin)
-      .order("date_operation", { ascending: true });
+    const [periodeRes, anterieurRes] = await Promise.all([
+      supabase
+        .from("journal_entries")
+        .select("*")
+        .eq("project_id", project.id)
+        .gte("date_operation", dateDebut)
+        .lte("date_operation", dateFin)
+        .order("date_operation", { ascending: true }),
+      // Solde antérieur = somme de tous les mouvements du compte (meme
+      // filtre par racine) survenus avant la date de debut choisie - pas
+      // seulement une valeur affichee, un vrai calcul sur l'historique.
+      supabase
+        .from("journal_entries")
+        .select("compte_debit, compte_credit, montant_debit, montant_credit")
+        .eq("project_id", project.id)
+        .lt("date_operation", dateDebut),
+    ]);
 
-    const filtered = ((data as JournalEntry[]) ?? []).filter(
+    const filtered = ((periodeRes.data as JournalEntry[]) ?? []).filter(
       (en) =>
         (en.compte_debit ?? "").startsWith(racine) ||
         (en.compte_credit ?? "").startsWith(racine)
     );
 
+    const anterieur = (
+      (anterieurRes.data as
+        | { compte_debit: string | null; compte_credit: string | null; montant_debit: number; montant_credit: number }[]
+        | null) ?? []
+    )
+      .filter(
+        (en) =>
+          (en.compte_debit ?? "").startsWith(racine) ||
+          (en.compte_credit ?? "").startsWith(racine)
+      )
+      .reduce((s, en) => s + en.montant_debit - en.montant_credit, 0);
+
     setEntries(filtered);
+    setSoldeAnterieur(anterieur);
     setRacineValidee(racine);
     setLoading(false);
   }
 
-  let running = 0;
+  const soldeFinal =
+    soldeAnterieur + entries.reduce((s, e) => s + e.montant_debit - e.montant_credit, 0);
+  const totalDebit =
+    (soldeAnterieur > 0 ? soldeAnterieur : 0) + entries.reduce((s, e) => s + e.montant_debit, 0);
+  const totalCredit =
+    (soldeAnterieur < 0 ? Math.abs(soldeAnterieur) : 0) +
+    entries.reduce((s, e) => s + e.montant_credit, 0);
+
+  let running = soldeAnterieur;
 
   return (
     <div>
@@ -88,23 +126,55 @@ export default function GrandLivrePage() {
         <div className="flex gap-2 print:hidden">
           <Pill
             onClick={() => {
-              let s = 0;
+              let s = soldeAnterieur;
+              const rows: (string | number | null)[][] = [
+                [
+                  new Date(veilleIso(dateDebut)).toLocaleDateString("fr-FR"),
+                  "",
+                  t.grandLivre.soldeAnterieur,
+                  `${racineValidee ?? ""}...`,
+                  "",
+                  soldeAnterieur > 0 ? soldeAnterieur : 0,
+                  soldeAnterieur < 0 ? Math.abs(soldeAnterieur) : 0,
+                  soldeAnterieur,
+                ],
+              ];
+              entries.forEach((e) => {
+                s += e.montant_debit - e.montant_credit;
+                rows.push([
+                  new Date(e.date_operation).toLocaleDateString("fr-FR"),
+                  e.n_piece,
+                  e.libelle,
+                  e.ref_fact_d,
+                  e.n_ecriture_journal,
+                  e.montant_debit,
+                  e.montant_credit,
+                  s,
+                ]);
+              });
+              rows.push([
+                "",
+                "",
+                t.grandLivre.soldeFinal,
+                "",
+                "",
+                totalDebit,
+                totalCredit,
+                soldeFinal,
+              ]);
               exporterCsv(
                 "GrandLivre",
-                [t.common.date, t.grandLivre.colPiece, t.grandLivre.colCompteD, t.grandLivre.colCompteC, t.common.libelle, t.common.debit, t.common.credit, t.grandLivre.colSoldeCumule],
-                entries.map((e) => {
-                  s += e.montant_debit - e.montant_credit;
-                  return [
-                    new Date(e.date_operation).toLocaleDateString("fr-FR"),
-                    e.n_piece,
-                    e.compte_debit,
-                    e.compte_credit,
-                    e.libelle,
-                    e.montant_debit,
-                    e.montant_credit,
-                    s,
-                  ];
-                })
+                [
+                  t.common.date,
+                  t.grandLivre.colPiece,
+                  t.common.libelle,
+                  t.grandLivre.colReference,
+                  t.grandLivre.colNJournal,
+                  t.common.debit,
+                  t.common.credit,
+                  t.grandLivre.colSoldeCumule,
+                ],
+                rows
               );
             }}
           >
@@ -151,10 +221,38 @@ export default function GrandLivrePage() {
         <div className="max-h-[65vh] overflow-auto rounded-xl border border-border-subtle print:max-h-none print:overflow-visible">
           <table className="min-w-full table-auto text-sm [&_td]:border-r [&_td]:border-border-subtle [&_th]:border-r [&_th]:border-border-subtle [&_tr>*:last-child]:border-r-0">
             <MiniTableHeader
-              columns={[t.common.date, t.grandLivre.colPiece, t.grandLivre.colCompteD, t.grandLivre.colCompteC, t.common.libelle, t.common.debit, t.common.credit, t.grandLivre.colSoldeCumule]}
+              columns={[
+                t.common.date,
+                t.grandLivre.colPiece,
+                t.common.libelle,
+                t.grandLivre.colReference,
+                t.grandLivre.colNJournal,
+                t.common.debit,
+                t.common.credit,
+                t.grandLivre.colSoldeCumule,
+              ]}
               align={["left", "left", "left", "left", "left", "right", "right", "right"]}
             />
             <tbody className="divide-y divide-border-subtle bg-bg-card/60">
+              <tr className="text-text-primary">
+                <td className="px-3 py-2">
+                  {new Date(veilleIso(dateDebut)).toLocaleDateString("fr-FR")}
+                </td>
+                <td className="px-3 py-2"></td>
+                <td className="px-3 py-2 font-semibold">{t.grandLivre.soldeAnterieur}</td>
+                <td className="px-3 py-2">{racineValidee}...</td>
+                <td className="px-3 py-2"></td>
+                <td className="px-3 py-2 text-right">
+                  {soldeAnterieur > 0 ? soldeAnterieur.toLocaleString("fr-FR") : ""}
+                </td>
+                <td className="px-3 py-2 text-right">
+                  {soldeAnterieur < 0 ? Math.abs(soldeAnterieur).toLocaleString("fr-FR") : ""}
+                </td>
+                <td className="px-3 py-2 text-right font-semibold">
+                  {soldeAnterieur.toLocaleString("fr-FR")}
+                </td>
+              </tr>
+
               {!loading && entries.length === 0 && (
                 <tr>
                   <td colSpan={8} className="px-3 py-4 text-center text-text-secondary">
@@ -170,9 +268,9 @@ export default function GrandLivrePage() {
                       {new Date(e.date_operation).toLocaleDateString("fr-FR")}
                     </td>
                     <td className="px-3 py-2">{e.n_piece}</td>
-                    <td className="px-3 py-2">{e.compte_debit ?? ""}</td>
-                    <td className="px-3 py-2">{e.compte_credit ?? ""}</td>
                     <td className="px-3 py-2">{e.libelle}</td>
+                    <td className="px-3 py-2">{e.ref_fact_d}</td>
+                    <td className="px-3 py-2">{e.n_ecriture_journal}</td>
                     <td className="px-3 py-2 text-right">
                       {e.montant_debit ? e.montant_debit.toLocaleString("fr-FR") : ""}
                     </td>
@@ -186,6 +284,16 @@ export default function GrandLivrePage() {
                 );
               })}
             </tbody>
+            <tfoot className="bg-bg-card font-semibold text-text-primary">
+              <tr>
+                <td className="px-3 py-2" colSpan={2}></td>
+                <td className="px-3 py-2">{t.grandLivre.soldeFinal}</td>
+                <td className="px-3 py-2" colSpan={2}></td>
+                <td className="px-3 py-2 text-right">{totalDebit.toLocaleString("fr-FR")}</td>
+                <td className="px-3 py-2 text-right">{totalCredit.toLocaleString("fr-FR")}</td>
+                <td className="px-3 py-2 text-right">{soldeFinal.toLocaleString("fr-FR")}</td>
+              </tr>
+            </tfoot>
           </table>
         </div>
       )}
