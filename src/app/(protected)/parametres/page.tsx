@@ -1,6 +1,6 @@
 "use client";
 
-import { BookText, Users, UserSquare2, UserCog, FolderKanban, Info, KeyRound, Table2, Building2, Tags, Target, AlertTriangle } from "lucide-react";
+import { BookText, Users, UserSquare2, UserCog, FolderKanban, Info, KeyRound, Table2, Building2, Tags, Target, AlertTriangle, MapPin } from "lucide-react";
 import { ActionCard } from "@/components/ui/ActionCard";
 import { NavigationSecondaire } from "@/components/ui/NavigationSecondaire";
 import { useAuth } from "@/lib/auth-context";
@@ -16,6 +16,7 @@ export default function ParametresPage() {
     { href: "/parametres/budget", label: t.parametres.tileBudget, icon: Table2, color: "blue" as const },
     { href: "/parametres/rubriques", label: t.parametres.tileRubriques, icon: Tags, color: "muted" as const },
     { href: "/parametres/outputs", label: t.parametres.tileOutputs, icon: Target, color: "teal" as const },
+    { href: "/parametres/zones", label: "Zones", icon: MapPin, color: "teal" as const },
     { href: "/parametres/tiers", label: t.parametres.tileTiers, icon: Users, color: "blue" as const },
     { href: "/parametres/personnel", label: t.parametres.tilePersonnel, icon: UserSquare2, color: "muted" as const },
     ...(hasRole(profile?.role, ["ADMIN_N1", "ADMIN_SITE", "RAF"])

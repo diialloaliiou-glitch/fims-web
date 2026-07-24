@@ -84,6 +84,12 @@ export type Zone = {
   country_id: number | null;
 };
 
+export type Country = {
+  id: number;
+  code: string;
+  nom: string;
+};
+
 export type BankJournal = {
   id: number;
   organization_id: string;
