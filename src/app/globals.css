@@ -5,6 +5,7 @@
   --bg-card: #101b2e;
   --bg-card-teal: #0e2b26;
   --bg-card-muted: #1e2228;
+  --bg-card-blue: #12233f;
   --border-subtle: #223454;
 
   --accent-teal: #34e0b0;
@@ -25,6 +26,7 @@
   --bg-card: #f1f4f9;
   --bg-card-teal: #e3f9f1;
   --bg-card-muted: #e9eaec;
+  --bg-card-blue: #e2ecfb;
   --border-subtle: #d8dee8;
 
   --accent-teal: #0f9d74;
@@ -45,6 +47,7 @@
   --color-bg-card: var(--bg-card);
   --color-bg-card-teal: var(--bg-card-teal);
   --color-bg-card-muted: var(--bg-card-muted);
+  --color-bg-card-blue: var(--bg-card-blue);
   --color-border-subtle: var(--border-subtle);
 
   --color-accent-teal: var(--accent-teal);
@@ -98,6 +101,7 @@ body {
     --bg-card: #ffffff;
     --bg-card-teal: #ffffff;
     --bg-card-muted: #f8f9fa;
+    --bg-card-blue: #f8f9fa;
     --border-subtle: #000000;
     --text-primary: #000000;
     --text-secondary: #333333;

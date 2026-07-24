@@ -600,6 +600,9 @@ export const en: typeof fr = {
     totalGeneral: "GRAND TOTAL",
     filtrerParOutput: "Filter by Output",
     tousLesOutputs: "All outputs",
+    genererLeTracker: "Generate Tracker",
+    detailBudget: "Budget detail (adjustment, advance, % allocation)",
+    totalT: "Total Q",
   },
   utilisateurs: {
     titre: "Users",

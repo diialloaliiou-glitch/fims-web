@@ -597,6 +597,9 @@ export const fr = {
     totalGeneral: "TOTAL GENERAL",
     filtrerParOutput: "Filtrer par Output",
     tousLesOutputs: "Tous les outputs",
+    genererLeTracker: "Générer le Tracker",
+    detailBudget: "Détail budget (ajustement, avance, % répartition)",
+    totalT: "Total T",
   },
   utilisateurs: {
     titre: "Utilisateurs",
