@@ -14,8 +14,15 @@ import type { BudgetLine, JournalEntry } from "@/lib/types";
 // avec quelques accents fixes. Volontairement independante des tokens de
 // theme sombre/clair du reste de l'appli (cette page ne change jamais avec
 // le theme ou la langue).
-const BROWN = "#8B6D4E";
-const DARK_GRAY = "#4B5563";
+const BLUE = "#1F4FA8";
+const GREEN_ITEM = "#2E9E7A";
+const BROWN = "#8A6D3B";
+const GRAY_NCHQ = "#4A4A4A";
+const RED = "#C0392B";
+const BAND_BG = "#F4F5F7";
+const BORDER_PALE = "#EEEEEE";
+const GRAY_TEXT = "#8A8A8A";
+const FONT_DOC = 'Calibri, Carlito, "Segoe UI", sans-serif';
 
 export default function FichePaiementPage() {
   const params = useParams<{ nej?: string[] }>();
@@ -170,25 +177,32 @@ export default function FichePaiementPage() {
         </button>
       </div>
 
-      <div className="mx-auto my-6 w-full max-w-3xl border border-gray-300 px-8 py-10">
+      <div
+        className="mx-auto my-6 w-full max-w-[760px] rounded-[4px] px-8 py-10 shadow-[0_1px_6px_rgba(0,0,0,0.12)] print:shadow-none"
+        style={{ border: `1px solid ${BORDER_PALE}`, fontFamily: FONT_DOC, fontSize: 13 }}
+      >
         <div className="mb-2 flex justify-center">
           {verificationToken ? (
-            <QRCodeSVG
-              value={`${window.location.origin}/verifier/${verificationToken}`}
-              size={56}
-            />
+            <div className="opacity-40">
+              <QRCodeSVG
+                value={`${window.location.origin}/verifier/${verificationToken}`}
+                size={48}
+              />
+            </div>
           ) : (
-            <div className="h-14 w-14" />
+            <div className="h-12 w-12" />
           )}
         </div>
-        <h1 className="text-center text-xl font-bold tracking-wide text-black">
+        <h1 className="text-center text-2xl font-bold tracking-wide text-black">
           PAYMENT AUTHORIZATION FORM
         </h1>
-        <div className="mb-8 mt-2 border-b border-gray-300" />
+        <div className="mb-6 mt-2" style={{ borderBottom: `1px solid ${BORDER_PALE}` }} />
 
-        <div className="mb-8 grid grid-cols-2 gap-y-3 text-sm">
+        <div className="mb-6 grid grid-cols-2 gap-y-1.5">
           <div className="flex items-center gap-2">
-            <span className="font-bold text-black">Item No. :</span>
+            <span className="font-bold" style={{ color: BLUE }}>
+              Item No. :
+            </span>
             <input
               type="text"
               value={numEJInput}
@@ -197,61 +211,66 @@ export default function FichePaiementPage() {
                 if (e.key === "Enter") goToPiece(numEJInput);
               }}
               onBlur={() => goToPiece(numEJInput)}
-              style={{ borderColor: "#34E0B0" }}
-              className="w-32 border px-2 py-0.5 text-center font-bold text-blue-700 outline-none"
+              style={{ border: `1.5px solid ${GREEN_ITEM}`, color: BLUE }}
+              className="w-32 px-2 py-0.5 text-center font-bold outline-none"
             />
           </div>
           <div className="flex items-baseline gap-2">
             <span className="font-bold text-black">Date :</span>
-            <span className="flex-1 border-b border-gray-300 text-black">
+            <span className="flex-1 text-black" style={{ borderBottom: `1px solid ${BORDER_PALE}` }}>
               {premiere ? new Date(premiere.date_operation).toLocaleDateString("en-GB") : ""}
             </span>
           </div>
 
           <div className="flex items-baseline gap-2">
             <span className="font-bold text-black">N°chq/ov/bcs :</span>
-            <span className="flex-1 border-b border-gray-300" style={{ color: DARK_GRAY }}>
+            <span
+              className="flex-1"
+              style={{ borderBottom: `1px solid ${BORDER_PALE}`, color: GRAY_NCHQ }}
+            >
               {premiere?.n_cheque_ov}
             </span>
           </div>
           <div className="flex items-baseline gap-2">
             <span className="font-bold text-black">Project ID :</span>
-            <span className="flex-1 border-b border-gray-300 text-black">
+            <span className="flex-1 text-black" style={{ borderBottom: `1px solid ${BORDER_PALE}` }}>
               {project?.code_projet}
             </span>
           </div>
 
           <div className="col-span-2 flex items-baseline gap-2">
             <span className="font-bold text-black">Beneficiary :</span>
-            <span className="flex-1 border-b border-gray-300" style={{ color: BROWN }}>
+            <span className="flex-1" style={{ borderBottom: `1px solid ${BORDER_PALE}`, color: BROWN }}>
               {premiere?.tiers}
             </span>
           </div>
           <div className="col-span-2 flex items-baseline gap-2">
             <span className="font-bold text-black">Organization :</span>
-            <span className="flex-1 border-b border-gray-300" style={{ color: BROWN }}>
+            <span className="flex-1" style={{ borderBottom: `1px solid ${BORDER_PALE}`, color: BROWN }}>
               {organization?.nom}
             </span>
           </div>
         </div>
 
-        {loading && <p className="mb-4 text-sm text-black">Loading...</p>}
-        {error && <p className="mb-4 text-sm text-red-600 print:hidden">{error}</p>}
+        {loading && <p className="mb-4 text-black">Loading...</p>}
+        {error && (
+          <p className="mb-4 text-red-600 print:hidden">{error}</p>
+        )}
 
         {premiere && (
           <>
             {estPieceAnterieure ? (
-              <div className="mb-8 border border-red-600 px-4 py-3 text-sm font-semibold text-red-600">
+              <div className="mb-6 border border-red-600 px-4 py-3 font-semibold text-red-600">
                 PREVIOUS PIECE — balance cannot be calculated. A more recent operation exists on
                 this account ({dernierNEJCompte}). Printing unavailable for {nejRoute}.
               </div>
             ) : (
               <>
-                <div className="mb-8 flex text-sm">
+                <div className="mb-6 flex">
                   <div className="flex-1">
                     <div
-                      className="border border-gray-400 py-1 text-center font-bold text-black"
-                      style={{ backgroundColor: "#EEEEEE" }}
+                      className="py-1 text-center font-bold text-black"
+                      style={{ border: `1px solid ${BORDER_PALE}`, backgroundColor: BAND_BG }}
                     >
                       Section
                     </div>
@@ -264,12 +283,15 @@ export default function FichePaiementPage() {
                   </div>
                   <div className="flex-1">
                     <div
-                      className="border border-gray-400 py-1 text-center font-bold text-black"
-                      style={{ backgroundColor: "#EEEEEE" }}
+                      className="py-1 text-center font-bold text-black"
+                      style={{ border: `1px solid ${BORDER_PALE}`, backgroundColor: BAND_BG }}
                     >
                       Budget
                     </div>
-                    <div className="border border-t-0 border-gray-400 px-3 py-1">
+                    <div
+                      className="px-3 py-1"
+                      style={{ borderLeft: `1px solid ${BORDER_PALE}`, borderRight: `1px solid ${BORDER_PALE}`, borderBottom: `1px solid ${BORDER_PALE}` }}
+                    >
                       <div className="text-right text-black">
                         {Math.round(budgetGlobal).toLocaleString("en-US")}
                       </div>
@@ -281,7 +303,7 @@ export default function FichePaiementPage() {
                       <div className="text-right text-black">
                         {Math.round(montantDemande).toLocaleString("en-US")}
                       </div>
-                      <div className="text-right font-bold text-red-600">
+                      <div className="text-right font-bold" style={{ color: RED }}>
                         {soldeRestant !== null
                           ? Math.round(soldeRestant).toLocaleString("en-US")
                           : "—"}
@@ -290,37 +312,30 @@ export default function FichePaiementPage() {
                   </div>
                 </div>
 
-                <table className="mb-0 w-full border-collapse text-sm">
+                <table className="w-full border-collapse">
                   <thead>
-                    <tr className="border-b border-gray-400">
-                      <th className="border-r border-gray-300 py-1 text-center font-bold text-black">
-                        Budget code
-                      </th>
-                      <th className="border-r border-gray-300 py-1 text-center font-bold text-black">
-                        Account No.
-                      </th>
-                      <th className="border-r border-gray-300 py-1 text-center font-bold text-black">
-                        Libelle
-                      </th>
-                      <th className="border-r border-gray-300 py-1 text-center font-bold text-black">
-                        Debit
-                      </th>
+                    <tr
+                      style={{
+                        borderTop: `1px solid ${BORDER_PALE}`,
+                        borderBottom: `1px solid ${BORDER_PALE}`,
+                      }}
+                    >
+                      <th className="py-1 text-center font-bold text-black">Budget code</th>
+                      <th className="py-1 text-center font-bold text-black">Account No.</th>
+                      <th className="py-1 text-center font-bold text-black">Libelle</th>
+                      <th className="py-1 text-center font-bold text-black">Debit</th>
                       <th className="py-1 text-center font-bold text-black">Credit</th>
                     </tr>
                   </thead>
                   <tbody>
                     {lignes.map((l) => (
                       <tr key={l.id}>
-                        <td className="border-r border-gray-300 px-2 py-1 text-center text-black">
-                          {l.b_s_line}
-                        </td>
-                        <td className="border-r border-gray-300 px-2 py-1 text-center text-black">
+                        <td className="px-2 py-1 text-center text-black">{l.b_s_line}</td>
+                        <td className="px-2 py-1 text-center text-black">
                           {l.montant_debit > 0 ? l.compte_debit : l.compte_credit}
                         </td>
-                        <td className="border-r border-gray-300 px-2 py-1 text-black">
-                          {l.libelle}
-                        </td>
-                        <td className="border-r border-gray-300 px-2 py-1 text-right text-black">
+                        <td className="px-2 py-1 text-black">{l.libelle}</td>
+                        <td className="px-2 py-1 text-right text-black">
                           {l.montant_debit ? l.montant_debit.toLocaleString("en-US") : ""}
                         </td>
                         <td className="px-2 py-1 text-right text-black">
@@ -328,74 +343,83 @@ export default function FichePaiementPage() {
                         </td>
                       </tr>
                     ))}
-                    {Array.from({ length: Math.max(0, 6 - lignes.length) }).map((_, i) => (
-                      <tr key={`blank-${i}`}>
-                        <td className="border-r border-gray-300 px-2 py-3">&nbsp;</td>
-                        <td className="border-r border-gray-300 px-2 py-3">&nbsp;</td>
-                        <td className="border-r border-gray-300 px-2 py-3">&nbsp;</td>
-                        <td className="border-r border-gray-300 px-2 py-3">&nbsp;</td>
-                        <td className="px-2 py-3">&nbsp;</td>
-                      </tr>
-                    ))}
+                    {/* Espace vide volontaire pour l'ajout manuel de lignes a
+                        l'impression - ne pas reduire. */}
+                    <tr>
+                      <td colSpan={5} style={{ height: 190 }} />
+                    </tr>
                   </tbody>
                 </table>
 
-                <div className="mb-10 flex justify-end gap-6 border-t border-gray-400 pt-2 text-sm font-bold">
+                <div
+                  className="mb-[130px] flex justify-end gap-6 pt-2 font-bold"
+                  style={{ borderTop: `1px solid ${BORDER_PALE}` }}
+                >
                   <span className="text-black">TOTALS ................=</span>
-                  <span className="w-24 text-right text-blue-700">
+                  <span className="w-24 text-right" style={{ color: BLUE }}>
                     {lignes.reduce((s, l) => s + l.montant_debit, 0).toLocaleString("en-US")}
                   </span>
-                  <span className="w-24 text-right text-blue-700">
+                  <span className="w-24 text-right" style={{ color: BLUE }}>
                     {lignes.reduce((s, l) => s + l.montant_credit, 0).toLocaleString("en-US")}
                   </span>
                 </div>
               </>
             )}
 
-            <div className="relative mb-10 grid grid-cols-2 gap-8 text-sm">
-              <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
-                <span className="text-3xl font-bold tracking-widest text-gray-100">FIMS</span>
+            <div style={{ border: `1px solid ${BORDER_PALE}` }} className="px-2 pb-4 pt-3">
+              <div className="relative grid grid-cols-2 gap-[200px]">
+                <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
+                  <span className="text-3xl font-bold tracking-widest text-gray-100">FIMS</span>
+                </div>
+                <div className="relative">
+                  <div
+                    className="flex items-center gap-1.5 px-2 py-1 font-bold text-black"
+                    style={{ border: `1px solid ${BORDER_PALE}`, backgroundColor: BAND_BG }}
+                  >
+                    <PenLine className="h-3.5 w-3.5" strokeWidth={2} />
+                    Checked by : Administrative &amp; Financial Manager
+                  </div>
+                  <div
+                    className="flex flex-col px-2 py-1"
+                    style={{ borderLeft: `1px solid ${BORDER_PALE}`, borderRight: `1px solid ${BORDER_PALE}`, borderBottom: `1px solid ${BORDER_PALE}` }}
+                  >
+                    <p className="text-black">{project?.administrative_financial_manager}</p>
+                    <div style={{ height: 80 }} />
+                    <p style={{ color: GRAY_TEXT }}>Date :</p>
+                  </div>
+                  <p className="mt-1 text-xs" style={{ color: GRAY_TEXT }}>
+                    By signing, you certify that the entries made are correct.
+                  </p>
+                </div>
+                <div className="relative">
+                  <div
+                    className="flex items-center gap-1.5 px-2 py-1 font-bold text-black"
+                    style={{ border: `1px solid ${BORDER_PALE}`, backgroundColor: BAND_BG }}
+                  >
+                    <BadgeCheck className="h-3.5 w-3.5" strokeWidth={2} />
+                    Approved by : Program Coordinator/President
+                  </div>
+                  <div
+                    className="flex flex-col px-2 py-1"
+                    style={{ borderLeft: `1px solid ${BORDER_PALE}`, borderRight: `1px solid ${BORDER_PALE}`, borderBottom: `1px solid ${BORDER_PALE}` }}
+                  >
+                    <p className="text-black">{project?.program_coordinator_president}</p>
+                    <div style={{ height: 80 }} />
+                    <p style={{ color: GRAY_TEXT }}>Date :</p>
+                  </div>
+                  <p className="mt-1 text-xs" style={{ color: GRAY_TEXT }}>
+                    By signing, you authorise the expenditure for the project.
+                  </p>
+                </div>
               </div>
-              <div className="relative">
-                <div
-                  className="flex items-center gap-1.5 border border-gray-400 px-2 py-1 font-bold text-black"
-                  style={{ backgroundColor: "#EEEEEE" }}
-                >
-                  <PenLine className="h-3.5 w-3.5" strokeWidth={2} />
-                  Checked by : Administrative &amp; Financial Manager
-                </div>
-                <div className="flex h-24 flex-col justify-between border border-t-0 border-gray-400 px-2 py-1">
-                  <p className="text-black">{project?.administrative_financial_manager}</p>
-                  <p className="font-bold text-black">Date :</p>
-                </div>
-                <p className="mt-1 text-xs text-black">
-                  By signing, you certify that the entries made are correct.
-                </p>
-              </div>
-              <div className="relative">
-                <div
-                  className="flex items-center gap-1.5 border border-gray-400 px-2 py-1 font-bold text-black"
-                  style={{ backgroundColor: "#EEEEEE" }}
-                >
-                  <BadgeCheck className="h-3.5 w-3.5" strokeWidth={2} />
-                  Approved by : Program Coordinator/President
-                </div>
-                <div className="flex h-24 flex-col justify-between border border-t-0 border-gray-400 px-2 py-1">
-                  <p className="text-black">{project?.program_coordinator_president}</p>
-                  <p className="font-bold text-black">Date :</p>
-                </div>
-                <p className="mt-1 text-xs text-black">
-                  By signing, you authorise the expenditure for the project.
-                </p>
-              </div>
-            </div>
 
-            <p className="text-center text-xs">
-              <span className="font-bold text-black">Seized by : </span>
-              <span className="border-b border-gray-300" style={{ color: BROWN }}>
-                {premiere.utilisateur}
-              </span>
-            </p>
+              <p className="mt-4 text-center text-xs">
+                <span className="font-bold text-black">Seized by : </span>
+                <span style={{ borderBottom: `1px solid ${BORDER_PALE}`, color: BROWN }}>
+                  {premiere.utilisateur}
+                </span>
+              </p>
+            </div>
           </>
         )}
       </div>
