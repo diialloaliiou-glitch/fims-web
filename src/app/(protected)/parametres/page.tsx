@@ -1,6 +1,6 @@
 "use client";
 
-import { BookText, Users, UserSquare2, UserCog, FolderKanban, Info, KeyRound, Table2, Building2, Tags, Target } from "lucide-react";
+import { BookText, Users, UserSquare2, UserCog, FolderKanban, Info, KeyRound, Table2, Building2, Tags, Target, AlertTriangle } from "lucide-react";
 import { ActionCard } from "@/components/ui/ActionCard";
 import { NavigationSecondaire } from "@/components/ui/NavigationSecondaire";
 import { useAuth } from "@/lib/auth-context";
@@ -32,6 +32,11 @@ export default function ParametresPage() {
       : []),
     ...(hasRole(profile?.role, ["ADMIN_N1"])
       ? [{ href: "/administration/organisations", label: t.parametres.tileOrganisations, icon: Building2, color: "blue" as const }]
+      : []),
+    // Outil de migration TEMPORAIRE - a retirer (avec administration/migration-jdepense)
+    // une fois toutes les anciennes bases Excel chargees.
+    ...(hasRole(profile?.role, ["ADMIN_N1"])
+      ? [{ href: "/administration/migration-jdepense", label: "⚠️ Migration JDEPENSE", icon: AlertTriangle, color: "muted" as const }]
       : []),
   ];
 
