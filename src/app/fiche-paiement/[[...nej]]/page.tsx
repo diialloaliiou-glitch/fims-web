@@ -293,19 +293,19 @@ export default function FichePaiementPage() {
                       style={{ borderLeft: `1px solid ${BORDER_PALE}`, borderRight: `1px solid ${BORDER_PALE}`, borderBottom: `1px solid ${BORDER_PALE}` }}
                     >
                       <div className="text-right text-black">
-                        {Math.round(budgetGlobal).toLocaleString("en-US")}
+                        {Math.round(budgetGlobal).toLocaleString("fr-FR")}
                       </div>
                       <div className="text-right text-black">
                         {soldeDisponible !== null
-                          ? Math.round(soldeDisponible).toLocaleString("en-US")
+                          ? Math.round(soldeDisponible).toLocaleString("fr-FR")
                           : "—"}
                       </div>
                       <div className="text-right text-black">
-                        {Math.round(montantDemande).toLocaleString("en-US")}
+                        {Math.round(montantDemande).toLocaleString("fr-FR")}
                       </div>
                       <div className="text-right font-bold" style={{ color: RED }}>
                         {soldeRestant !== null
-                          ? Math.round(soldeRestant).toLocaleString("en-US")
+                          ? Math.round(soldeRestant).toLocaleString("fr-FR")
                           : "—"}
                       </div>
                     </div>
@@ -336,10 +336,10 @@ export default function FichePaiementPage() {
                         </td>
                         <td className="px-2 py-1 text-black">{l.libelle}</td>
                         <td className="px-2 py-1 text-right text-black">
-                          {l.montant_debit ? l.montant_debit.toLocaleString("en-US") : ""}
+                          {l.montant_debit ? l.montant_debit.toLocaleString("fr-FR") : ""}
                         </td>
                         <td className="px-2 py-1 text-right text-black">
-                          {l.montant_credit ? l.montant_credit.toLocaleString("en-US") : ""}
+                          {l.montant_credit ? l.montant_credit.toLocaleString("fr-FR") : ""}
                         </td>
                       </tr>
                     ))}
@@ -357,10 +357,10 @@ export default function FichePaiementPage() {
                 >
                   <span className="text-black">TOTALS ................=</span>
                   <span className="w-24 text-right" style={{ color: BLUE }}>
-                    {lignes.reduce((s, l) => s + l.montant_debit, 0).toLocaleString("en-US")}
+                    {lignes.reduce((s, l) => s + l.montant_debit, 0).toLocaleString("fr-FR")}
                   </span>
                   <span className="w-24 text-right" style={{ color: BLUE }}>
-                    {lignes.reduce((s, l) => s + l.montant_credit, 0).toLocaleString("en-US")}
+                    {lignes.reduce((s, l) => s + l.montant_credit, 0).toLocaleString("fr-FR")}
                   </span>
                 </div>
               </>
