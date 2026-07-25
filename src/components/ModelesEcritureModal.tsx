@@ -12,7 +12,7 @@ import {
   modelesPour,
   typesOperationDisponibles,
 } from "@/lib/modeles-ecriture";
-import type { ChartOfAccount, Project, ThirdParty, Zone } from "@/lib/types";
+import type { BankJournal, OperationType, Project, ThirdParty, Zone } from "@/lib/types";
 
 type LigneGeneree = {
   compte: string;
@@ -39,19 +39,21 @@ export function ModelesEcritureModal({
   open,
   onClose,
   project,
-  accounts,
   thirdParties,
   zones,
   budgetLines,
+  operationTypes,
+  bankJournals,
   onGenerer,
 }: {
   open: boolean;
   onClose: () => void;
   project: Project;
-  accounts: ChartOfAccount[];
   thirdParties: ThirdParty[];
   zones: Zone[];
   budgetLines: { our_line_code: string | null; description: string | null }[];
+  operationTypes: OperationType[];
+  bankJournals: BankJournal[];
   onGenerer: (resultat: ResultatModele) => void;
 }) {
   const { t } = useLanguage();
@@ -78,6 +80,17 @@ export function ModelesEcritureModal({
   const [soldesCoches, setSoldesCoches] = useState<Set<string>>(new Set());
 
   const props = modeleNom ? getModeleProps(modeleNom) : null;
+
+  // Le catalogue reproduit fidelement le VBA d'origine (donc peut lister
+  // des types/journaux jamais configures pour cette organisation, ex:
+  // VT/IM/CS) - on ne propose que ceux qui existent reellement en base,
+  // meme filtrage que sur la page Saisie.
+  const typesDisponibles = typesOperationDisponibles().filter((v) =>
+    operationTypes.some((op) => op.code === v)
+  );
+  const journauxDisponibles = journauxPour(typeOp).filter((j) =>
+    bankJournals.some((bj) => bj.code === j)
+  );
 
   function resetTout() {
     setStep("type");
@@ -138,12 +151,18 @@ export function ModelesEcritureModal({
   const compteDResolved = props?.debit?.fixe ?? compteDChoisi;
   const compteCResolved = props?.credit?.fixe ?? compteCChoisi;
 
-  const compteDPorteur = accounts.find((a) => a.ccompte === compteDResolved)?.compte_tiers === true;
-  const compteCPorteur = accounts.find((a) => a.ccompte === compteCResolved)?.compte_tiers === true;
-  const compteTiersActif = compteDPorteur ? compteDResolved : compteCPorteur ? compteCResolved : null;
-  const tiersOptions = compteTiersActif
-    ? thirdParties.filter((tp) => tp.compte_classe_4 === compteTiersActif)
-    : [];
+  // Reproduit GetCompteTiersActif()/CompteEstPorteurDeTiers() du VBA : un
+  // compte "porte un tiers" uniquement si des tiers existent reellement
+  // pour lui dans third_parties - pas une case a cocher separee sur la
+  // fiche du compte, qui peut etre cochee sans qu'aucun tiers existe.
+  function tiersPourCompte(compte: string) {
+    if (!compte.startsWith("4")) return [];
+    return thirdParties.filter((tp) => tp.compte_classe_4 && compte.startsWith(tp.compte_classe_4));
+  }
+  const tiersD = tiersPourCompte(compteDResolved);
+  const tiersC = tiersPourCompte(compteCResolved);
+  const compteTiersActif = tiersD.length > 0 ? compteDResolved : tiersC.length > 0 ? compteCResolved : null;
+  const tiersOptions = tiersD.length > 0 ? tiersD : tiersC;
 
   const bslOptions = budgetLines.filter(
     (b) => b.our_line_code && b.our_line_code.toUpperCase() !== "52B" && b.our_line_code !== "-"
@@ -305,7 +324,7 @@ export function ModelesEcritureModal({
 
         {step === "type" && (
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-            {typesOperationDisponibles().map((v) => (
+            {typesDisponibles.map((v) => (
               <button
                 key={v}
                 onClick={() => choisirType(v)}
@@ -326,7 +345,7 @@ export function ModelesEcritureModal({
               {t.saisie.modeles.retour}
             </button>
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-              {journauxPour(typeOp).map((j) => (
+              {journauxDisponibles.map((j) => (
                 <button
                   key={j}
                   onClick={() => choisirJournal(j)}
