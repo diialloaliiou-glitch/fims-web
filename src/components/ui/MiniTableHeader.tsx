@@ -7,9 +7,11 @@ const ALIGN_CLASSES = {
 export function MiniTableHeader({
   columns,
   align,
+  minWidths,
 }: {
   columns: string[];
   align?: ("left" | "right" | "center")[];
+  minWidths?: (number | undefined)[];
 }) {
   return (
     <thead className="sticky top-0 z-10 bg-bg-card text-text-primary">
@@ -17,6 +19,7 @@ export function MiniTableHeader({
         {columns.map((col, i) => (
           <th
             key={col + i}
+            style={minWidths?.[i] ? { minWidth: minWidths[i] } : undefined}
             className={`whitespace-normal bg-bg-card px-3 py-2 align-top text-xs font-semibold uppercase leading-tight tracking-wide ${
               ALIGN_CLASSES[align?.[i] ?? "center"]
             }`}
