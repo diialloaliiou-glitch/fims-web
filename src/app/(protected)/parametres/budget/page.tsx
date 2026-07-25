@@ -55,7 +55,21 @@ export default function BudgetDataPage() {
 
     const colonnes: ColonneAffichee[] = [];
     for (const c of BUDGET_IMPORT_COLUMNS) {
-      if (c.key === "output_code") {
+      if (c.key === "t_pec") {
+        colonnes.push({
+          key: "t_pec",
+          header: c.header,
+          align: "right",
+          // t_pec est stocke en base comme une fraction (0.23 = 23%), pas
+          // en pourcentage - reproduit le format d'affichage du "% TO
+          // PROJECT" du Financial Report VBA (colonne G, format pourcentage).
+          render: (l) => {
+            if (l.t_pec == null || l.t_pec === "") return "";
+            const n = Number(l.t_pec);
+            return isNaN(n) ? l.t_pec : `${(n * 100).toFixed(0)}%`;
+          },
+        });
+      } else if (c.key === "output_code") {
         colonnes.push({
           key: "categorie",
           header: t.budgetData.colCategorie,
