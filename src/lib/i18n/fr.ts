@@ -223,7 +223,7 @@ export const fr = {
     colNChqOv: "N°CHQ/OV",
     colZone: "Zone",
     colMontant: "Montant",
-    colNPiece: "N°Pièce",
+    colNEJ: "N° Journal",
     aucuneDepense: "Aucune dépense sur cette période.",
   },
   financialReport: {

@@ -227,7 +227,7 @@ export const en: typeof fr = {
     colNChqOv: "Cheque/Transfer No.",
     colZone: "Zone",
     colMontant: "Amount",
-    colNPiece: "Voucher No.",
+    colNEJ: "Entry No.",
     aucuneDepense: "No expenses for this period.",
   },
   financialReport: {

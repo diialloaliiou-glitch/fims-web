@@ -33,12 +33,16 @@ type ReportRow = {
   ref: string | null;
   zone: string;
   montant: number;
-  nPiece: string | null;
+  nEcritureJournal: string | null;
 };
 
 // Reproduit GenererReporting() du FIMS VBA d'origine : liste detaillee
-// des transactions (montant_debit only, hors comptes 5xxxxx/411xxx,
-// hors ligne placeholder "52B"), categorisees par ligne budgetaire.
+// des transactions (montant_debit only, hors comptes 5xxxxx/411xxx),
+// categorisees par ligne budgetaire - uniquement les depenses dont le
+// code ligne (B-S-Line, source de BUDGET LINE) correspond a une vraie
+// ligne budgetaire du projet. budgetByLine exclut deja volontairement le
+// placeholder 52B (budget_line = "-", jamais la chaine "52B") : toute
+// depense qui ne matche aucune ligne reelle (dont 52B) est donc omise.
 function calculerReporting(
   entries: JournalEntry[],
   budgetByLine: Map<string, { code_1: string; icp: string }>,
@@ -51,9 +55,10 @@ function calculerReporting(
     const compteD = e.compte_debit ?? "";
     if (compteD.startsWith("5") || compteD.startsWith("411")) return;
     const bsl = (e.b_s_line ?? "").trim();
-    if (bsl.toUpperCase() === "52B") return;
+    if (!bsl) return;
 
     const budget = budgetByLine.get(bsl.toUpperCase());
+    if (!budget) return;
 
     rows.push({
       date: e.date_operation,
@@ -66,7 +71,7 @@ function calculerReporting(
       ref: e.n_cheque_ov,
       zone: e.zone_id != null ? zoneById.get(e.zone_id) ?? "" : "",
       montant: e.montant_debit,
-      nPiece: e.n_piece,
+      nEcritureJournal: e.n_ecriture_journal,
     });
   });
 
@@ -94,7 +99,11 @@ export default function ReportingPage() {
           .lte("date_operation", dateFin),
         project
       ),
-      supabase.from("budget_lines").select("*").eq("project_id", project.id),
+      supabase
+        .from("budget_lines")
+        .select("*")
+        .eq("project_id", project.id)
+        .neq("our_line_code", "52B"),
       supabase
         .from("zones")
         .select("*")
@@ -147,7 +156,7 @@ export default function ReportingPage() {
                   t.reporting.colNChqOv,
                   t.reporting.colZone,
                   t.reporting.colMontant,
-                  t.reporting.colNPiece,
+                  t.reporting.colNEJ,
                 ],
                 rows.map((r) => [
                   r.date,
@@ -160,7 +169,7 @@ export default function ReportingPage() {
                   r.ref,
                   r.zone,
                   r.montant,
-                  r.nPiece,
+                  r.nEcritureJournal,
                 ])
               )
             }
@@ -195,10 +204,11 @@ export default function ReportingPage() {
       </div>
 
       <div className="max-h-[65vh] overflow-auto rounded-xl border border-border-subtle print:max-h-none print:overflow-visible">
-        <table className="min-w-full table-auto text-sm [&_td]:border-r [&_td]:border-border-subtle [&_th]:border-r [&_th]:border-border-subtle [&_tr>*:last-child]:border-r-0">
+        <table className="min-w-full table-auto text-sm [&_td]:whitespace-nowrap [&_td]:border-r [&_td]:border-border-subtle [&_th]:border-r [&_th]:border-border-subtle [&_tr>*:last-child]:border-r-0">
           <MiniTableHeader
-            columns={[t.common.date, t.reporting.colPartCode, t.reporting.colPartCCode, t.reporting.colOurLineCode, t.reporting.colJournal, t.reporting.colNCompte, t.common.libelle, t.reporting.colNChqOv, t.reporting.colZone, t.reporting.colMontant, t.reporting.colNPiece]}
+            columns={[t.common.date, t.reporting.colPartCode, t.reporting.colPartCCode, t.reporting.colOurLineCode, t.reporting.colJournal, t.reporting.colNCompte, t.common.libelle, t.reporting.colNChqOv, t.reporting.colZone, t.reporting.colMontant, t.reporting.colNEJ]}
             align={["left", "left", "left", "left", "left", "left", "left", "left", "left", "right", "left"]}
+            noWrap
           />
           <tbody className="divide-y divide-border-subtle bg-bg-card/60">
             {loading && (
@@ -231,7 +241,7 @@ export default function ReportingPage() {
                 <td className="px-3 py-2 text-right">
                   {r.montant.toLocaleString("fr-FR")}
                 </td>
-                <td className="px-3 py-2">{r.nPiece}</td>
+                <td className="px-3 py-2">{r.nEcritureJournal}</td>
               </tr>
             ))}
           </tbody>
