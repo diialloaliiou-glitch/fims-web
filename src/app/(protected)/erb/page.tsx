@@ -6,6 +6,7 @@ import { useAuth } from "@/lib/auth-context";
 import { useLanguage } from "@/lib/language-context";
 import { FormField, fieldControlClass } from "@/components/ui/FormField";
 import { MiniTableHeader } from "@/components/ui/MiniTableHeader";
+import { Pill } from "@/components/ui/Pill";
 import { PrimaryButton } from "@/components/ui/PrimaryButton";
 import { NavigationSecondaire } from "@/components/ui/NavigationSecondaire";
 import { SignatureBlock } from "@/components/ui/SignatureBlock";
@@ -286,7 +287,7 @@ function ItemSection({
                 <td className="px-2 py-1.5">{i.no_justificatif}</td>
                 <td className="px-2 py-1.5">{i.no_cheque}</td>
                 <td className="px-2 py-1.5 text-right">{i.montant.toLocaleString("fr-FR")}</td>
-                <td className="px-2 py-1.5 text-right">
+                <td className="px-2 py-1.5 text-right print:hidden">
                   <button
                     onClick={() => handleDelete(i.id)}
                     className="text-accent-red hover:underline"
@@ -309,7 +310,7 @@ function ItemSection({
         </table>
       </div>
 
-      <form onSubmit={handleAdd} className="mt-3 flex flex-wrap items-end gap-3">
+      <form onSubmit={handleAdd} className="mt-3 flex flex-wrap items-end gap-3 print:hidden">
         <FormField
           label={t.erb.noJustificatif}
           value={noJustificatif}
@@ -449,12 +450,18 @@ function DetailRapprochement({
         <button onClick={onBack} className="text-sm text-accent-blue hover:underline">
           {t.erb.retourListe}
         </button>
-        <button
-          onClick={handleDeleteReconciliation}
-          className="text-sm text-accent-red hover:underline"
-        >
-          {t.common.supprimer}
-        </button>
+        <div className="flex items-center gap-4">
+          <Pill onClick={() => window.print()}>{t.common.exportPdf}</Pill>
+          <Pill solid onClick={() => window.print()}>
+            {t.common.imprimer}
+          </Pill>
+          <button
+            onClick={handleDeleteReconciliation}
+            className="text-sm text-accent-red hover:underline"
+          >
+            {t.common.supprimer}
+          </button>
+        </div>
       </div>
 
       <div className="mb-4 grid grid-cols-1 gap-3 rounded-xl border border-border-subtle bg-bg-card p-4 text-sm sm:grid-cols-3">
