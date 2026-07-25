@@ -11,6 +11,7 @@ export function FormField({
   required = false,
   value,
   onChange,
+  onBlur,
   type = "text",
   placeholder,
   list,
@@ -22,6 +23,7 @@ export function FormField({
   required?: boolean;
   value?: string | number;
   onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  onBlur?: (e: React.FocusEvent<HTMLInputElement>) => void;
   type?: string;
   placeholder?: string;
   list?: string;
@@ -65,6 +67,7 @@ export function FormField({
             type={type}
             value={value}
             onChange={onChange}
+            onBlur={onBlur}
             placeholder={placeholder}
             list={list}
             step={step}

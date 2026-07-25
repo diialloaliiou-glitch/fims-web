@@ -107,7 +107,6 @@ export const en: typeof fr = {
   saisie: {
     dateComptable: "ACCOUNTING DATE:",
     accederJournalIntermediaire: "Open intermediate journal",
-    journalIntermediaireBientot: "Intermediate journal: feature coming soon.",
     lettrage: "Matching",
     delettrage: "Unmatching",
     nJournal: "JOURNAL NO.",
@@ -153,6 +152,14 @@ export const en: typeof fr = {
     retirer: "remove",
     reglement: "Payment",
     modelesEcriture: "Entry templates",
+    champInactif: "Not applicable for this selection",
+    journalIntermediaire: {
+      titre: "Intermediate journal — lines pending validation",
+      vide: "No lines pending.",
+      retour: "← Back",
+      colCptD: "Acct D",
+      colCptC: "Acct C",
+    },
     modeles: {
       titre: "Entry templates",
       retour: "← Back",

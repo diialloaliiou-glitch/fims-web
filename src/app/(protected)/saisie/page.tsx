@@ -12,18 +12,24 @@ import { MiniTableHeader } from "@/components/ui/MiniTableHeader";
 import { Pill } from "@/components/ui/Pill";
 import { ModelesEcritureModal, type ResultatModele } from "@/components/ModelesEcritureModal";
 import { Cloud, Wand2 } from "lucide-react";
-import type { BudgetLine, ChartOfAccount, ThirdParty, Zone } from "@/lib/types";
+import type {
+  BankJournal,
+  BudgetLine,
+  ChartOfAccount,
+  OperationType,
+  ThirdParty,
+  Zone,
+} from "@/lib/types";
 
-// Codes canoniques (valeurs stockees en base) - jamais traduits, seuls les
-// libelles de champs/boutons autour le sont.
-const JOURNAUX = ["AC", "BQ", "OD", "SA"];
-const TYPES_OPERATION = [
-  "AVANCE et REGU",
-  "PRISE EN CHARGE",
-  "REGLEMENT",
-  "REVERSEMENT",
-  "TRESORERIE",
-];
+// Reproduit ActualiserInterfaceContextuelle() du FIMS VBA d'origine : le
+// journal disponible depend du type d'operation choisi. Les types absents
+// de cette table (AVANCE et REGU, REGLEMENT, REVERSEMENT) restent sans
+// restriction, exactement comme le "Case Else -> SupprimerValidation" VBA.
+const JOURNAUX_PAR_TYPE: Record<string, string[]> = {
+  "PRISE EN CHARGE": ["AC", "SA", "VT", "OD", "IM"],
+  "OPERATIONS DIVERSES": ["OD"],
+  TRESORERIE: ["BQ", "CS"],
+};
 
 type Ligne = {
   id: number;
@@ -74,12 +80,15 @@ export default function SaisiePage() {
   const [thirdParties, setThirdParties] = useState<ThirdParty[]>([]);
   const [zones, setZones] = useState<Zone[]>([]);
   const [budgetLines, setBudgetLines] = useState<BudgetLine[]>([]);
+  const [operationTypes, setOperationTypes] = useState<OperationType[]>([]);
+  const [bankJournals, setBankJournals] = useState<BankJournal[]>([]);
   const [modelesOuvert, setModelesOuvert] = useState(false);
+  const [journalIntermediaireOuvert, setJournalIntermediaireOuvert] = useState(false);
 
   const [dateOperation, setDateOperation] = useState(todayIso());
-  const [journal, setJournal] = useState("BQ");
+  const [journal, setJournal] = useState("");
   const [nEcritureJournal, setNEcritureJournal] = useState("");
-  const [typeOperation, setTypeOperation] = useState(TYPES_OPERATION[0]);
+  const [typeOperation, setTypeOperation] = useState("");
   const [bSLine, setBSLine] = useState("");
   const [zoneId, setZoneId] = useState("");
   const [tiers, setTiers] = useState("");
@@ -128,13 +137,89 @@ export default function SaisiePage() {
       .eq("project_id", project.id)
       .then(({ data }) => setBudgetLines((data as BudgetLine[]) ?? []));
 
+    supabase
+      .from("operation_types")
+      .select("*")
+      .eq("organization_id", project.organization_id)
+      .order("code")
+      .then(({ data }) => {
+        const types = (data as OperationType[]) ?? [];
+        setOperationTypes(types);
+        setTypeOperation((current) => current || types[0]?.code || "");
+      });
+
+    supabase
+      .from("bank_journals")
+      .select("*")
+      .eq("organization_id", project.organization_id)
+      .order("code")
+      .then(({ data }) => setBankJournals((data as BankJournal[]) ?? []));
+
     nextSequence(project.id, "n_piece", "PC").then(setNPiece);
   }, [project]);
 
+  // Reproduit ActualiserInterfaceContextuelle() : le journal disponible
+  // depend du type d'operation. Si le journal actuellement selectionne
+  // n'est plus dans la liste autorisee, on bascule sur le premier valide.
+  const codesAutorises = JOURNAUX_PAR_TYPE[typeOperation.toUpperCase()];
+  const journauxDisponibles = codesAutorises
+    ? bankJournals.filter((j) => codesAutorises.includes(j.code))
+    : bankJournals;
+
   useEffect(() => {
-    if (!project) return;
+    if (journauxDisponibles.length === 0) return;
+    if (!journauxDisponibles.some((j) => j.code === journal)) {
+      setJournal(journauxDisponibles[0].code);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [typeOperation, bankJournals]);
+
+  useEffect(() => {
+    if (!project || !journal) return;
     nextSequence(project.id, "n_ecriture_journal", journal).then(setNEcritureJournal);
   }, [project, journal]);
+
+  // Reproduit D9Actif() : B-S-Line n'est actif que pour ces 2 types.
+  const bSLineActif = typeOperation === "OPERATIONS DIVERSES" || typeOperation === "TRESORERIE";
+  useEffect(() => {
+    if (!bSLineActif) setBSLine("");
+  }, [bSLineActif]);
+
+  // Reproduit D15Actif() : N°/Chq/OV n'est obligatoire/actif que pour BQ/CS.
+  const nChequeOvActif = journal === "BQ" || journal === "CS";
+  useEffect(() => {
+    if (!nChequeOvActif) setNChequeOv("");
+  }, [nChequeOvActif]);
+
+  // Reproduit H9Actif()/GetListeTiersPourCompte() : le tiers n'est actif
+  // que si le compte en cours de saisie est "porteur de tiers" (classe 4
+  // rattachee a des tiers via third_parties.compte_classe_4), et la liste
+  // est filtree a ceux de ce compte precis.
+  const compteSaisiTrim = compte.trim();
+  const tiersDisponibles = thirdParties.filter(
+    (tp) => tp.compte_classe_4 && compteSaisiTrim.startsWith(tp.compte_classe_4)
+  );
+  const tiersActif = tiersDisponibles.length > 0;
+  useEffect(() => {
+    if (!tiersActif) setTiers("");
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [compteSaisiTrim]);
+
+  async function handleRefFactDBlur() {
+    if (!project || !refFactD.trim()) return;
+    // Reproduit ChercherPieceExistante() : reutilise le N°Piece existant
+    // si la reference correspond deja a une ecriture passee.
+    const { data } = await supabase
+      .from("journal_entries")
+      .select("n_piece")
+      .eq("project_id", project.id)
+      .eq("ref_fact_d", refFactD.trim())
+      .not("n_piece", "is", null)
+      .limit(1);
+    if (data && data.length > 0 && data[0].n_piece) {
+      setNPiece(data[0].n_piece);
+    }
+  }
 
   const totalDebit = lignes
     .filter((l) => l.sens === "debit")
@@ -326,7 +411,7 @@ export default function SaisiePage() {
           <p className="text-center text-sm font-medium text-text-secondary">
             {t.login.sousTitre}
           </p>
-          <Pill onClick={() => afficherNotice(t.saisie.journalIntermediaireBientot)}>
+          <Pill onClick={() => setJournalIntermediaireOuvert(true)}>
             {t.saisie.accederJournalIntermediaire}
           </Pill>
         </div>
@@ -357,16 +442,16 @@ export default function SaisiePage() {
             value={dateOperation}
             onChange={(e) => setDateOperation(e.target.value)}
           />
-          <FormField label={t.saisie.nPiece} value={nPiece} onChange={(e) => setNPiece(e.target.value)} />
+          <FormField label={t.saisie.nPiece} value={nPiece} disabled />
           <FormField label={t.saisie.typeOperation} required>
             <select
               value={typeOperation}
               onChange={(e) => setTypeOperation(e.target.value)}
               className={fieldControlClass}
             >
-              {TYPES_OPERATION.map((op) => (
-                <option key={op} value={op}>
-                  {op}
+              {operationTypes.map((op) => (
+                <option key={op.id} value={op.code}>
+                  {op.code}
                 </option>
               ))}
             </select>
@@ -377,14 +462,37 @@ export default function SaisiePage() {
               onChange={(e) => setJournal(e.target.value)}
               className={fieldControlClass}
             >
-              {JOURNAUX.map((j) => (
-                <option key={j} value={j}>
-                  {j}
+              {journauxDisponibles.map((j) => (
+                <option key={j.id} value={j.code}>
+                  {j.code}
                 </option>
               ))}
             </select>
           </FormField>
-          <FormField label={t.saisie.bSLine} value={bSLine} onChange={(e) => setBSLine(e.target.value)} />
+          <FormField label={t.saisie.bSLine}>
+            {bSLineActif ? (
+              <select
+                value={bSLine}
+                onChange={(e) => setBSLine(e.target.value)}
+                className={fieldControlClass}
+              >
+                <option value="">—</option>
+                {budgetLines.map((b) => (
+                  <option key={b.id} value={b.our_line_code ?? ""}>
+                    {b.our_line_code}
+                  </option>
+                ))}
+              </select>
+            ) : (
+              <input
+                type="text"
+                value=""
+                disabled
+                placeholder={t.saisie.champInactif}
+                className={`${fieldControlClass} opacity-50`}
+              />
+            )}
+          </FormField>
         </div>
 
         <div className="mb-4 grid grid-cols-1 gap-4 sm:grid-cols-5">
@@ -402,19 +510,31 @@ export default function SaisiePage() {
               ))}
             </select>
           </FormField>
-          <FormField label={t.saisie.tiers} required>
-            <input
-              list="tiers-list"
-              type="text"
-              value={tiers}
-              onChange={(e) => setTiers(e.target.value)}
-              className={fieldControlClass}
-            />
-            <datalist id="tiers-list">
-              {thirdParties.map((tp) => (
-                <option key={tp.id} value={tp.nom_tiers} />
-              ))}
-            </datalist>
+          <FormField label={t.saisie.tiers} required={tiersActif}>
+            {tiersActif ? (
+              <>
+                <input
+                  list="tiers-list"
+                  type="text"
+                  value={tiers}
+                  onChange={(e) => setTiers(e.target.value)}
+                  className={fieldControlClass}
+                />
+                <datalist id="tiers-list">
+                  {tiersDisponibles.map((tp) => (
+                    <option key={tp.id} value={tp.nom_tiers} />
+                  ))}
+                </datalist>
+              </>
+            ) : (
+              <input
+                type="text"
+                value=""
+                disabled
+                placeholder={t.saisie.champInactif}
+                className={`${fieldControlClass} opacity-50`}
+              />
+            )}
           </FormField>
           <FormField label={t.saisie.nCompte} required>
             <input
@@ -456,7 +576,13 @@ export default function SaisiePage() {
         </div>
 
         <div className="mb-4 grid grid-cols-1 gap-4 sm:grid-cols-5">
-          <FormField label={t.saisie.refFactD} required value={refFactD} onChange={(e) => setRefFactD(e.target.value)} />
+          <FormField
+            label={t.saisie.refFactD}
+            required
+            value={refFactD}
+            onChange={(e) => setRefFactD(e.target.value)}
+            onBlur={handleRefFactDBlur}
+          />
           <div className="sm:col-span-2">
             <FormField label={t.saisie.libelle} required value={libelle} onChange={(e) => setLibelle(e.target.value)} />
           </div>
@@ -479,7 +605,14 @@ export default function SaisiePage() {
         {success && <p className="mb-3 text-sm text-accent-teal">{success}</p>}
 
         <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-3 sm:items-end">
-          <FormField label={t.saisie.nChqOv} required value={nChequeOv} onChange={(e) => setNChequeOv(e.target.value)} />
+          <FormField
+            label={t.saisie.nChqOv}
+            required={nChequeOvActif}
+            value={nChequeOv}
+            onChange={(e) => setNChequeOv(e.target.value)}
+            disabled={!nChequeOvActif}
+            placeholder={nChequeOvActif ? undefined : t.saisie.champInactif}
+          />
           <Pill icon={undefined} onClick={genererLeReglement}>
             {t.saisie.genererLeReglement}
           </Pill>
@@ -560,6 +693,87 @@ export default function SaisiePage() {
           budgetLines={budgetLines}
           onGenerer={appliquerModele}
         />
+      )}
+
+      {journalIntermediaireOuvert && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
+          <div className="max-h-[85vh] w-full max-w-5xl overflow-auto rounded-xl border border-border-subtle bg-bg-card p-6">
+            <div className="mb-4 flex items-center justify-between">
+              <p className="font-semibold text-text-primary">
+                {t.saisie.journalIntermediaire.titre}
+              </p>
+              <button
+                onClick={() => setJournalIntermediaireOuvert(false)}
+                className="text-sm text-accent-blue hover:underline"
+              >
+                {t.saisie.journalIntermediaire.retour}
+              </button>
+            </div>
+
+            <div className="overflow-auto rounded-lg border border-border-subtle">
+              <table className="min-w-full text-sm [&_td]:whitespace-nowrap [&_td]:border-r [&_td]:border-border-subtle [&_th]:border-r [&_th]:border-border-subtle [&_tr>*:last-child]:border-r-0">
+                <MiniTableHeader
+                  columns={[
+                    t.common.date,
+                    t.saisie.typeOperation,
+                    t.saisie.bSLine,
+                    t.saisie.journal,
+                    t.saisie.journalIntermediaire.colCptD,
+                    t.saisie.journalIntermediaire.colCptC,
+                    t.saisie.tiers,
+                    t.saisie.refFactD,
+                    t.saisie.nChqOv,
+                    t.saisie.nPiece,
+                    t.saisie.zone,
+                    t.saisie.colMontantD,
+                    t.saisie.colMontantC,
+                    t.common.libelle,
+                  ]}
+                  align={[
+                    "left", "left", "left", "left", "left", "left", "left",
+                    "left", "left", "left", "left", "right", "right", "left",
+                  ]}
+                  noWrap
+                />
+                <tbody className="divide-y divide-border-subtle bg-bg-card/60">
+                  {lignes.length === 0 && (
+                    <tr>
+                      <td colSpan={14} className="px-3 py-4 text-center text-text-secondary">
+                        {t.saisie.journalIntermediaire.vide}
+                      </td>
+                    </tr>
+                  )}
+                  {lignes.map((l) => (
+                    <tr key={l.id} className="text-text-primary">
+                      <td className="px-2 py-1.5">
+                        {new Date(dateOperation).toLocaleDateString("fr-FR")}
+                      </td>
+                      <td className="px-2 py-1.5">{typeOperation}</td>
+                      <td className="px-2 py-1.5">{bSLine}</td>
+                      <td className="px-2 py-1.5">{journal}</td>
+                      <td className="px-2 py-1.5">{l.sens === "debit" ? l.compte : ""}</td>
+                      <td className="px-2 py-1.5">{l.sens === "credit" ? l.compte : ""}</td>
+                      <td className="px-2 py-1.5">{l.tiers ?? tiers}</td>
+                      <td className="px-2 py-1.5">{refFactD}</td>
+                      <td className="px-2 py-1.5">{nChequeOv}</td>
+                      <td className="px-2 py-1.5">{l.nPieceOverride ?? nPiece}</td>
+                      <td className="px-2 py-1.5">
+                        {zones.find((z) => String(z.id) === zoneId)?.code ?? ""}
+                      </td>
+                      <td className="px-2 py-1.5 text-right">
+                        {l.sens === "debit" ? l.montant.toLocaleString("fr-FR") : ""}
+                      </td>
+                      <td className="px-2 py-1.5 text-right">
+                        {l.sens === "credit" ? l.montant.toLocaleString("fr-FR") : ""}
+                      </td>
+                      <td className="px-2 py-1.5">{l.libelle}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

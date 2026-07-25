@@ -103,7 +103,6 @@ export const fr = {
   saisie: {
     dateComptable: "DATE COMPTABLE :",
     accederJournalIntermediaire: "Accéder au journal intermédiaire",
-    journalIntermediaireBientot: "Journal intermédiaire : fonctionnalité à venir.",
     lettrage: "Lettrage",
     delettrage: "Délettrage",
     nJournal: "N° JOURNAL",
@@ -149,6 +148,14 @@ export const fr = {
     retirer: "retirer",
     reglement: "Règlement",
     modelesEcriture: "Modèles d'écriture",
+    champInactif: "Non applicable pour cette sélection",
+    journalIntermediaire: {
+      titre: "Journal intermédiaire — lignes en attente de validation",
+      vide: "Aucune ligne en attente.",
+      retour: "← Retour",
+      colCptD: "Cpt D",
+      colCptC: "Cpt C",
+    },
     modeles: {
       titre: "Modèles d'écriture",
       retour: "← Retour",
