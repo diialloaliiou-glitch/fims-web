@@ -10,6 +10,7 @@ import { FormField } from "@/components/ui/FormField";
 import { MiniTableHeader } from "@/components/ui/MiniTableHeader";
 import { Pill } from "@/components/ui/Pill";
 import { StatCard } from "@/components/ui/StatCard";
+import { SignatureBlock } from "@/components/ui/SignatureBlock";
 import { scopeToProjectSpending } from "@/lib/project-scope";
 import type { BudgetLine, JournalEntry, Zone } from "@/lib/types";
 
@@ -260,6 +261,8 @@ export default function ReportingPage() {
           )}
         </table>
       </div>
+
+      <SignatureBlock project={project} />
     </div>
   );
 }

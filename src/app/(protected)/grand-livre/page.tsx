@@ -9,6 +9,7 @@ import { FormField } from "@/components/ui/FormField";
 import { MiniTableHeader } from "@/components/ui/MiniTableHeader";
 import { Pill } from "@/components/ui/Pill";
 import { PrimaryButton } from "@/components/ui/PrimaryButton";
+import { SignatureBlock } from "@/components/ui/SignatureBlock";
 import type { JournalEntry } from "@/lib/types";
 
 function firstOfMonthIso() {
@@ -297,6 +298,8 @@ export default function GrandLivrePage() {
           </table>
         </div>
       )}
+
+      <SignatureBlock project={project} />
     </div>
   );
 }

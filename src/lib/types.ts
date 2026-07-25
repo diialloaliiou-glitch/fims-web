@@ -133,17 +133,31 @@ export type PeriodClosure = {
   created_at: string;
 };
 
-export type ErbLine = {
+export type ErbReconciliation = {
   id: number;
   organization_id: string;
   project_id: string;
-  cote: "CHEZ_MOI" | "CHEZ_BANQUE";
-  date_operation: string | null;
-  reference: string | null;
-  operation: string | null;
-  montant_debit: number;
-  montant_credit: number;
-  pointe: boolean;
+  banque: string | null;
+  no_compte: string | null;
+  titulaire_compte: string | null;
+  droit_signature: string | null;
+  devise: string | null;
+  racine_compte: string;
+  date_finale: string;
+  solde_releve_bancaire: number;
+  date_releve: string | null;
+  created_at: string;
+};
+
+export type CategorieEcartErb = "debit_non_apparu" | "credit_non_apparu" | "erreur_banque";
+
+export type ErbReconciliationItem = {
+  id: number;
+  reconciliation_id: number;
+  categorie: CategorieEcartErb;
+  no_justificatif: string | null;
+  no_cheque: string | null;
+  montant: number;
   created_at: string;
 };
 
