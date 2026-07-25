@@ -633,7 +633,7 @@ export default function ErbPage() {
         </>
       )}
 
-      <SignatureBlock project={project} />
+      <SignatureBlock project={project} profile={profile} />
     </div>
   );
 }

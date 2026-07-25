@@ -28,7 +28,7 @@ function veilleIso(dateIso: string) {
 }
 
 export default function GrandLivrePage() {
-  const { project } = useAuth();
+  const { project, profile } = useAuth();
   const { t } = useLanguage();
   const [racineInput, setRacineInput] = useState("");
   const [racineValidee, setRacineValidee] = useState<string | null>(null);
@@ -299,7 +299,7 @@ export default function GrandLivrePage() {
         </div>
       )}
 
-      <SignatureBlock project={project} />
+      <SignatureBlock project={project} profile={profile} />
     </div>
   );
 }

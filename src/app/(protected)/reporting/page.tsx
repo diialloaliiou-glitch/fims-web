@@ -80,7 +80,7 @@ function calculerReporting(
 }
 
 export default function ReportingPage() {
-  const { project } = useAuth();
+  const { project, profile } = useAuth();
   const { t } = useLanguage();
   const [dateDebut, setDateDebut] = useState(firstOfMonthIso());
   const [dateFin, setDateFin] = useState(todayIso());
@@ -262,7 +262,7 @@ export default function ReportingPage() {
         </table>
       </div>
 
-      <SignatureBlock project={project} />
+      <SignatureBlock project={project} profile={profile} />
     </div>
   );
 }

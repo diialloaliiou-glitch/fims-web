@@ -1,17 +1,26 @@
 "use client";
 
 import { useLanguage } from "@/lib/language-context";
-import type { Project } from "@/lib/types";
+import type { Profile, Project } from "@/lib/types";
 
 // Reproduit le bloc de signature identique retrouve en bas des feuilles
 // J-AUXILIAIRE, GRAND LIVRE, BALANCE, REPORTING, FINANCIAL REPORT et ERB
 // du FIMS Excel d'origine (memes 3 roles, meme structure Full name /
-// Signature / Date sur chacune).
-export function SignatureBlock({ project }: { project: Project | null }) {
+// Signature / Date sur chacune). "Prepared by" est celui qui prepare le
+// document, donc l'utilisateur connecte - pas un nom fige des parametres
+// du projet, contrairement a Reviewed by / Approved by qui restent les
+// personnes designees pour valider/approuver.
+export function SignatureBlock({
+  project,
+  profile,
+}: {
+  project: Project | null;
+  profile: Profile | null;
+}) {
   const { t } = useLanguage();
 
   const signataires = [
-    { role: t.signatureBlock.preparedByFinance, nom: project?.administrative_financial_manager },
+    { role: t.signatureBlock.preparedByFinance, nom: profile?.nom_utilisateur },
     { role: t.signatureBlock.reviewedByRaf, nom: project?.reviewed_by },
     { role: t.signatureBlock.approvedByCoordinator, nom: project?.program_coordinator_president },
   ];

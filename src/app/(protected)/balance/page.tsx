@@ -95,7 +95,7 @@ function calculerBalance(
 }
 
 export default function BalancePage() {
-  const { project } = useAuth();
+  const { project, profile } = useAuth();
   const { t } = useLanguage();
   const [mode, setMode] = useState<"GENERAL" | "AUXILIAIRE">("GENERAL");
   const [filtreAux, setFiltreAux] = useState("40");
@@ -291,7 +291,7 @@ export default function BalancePage() {
         </table>
       </div>
 
-      <SignatureBlock project={project} />
+      <SignatureBlock project={project} profile={profile} />
     </div>
   );
 }

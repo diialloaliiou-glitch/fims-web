@@ -63,7 +63,7 @@ type ReportRow = BudgetLine & {
 };
 
 export default function FinancialReportPage() {
-  const { project } = useAuth();
+  const { project, profile } = useAuth();
   const { t } = useLanguage();
   const [lines, setLines] = useState<BudgetLine[]>([]);
   const [entries, setEntries] = useState<JournalEntry[]>([]);
@@ -341,7 +341,7 @@ export default function FinancialReportPage() {
         </table>
       </div>
 
-      <SignatureBlock project={project} />
+      <SignatureBlock project={project} profile={profile} />
     </div>
   );
 }

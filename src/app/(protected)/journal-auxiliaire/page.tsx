@@ -26,7 +26,7 @@ function todayIso() {
 // pas par tiers — c'est un sous-journal par type de journal (ex:
 // "journal auxiliaire de banque"), avec "*" pour voir tous les journaux.
 export default function JournalAuxiliairePage() {
-  const { project } = useAuth();
+  const { project, profile } = useAuth();
   const { t } = useLanguage();
   const [journaux, setJournaux] = useState<BankJournal[]>([]);
   const [journal, setJournal] = useState("*");
@@ -198,7 +198,7 @@ export default function JournalAuxiliairePage() {
         </table>
       </div>
 
-      <SignatureBlock project={project} />
+      <SignatureBlock project={project} profile={profile} />
     </div>
   );
 }
