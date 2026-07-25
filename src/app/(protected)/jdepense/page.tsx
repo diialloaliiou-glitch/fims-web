@@ -100,8 +100,10 @@ export default function JdepensePage() {
       .eq("project_id", project.id)
       .gte("date_operation", dateDebut)
       .lte("date_operation", dateFin)
-      .order("date_operation", { ascending: false })
-      .order("n_ecriture_journal", { ascending: false })
+      // Plus ancien en haut, plus recent en bas (comme l'ancien classeur
+      // Excel) - inverse de l'ordre precedent.
+      .order("date_operation", { ascending: true })
+      .order("n_ecriture_journal", { ascending: true })
       // A l'interieur d'une meme ecriture, la ligne Debit est toujours
       // inseree avant la ligne Credit (id plus petit) - trier par id
       // croissant ici garantit Debit avant Credit, quel que soit l'ordre
