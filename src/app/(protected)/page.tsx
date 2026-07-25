@@ -63,7 +63,12 @@ export default function DashboardPage() {
       .from("journal_entries")
       .select("n_ecriture_journal, date_operation")
       .eq("project_id", project.id)
-      .order("created_at", { ascending: false })
+      // Tri par date_operation (date reelle de l'operation), pas created_at
+      // (horodatage d'insertion) - un import en masse insere des centaines
+      // de lignes historiques au meme instant technique, ce qui rendait
+      // "created_at" inutilisable pour trouver la vraie derniere operation.
+      .order("date_operation", { ascending: false })
+      .order("id", { ascending: false })
       .limit(1)
       .then(({ data }) => {
         if (data && data.length > 0) setLastEntry(data[0]);

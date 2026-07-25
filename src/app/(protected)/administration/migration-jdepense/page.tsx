@@ -218,7 +218,11 @@ export default function MigrationJdepensePage() {
       organization_id: targetProject?.organization_id,
       project_id: targetProjectId,
       date_operation: l.dateOperationIso,
-      tag_projet_local: (l.values.tag_projet_local as string | null) || null,
+      // Si PROJECT ID est vide dans le fichier, rattache par defaut au
+      // projet cible choisi - sans ca, ces lignes restent invisibles pour
+      // tous les calculs de depense reelle (avance, taux de conso...) qui
+      // filtrent aussi par tag_projet_local en plus de project_id.
+      tag_projet_local: (l.values.tag_projet_local as string | null) || targetProject?.code_projet || null,
       budget_line: (l.values.budget_line as string | null) || null,
       categorie: (l.values.categorie as string | null) || null,
       type_operation: (l.values.type_operation as string | null) || null,
