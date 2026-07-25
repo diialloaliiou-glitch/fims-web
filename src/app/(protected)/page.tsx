@@ -45,6 +45,10 @@ export default function DashboardPage() {
   const [entriesThisMonth, setEntriesThisMonth] = useState<number | null>(null);
   const [tauxConsoBudgetaire, setTauxConsoBudgetaire] = useState<number | null>(null);
   const [tauxConsoAvance, setTauxConsoAvance] = useState<number | null>(null);
+  // Distingue "pas encore charge" (affiche "...") de "charge mais aucune
+  // valeur significative" (ex: aucune avance recue - affiche "-", pas "..."
+  // qui donnerait l'impression que ca charge indefiniment).
+  const [tauxLoaded, setTauxLoaded] = useState(false);
 
   const [search, setSearch] = useState("");
   const [searchResults, setSearchResults] = useState<JournalEntry[] | null>(null);
@@ -53,6 +57,7 @@ export default function DashboardPage() {
 
   useEffect(() => {
     if (!project) return;
+    setTauxLoaded(false);
 
     supabase
       .from("journal_entries")
@@ -122,6 +127,7 @@ export default function DashboardPage() {
 
       setTauxConsoBudgetaire(budgetTotal > 0 ? depenseTotale / budgetTotal : null);
       setTauxConsoAvance(cumulAvance > 0 ? depenseTotale / cumulAvance : null);
+      setTauxLoaded(true);
     });
   }, [project]);
 
@@ -241,9 +247,11 @@ export default function DashboardPage() {
         <StatCard
           label={t.dashboard.tauxConsoBudgetaire}
           value={
-            tauxConsoBudgetaire === null
+            !tauxLoaded
               ? "..."
-              : `${(tauxConsoBudgetaire * 100).toFixed(1)}%`
+              : tauxConsoBudgetaire === null
+                ? "—"
+                : `${(tauxConsoBudgetaire * 100).toFixed(1)}%`
           }
           valueColor="teal"
           icon={Percent}
@@ -251,7 +259,11 @@ export default function DashboardPage() {
         <StatCard
           label={t.dashboard.tauxConsoAvance}
           value={
-            tauxConsoAvance === null ? "..." : `${(tauxConsoAvance * 100).toFixed(1)}%`
+            !tauxLoaded
+              ? "..."
+              : tauxConsoAvance === null
+                ? "—"
+                : `${(tauxConsoAvance * 100).toFixed(1)}%`
           }
           valueColor="amber"
           icon={Percent}
