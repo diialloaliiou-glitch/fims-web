@@ -164,7 +164,8 @@ export function validerLignesJdepense(
   rawRows: Record<string, unknown>[],
   colonnesTrouvees: JdepenseImportKey[],
   comptesValides: Set<string>,
-  zonesInfo: Map<string, number>
+  zonesInfo: Map<string, number>,
+  typesOperationInfo: Map<string, string> = new Map()
 ): JdepenseImportRow[] {
   const lignes: JdepenseImportRow[] = rawRows.map((raw, i) => {
     const rowNumber = i + 2;
@@ -176,7 +177,17 @@ export function validerLignesJdepense(
       const brut = present ? raw[col.key] : undefined;
 
       if (col.type === "date") {
-        values[col.key] = brut == null || brut === "" ? null : String(brut);
+        if (brut == null || brut === "") {
+          values[col.key] = null;
+        } else if (brut instanceof Date) {
+          // Affichage propre dans l'apercu - la valeur brute (Date) est
+          // reparsee separement via parserDateSouple, ceci ne sert qu'a
+          // eviter le Date.toString() illisible ("Fri Sep 26 2025 00:00:00
+          // GMT+0000...") dans le tableau de previsualisation.
+          values[col.key] = brut.toLocaleDateString("fr-FR");
+        } else {
+          values[col.key] = String(brut);
+        }
         continue;
       }
 
@@ -228,6 +239,24 @@ export function validerLignesJdepense(
     }
     if (cRempli && !comptesValides.has(values.compte_credit as string)) {
       errors.push(`Compte C "${values.compte_credit}" introuvable dans le plan comptable du projet.`);
+    }
+
+    // TYPE D'OPERATION contraint par une cle etrangere (organization_id,
+    // type_operation) vers operation_types - une valeur qui n'y existe pas
+    // exactement (casse/espace) fait echouer l'insertion avec une erreur
+    // Postgres peu comprehensible. Verifie et normalise avant insertion,
+    // meme logique que Rubrique pour budget_lines.
+    const typeOpBrut = values.type_operation as string | null;
+    if (typeOpBrut) {
+      const normTypeOp = normaliserEnTeteJdepense(typeOpBrut);
+      const canoniqueTypeOp = typesOperationInfo.get(normTypeOp);
+      if (canoniqueTypeOp) {
+        values.type_operation = canoniqueTypeOp;
+      } else {
+        errors.push(
+          `TYPE D'OPERATION "${typeOpBrut}" invalide — valeurs autorisées : ${[...new Set(typesOperationInfo.values())].join(", ")}.`
+        );
+      }
     }
 
     // Zone verifiee contre zones.code - resolue en zone_id, jamais devinee.

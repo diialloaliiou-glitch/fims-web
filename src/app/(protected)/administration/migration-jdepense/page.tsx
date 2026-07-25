@@ -12,6 +12,7 @@ import {
   JDEPENSE_IMPORT_COLUMNS,
   JDEPENSE_EXAMPLE_ROW,
   mapperEntetesJdepense,
+  normaliserEnTeteJdepense,
   validerLignesJdepense,
   type JdepenseImportKey,
   type JdepenseImportRow,
@@ -42,6 +43,7 @@ export default function MigrationJdepensePage() {
 
   const [comptesValides, setComptesValides] = useState<Set<string>>(new Set());
   const [zonesInfo, setZonesInfo] = useState<Map<string, number>>(new Map());
+  const [typesOperationInfo, setTypesOperationInfo] = useState<Map<string, string>>(new Map());
   const [chargementRef, setChargementRef] = useState(false);
 
   const [doublons, setDoublons] = useState<Set<string> | null>(null);
@@ -59,6 +61,7 @@ export default function MigrationJdepensePage() {
     if (!targetProjectId || !targetProject) {
       setComptesValides(new Set());
       setZonesInfo(new Map());
+      setTypesOperationInfo(new Map());
       return;
     }
     setChargementRef(true);
@@ -71,7 +74,11 @@ export default function MigrationJdepensePage() {
         .from("zones")
         .select("id, code")
         .eq("organization_id", targetProject.organization_id),
-    ]).then(([comptesRes, zonesRes]) => {
+      supabase
+        .from("operation_types")
+        .select("code")
+        .eq("organization_id", targetProject.organization_id),
+    ]).then(([comptesRes, zonesRes, typesRes]) => {
       setComptesValides(
         new Set(((comptesRes.data ?? []) as { ccompte: string }[]).map((c) => c.ccompte))
       );
@@ -80,6 +87,11 @@ export default function MigrationJdepensePage() {
         map.set(z.code.toUpperCase(), z.id)
       );
       setZonesInfo(map);
+      const typesMap = new Map<string, string>();
+      ((typesRes.data ?? []) as { code: string }[]).forEach((tOp) =>
+        typesMap.set(normaliserEnTeteJdepense(tOp.code), tOp.code)
+      );
+      setTypesOperationInfo(typesMap);
       setChargementRef(false);
     });
   }, [targetProjectId, targetProject]);
@@ -152,8 +164,14 @@ export default function MigrationJdepensePage() {
 
   const lignes: JdepenseImportRow[] = useMemo(() => {
     if (!parsed) return [];
-    return validerLignesJdepense(parsed.rawObjects, parsed.colonnesTrouvees, comptesValides, zonesInfo);
-  }, [parsed, comptesValides, zonesInfo]);
+    return validerLignesJdepense(
+      parsed.rawObjects,
+      parsed.colonnesTrouvees,
+      comptesValides,
+      zonesInfo,
+      typesOperationInfo
+    );
+  }, [parsed, comptesValides, zonesInfo, typesOperationInfo]);
 
   const lignesValides = lignes.filter((l) => l.errors.length === 0);
   const lignesRejetees = lignes.filter((l) => l.errors.length > 0);
