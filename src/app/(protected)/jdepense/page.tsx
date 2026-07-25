@@ -475,8 +475,9 @@ export default function JdepensePage() {
             minWidths={[
               undefined, undefined, 140, 140, undefined, undefined, 140, undefined, undefined,
               undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined,
-              undefined, undefined, undefined, undefined, undefined, undefined, undefined,
+              undefined, undefined, 420, undefined, undefined, undefined, undefined,
             ]}
+            noWrap
           />
           <tbody className="divide-y divide-border-subtle bg-bg-card/60">
             {loading && (
