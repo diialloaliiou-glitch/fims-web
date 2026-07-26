@@ -323,6 +323,12 @@ export default function SaisiePage() {
 
     const nej = await nextSequence(project.id, "n_ecriture_journal", journal);
 
+    // IDC (identifiant mensuel "mois_annee", ex: "7_2026") est utilise par
+    // BUD TRACKER pour regrouper les depenses par mois (JDEPENSE[IDC]) -
+    // sans lui, la ligne est silencieusement ignoree du suivi budgetaire.
+    const [anneeOp, moisOp] = dateOperation.split("-");
+    const idc = `${parseInt(moisOp, 10)}_${anneeOp}`;
+
     const common = {
       organization_id: profile.organization_id,
       project_id: project.id,
@@ -330,6 +336,7 @@ export default function SaisiePage() {
       type_operation: typeOperation,
       journal,
       n_ecriture_journal: nej,
+      idc,
       b_s_line: bSLine || null,
       zone_id: zoneId ? parseInt(zoneId, 10) : null,
       ref_fact_d: refFactD || null,
