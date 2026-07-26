@@ -142,7 +142,7 @@ export default function JdepensePage() {
     supabase
       .from("third_parties")
       .select("*")
-      .eq("project_id", project.id)
+      .eq("organization_id", project.organization_id)
       .then(({ data }) => setThirdParties((data as ThirdParty[]) ?? []));
 
     supabase

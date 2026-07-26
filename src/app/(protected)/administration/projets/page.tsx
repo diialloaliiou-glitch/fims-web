@@ -123,9 +123,11 @@ export default function ProjetsPage() {
     });
   }
 
-  // Copie plan comptable / tiers / personnel depuis un projet source vers
-  // un projet cible — pour amorcer un nouveau projet (meme bailleur : clone
-  // un projet existant ; nouveau bailleur : clone le projet marque "modele").
+  // Copie le plan comptable depuis un projet source vers un projet cible —
+  // pour amorcer un nouveau projet (meme bailleur : clone un projet
+  // existant ; nouveau bailleur : clone le projet marque "modele"). Tiers
+  // et personnel ne sont plus clones : ils sont propres a l'organisation,
+  // pas au projet, donc deja visibles sans duplication.
   async function handleCloner(targetProjectId: string) {
     setCloneMessage(null);
     const source = sourceProjectId[targetProjectId];
@@ -155,48 +157,6 @@ export default function ProjetsPage() {
             ? await supabase.from("chart_of_accounts").insert(rows)
             : { error: null };
           return { table: t.projets.tablePlanComptable, count: rows.length, error: error?.message ?? null };
-        })()
-      );
-    }
-
-    if (tables.has("third_parties")) {
-      tasks.push(
-        (async () => {
-          const { data } = await supabase
-            .from("third_parties")
-            .select("compte_classe_4, nom_tiers, type, contact, statut, zone_id")
-            .eq("project_id", source);
-          const rows = (data ?? []).map((r) => ({
-            ...r,
-            organization_id: profile.organization_id,
-            project_id: targetProjectId,
-          }));
-          const { error } = rows.length
-            ? await supabase.from("third_parties").insert(rows)
-            : { error: null };
-          return { table: t.projets.tableTiers, count: rows.length, error: error?.message ?? null };
-        })()
-      );
-    }
-
-    if (tables.has("personnel")) {
-      tasks.push(
-        (async () => {
-          const { data } = await supabase
-            .from("personnel")
-            .select(
-              "matricule, prenom_nom, poste, b_s_line, compte_classe_4, salaire_brut, inps_patronale, inps_ouvriere, its, tl_patronale, salaire_net, date_debut, date_fin, statut, zone_id"
-            )
-            .eq("project_id", source);
-          const rows = (data ?? []).map((r) => ({
-            ...r,
-            organization_id: profile.organization_id,
-            project_id: targetProjectId,
-          }));
-          const { error } = rows.length
-            ? await supabase.from("personnel").insert(rows)
-            : { error: null };
-          return { table: t.projets.tablePersonnel, count: rows.length, error: error?.message ?? null };
         })()
       );
     }
@@ -393,8 +353,6 @@ export default function ProjetsPage() {
                             </select>
                             {[
                               { key: "chart_of_accounts", label: t.projets.tablePlanComptable },
-                              { key: "third_parties", label: t.projets.tableTiers },
-                              { key: "personnel", label: t.projets.tablePersonnel },
                             ].map((tbl) => (
                               <label
                                 key={tbl.key}

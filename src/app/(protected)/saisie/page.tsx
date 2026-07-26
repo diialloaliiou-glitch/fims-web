@@ -102,7 +102,6 @@ export default function SaisiePage() {
   const [montant, setMontant] = useState("");
 
   const [lignes, setLignes] = useState<Ligne[]>([]);
-  const [notice, setNotice] = useState<string | null>(null);
 
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -121,7 +120,7 @@ export default function SaisiePage() {
     supabase
       .from("third_parties")
       .select("*")
-      .eq("project_id", project.id)
+      .eq("organization_id", project.organization_id)
       .then(({ data }) => setThirdParties((data as ThirdParty[]) ?? []));
 
     supabase
@@ -228,11 +227,6 @@ export default function SaisiePage() {
     .filter((l) => l.sens === "credit")
     .reduce((s, l) => s + l.montant, 0);
 
-  function afficherNotice(msg: string) {
-    setNotice(msg);
-    setTimeout(() => setNotice(null), 3000);
-  }
-
   function ajouterLigne() {
     setError(null);
     if (!compte.trim()) {
@@ -260,6 +254,7 @@ export default function SaisiePage() {
   function annulerLigne() {
     setCompte("");
     setMontant("");
+    setLibelle("");
     setSens("debit");
     setError(null);
   }
@@ -268,30 +263,6 @@ export default function SaisiePage() {
     setLignes(lignes.filter((l) => l.id !== id));
   }
 
-  function genererLeReglement() {
-    const ecart = totalDebit - totalCredit;
-    if (ecart === 0) {
-      afficherNotice(t.saisie.lignesDejaEquilibrees);
-      return;
-    }
-    const compteTresorerie = accounts.find((a) => a.ccompte.startsWith("521"))?.ccompte ?? "521100";
-    const compteDefaut = accounts.find((a) => a.ccompte.startsWith("401"))?.ccompte ?? "401100";
-    const compteReglement =
-      typeOperation === "TRESORERIE" || typeOperation === "REGLEMENT"
-        ? compteTresorerie
-        : compteDefaut;
-
-    setLignes([
-      ...lignes,
-      {
-        id: ligneIdCounter++,
-        compte: compteReglement,
-        sens: ecart > 0 ? "credit" : "debit",
-        libelle: libelle.trim() || t.saisie.reglement,
-        montant: Math.abs(ecart),
-      },
-    ]);
-  }
 
   function appliquerModele(resultat: ResultatModele) {
     setTypeOperation(resultat.typeOperation);
@@ -427,12 +398,6 @@ export default function SaisiePage() {
           <p className="text-xs text-text-secondary">{t.saisie.nJournal}</p>
           <p className="text-lg font-bold text-accent-teal">{nEcritureJournal || "—"}</p>
         </div>
-
-        {notice && (
-          <p className="mb-4 rounded-md bg-bg-card px-4 py-2 text-sm text-accent-amber">
-            {notice}
-          </p>
-        )}
 
         <div className="mb-4 grid grid-cols-1 gap-4 sm:grid-cols-5">
           <FormField
@@ -604,7 +569,7 @@ export default function SaisiePage() {
         {error && <p className="mb-3 text-sm text-accent-red">{error}</p>}
         {success && <p className="mb-3 text-sm text-accent-teal">{success}</p>}
 
-        <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-3 sm:items-end">
+        <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 sm:items-end">
           <FormField
             label={t.saisie.nChqOv}
             required={nChequeOvActif}
@@ -613,9 +578,6 @@ export default function SaisiePage() {
             disabled={!nChequeOvActif}
             placeholder={nChequeOvActif ? undefined : t.saisie.champInactif}
           />
-          <Pill icon={undefined} onClick={genererLeReglement}>
-            {t.saisie.genererLeReglement}
-          </Pill>
           <div className="flex items-center justify-end gap-3">
             <p className="text-xs text-accent-amber">
               {t.saisie.cliquezPourEnregistrer}
@@ -719,6 +681,7 @@ export default function SaisiePage() {
                     t.saisie.typeOperation,
                     t.saisie.bSLine,
                     t.saisie.journal,
+                    t.jdepense.colNEJ,
                     t.saisie.journalIntermediaire.colCptD,
                     t.saisie.journalIntermediaire.colCptC,
                     t.saisie.tiers,
@@ -729,17 +692,19 @@ export default function SaisiePage() {
                     t.saisie.colMontantD,
                     t.saisie.colMontantC,
                     t.common.libelle,
+                    t.jdepense.colDateHeureSaisie,
+                    t.jdepense.colUtilisateur,
                   ]}
                   align={[
-                    "left", "left", "left", "left", "left", "left", "left",
-                    "left", "left", "left", "left", "right", "right", "left",
+                    "left", "left", "left", "left", "left", "left", "left", "left",
+                    "left", "left", "left", "left", "right", "right", "left", "left", "left",
                   ]}
                   noWrap
                 />
                 <tbody className="divide-y divide-border-subtle bg-bg-card/60">
                   {lignes.length === 0 && (
                     <tr>
-                      <td colSpan={14} className="px-3 py-4 text-center text-text-secondary">
+                      <td colSpan={17} className="px-3 py-4 text-center text-text-secondary">
                         {t.saisie.journalIntermediaire.vide}
                       </td>
                     </tr>
@@ -752,6 +717,7 @@ export default function SaisiePage() {
                       <td className="px-2 py-1.5">{typeOperation}</td>
                       <td className="px-2 py-1.5">{bSLine}</td>
                       <td className="px-2 py-1.5">{journal}</td>
+                      <td className="px-2 py-1.5">{nEcritureJournal}</td>
                       <td className="px-2 py-1.5">{l.sens === "debit" ? l.compte : ""}</td>
                       <td className="px-2 py-1.5">{l.sens === "credit" ? l.compte : ""}</td>
                       <td className="px-2 py-1.5">{l.tiers ?? tiers}</td>
@@ -768,6 +734,8 @@ export default function SaisiePage() {
                         {l.sens === "credit" ? l.montant.toLocaleString("fr-FR") : ""}
                       </td>
                       <td className="px-2 py-1.5">{l.libelle}</td>
+                      <td className="px-2 py-1.5">{new Date().toLocaleString("fr-FR")}</td>
+                      <td className="px-2 py-1.5">{profile?.nom_utilisateur}</td>
                     </tr>
                   ))}
                 </tbody>

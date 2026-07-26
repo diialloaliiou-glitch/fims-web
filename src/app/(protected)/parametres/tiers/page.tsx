@@ -41,7 +41,7 @@ export default function TiersPage() {
     const { data } = await supabase
       .from("third_parties")
       .select("*")
-      .eq("project_id", project.id)
+      .eq("organization_id", project.organization_id)
       .order("nom_tiers");
     setTiers((data as ThirdParty[]) ?? []);
     setLoading(false);
