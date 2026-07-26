@@ -145,7 +145,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
     });
 
-    return () => subscription.unsubscribe();
+    // Le rafraichissement automatique du jeton (timer interne de
+    // supabase-js) est mis en pause par le navigateur quand l'onglet passe
+    // en arriere-plan un moment. Au retour, le jeton peut etre expire sans
+    // que l'app ne le sache - toute ecriture (Saisie, etc.) echoue alors
+    // avec une erreur RLS generique. On force un rafraichissement explicite
+    // des que l'onglet redevient visible.
+    function handleVisibilityChange() {
+      if (document.visibilityState === "visible") {
+        supabase.auth.refreshSession();
+      }
+    }
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
+    return () => {
+      subscription.unsubscribe();
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
   }, []);
 
   async function signOut() {

@@ -315,6 +315,12 @@ export default function SaisiePage() {
 
     setSubmitting(true);
 
+    // Garde-fou : si l'onglet est reste en arriere-plan un moment, le
+    // jeton de session peut avoir expire silencieusement (le timer de
+    // rafraichissement de supabase-js est mis en pause hors-focus).
+    // getSession() rafraichit automatiquement si necessaire avant l'ecriture.
+    await supabase.auth.getSession();
+
     const nej = await nextSequence(project.id, "n_ecriture_journal", journal);
 
     const common = {
