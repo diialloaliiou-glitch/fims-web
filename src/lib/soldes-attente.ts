@@ -9,7 +9,7 @@ export type SoldeEnAttente = {
   soldeNet: number;
   bsl: string;
   zoneId: number | null;
-  refChq: string;
+  refFactD: string;
   libelle: string;
 };
 
@@ -31,7 +31,7 @@ export async function soldesEnAttente(project: Project): Promise<SoldeEnAttente[
   const { data } = await supabase
     .from("journal_entries")
     .select(
-      "compte_debit, compte_credit, montant_debit, montant_credit, tiers, n_piece, date_operation, b_s_line, zone_id, n_cheque_ov, libelle"
+      "compte_debit, compte_credit, montant_debit, montant_credit, tiers, n_piece, date_operation, b_s_line, zone_id, ref_fact_d, libelle"
     )
     .eq("project_id", project.id);
 
@@ -46,7 +46,7 @@ export async function soldesEnAttente(project: Project): Promise<SoldeEnAttente[
     | "date_operation"
     | "b_s_line"
     | "zone_id"
-    | "n_cheque_ov"
+    | "ref_fact_d"
     | "libelle"
   >[]) ?? [];
 
@@ -59,7 +59,7 @@ export async function soldesEnAttente(project: Project): Promise<SoldeEnAttente[
     dateOp: string;
     bsl: string;
     zoneId: number | null;
-    refChq: string;
+    refFactD: string;
     libelle: string;
   };
 
@@ -79,7 +79,7 @@ export async function soldesEnAttente(project: Project): Promise<SoldeEnAttente[
         dateOp: "1900-01-01",
         bsl: "",
         zoneId: null,
-        refChq: "",
+        refFactD: "",
         libelle: "",
       };
       groupes.set(key, g);
@@ -91,7 +91,7 @@ export async function soldesEnAttente(project: Project): Promise<SoldeEnAttente[
       g.tiers = e.tiers ?? "";
       g.bsl = e.b_s_line ?? "";
       g.zoneId = e.zone_id;
-      g.refChq = e.n_cheque_ov ?? "";
+      g.refFactD = e.ref_fact_d ?? "";
       g.libelle = e.libelle ?? "";
     }
   }
@@ -113,7 +113,7 @@ export async function soldesEnAttente(project: Project): Promise<SoldeEnAttente[
         soldeNet: net,
         bsl: g.bsl,
         zoneId: g.zoneId,
-        refChq: g.refChq,
+        refFactD: g.refFactD,
         libelle: g.libelle,
       });
     }

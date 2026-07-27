@@ -181,7 +181,10 @@ export function ModelesEcritureModal({
     setMontant(String(Math.abs(s.soldeNet)));
     if (s.bsl) setBsl(s.bsl);
     if (s.zoneId != null) setZoneVal(String(s.zoneId));
-    if (s.refChq) setRefReel(s.refChq);
+    // Reproduit lstSoldes_Click() : seule la Ref. Fact/D d'origine (txtRef)
+    // est reportee - le N°/CHQ/OV reel n'est jamais reporte automatiquement
+    // dans le VBA, meme quand il existait sur l'ecriture d'origine.
+    if (s.refFactD) setRefFactD(s.refFactD);
     if (!libelle.trim()) setLibelle(libelleSolde(s));
     if (s.tiers) setTiersVal(s.tiers);
     // Si le compte du solde correspond a une des options "choix" du debit

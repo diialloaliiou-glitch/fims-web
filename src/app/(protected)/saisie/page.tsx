@@ -242,6 +242,12 @@ export default function SaisiePage() {
       setError(t.saisie.erreurLibelleObligatoire);
       return;
     }
+    // Reproduit la verification H9Actif() du VBA : un compte porteur de
+    // tiers exige un tiers selectionne avant d'ajouter la ligne.
+    if (tiersActif && !tiers.trim()) {
+      setError(t.saisie.modeles.erreurTiersObligatoire);
+      return;
+    }
 
     setLignes([
       ...lignes,
