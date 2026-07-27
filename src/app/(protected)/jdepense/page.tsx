@@ -8,7 +8,7 @@ import { periodeCouranteFermee } from "@/lib/period-closure";
 import { FormField, fieldControlClass } from "@/components/ui/FormField";
 import { MiniTableHeader } from "@/components/ui/MiniTableHeader";
 import { PrimaryButton } from "@/components/ui/PrimaryButton";
-import type { ChartOfAccount, JournalEntry, ThirdParty, Zone } from "@/lib/types";
+import type { BudgetLine, ChartOfAccount, JournalEntry, ThirdParty, Zone } from "@/lib/types";
 
 const JOURNAUX = ["AC", "BQ", "OD", "SA"];
 const TYPES_OPERATION = [
@@ -35,6 +35,8 @@ type EditForm = {
   n_piece: string;
   type_operation: string;
   b_s_line: string;
+  budget_line: string;
+  categorie: string;
   compte_debit: string;
   compte_credit: string;
   montant_debit: string;
@@ -55,6 +57,8 @@ function toEditForm(e: JournalEntry): EditForm {
     n_piece: e.n_piece ?? "",
     type_operation: e.type_operation ?? TYPES_OPERATION[0],
     b_s_line: e.b_s_line ?? "",
+    budget_line: e.budget_line ?? "",
+    categorie: e.categorie ?? "",
     compte_debit: e.compte_debit ?? "",
     compte_credit: e.compte_credit ?? "",
     montant_debit: e.montant_debit ? String(e.montant_debit) : "",
@@ -75,6 +79,14 @@ export default function JdepensePage() {
   const [accounts, setAccounts] = useState<ChartOfAccount[]>([]);
   const [thirdParties, setThirdParties] = useState<ThirdParty[]>([]);
   const [zones, setZones] = useState<Zone[]>([]);
+  const [budgetLines, setBudgetLines] = useState<BudgetLine[]>([]);
+
+  // Reproduit la regle metier : seul le RAF (+ ADMIN_N1) peut modifier une
+  // ecriture JDEPENSE, et le RAF ne peut toucher qu'a B-S-LINE - PROJECT ID,
+  // BUDGET LINE et CATEGORIE se re-derivent alors automatiquement (comme sur
+  // Saisie), tous les autres champs restent verrouilles pour ce role.
+  const peutModifier = profile?.role === "RAF" || profile?.role === "ADMIN_N1";
+  const champsRestreints = profile?.role === "RAF";
 
   const [dateDebut, setDateDebut] = useState(firstOfMonthIso());
   const [dateFin, setDateFin] = useState(todayIso());
@@ -151,12 +163,35 @@ export default function JdepensePage() {
       .eq("organization_id", project.organization_id)
       .order("code")
       .then(({ data }) => setZones((data as Zone[]) ?? []));
+
+    supabase
+      .from("budget_lines")
+      .select("*")
+      .eq("project_id", project.id)
+      .then(({ data }) => setBudgetLines((data as BudgetLine[]) ?? []));
   }, [project]);
 
   function startEdit(e: JournalEntry) {
+    if (!peutModifier) return;
     setEditingId(e.id);
     setForm(toEditForm(e));
     setError(null);
+  }
+
+  // Reproduit BuildDatabaseLookup() : PROJECT ID, BUDGET LINE et CATEGORIE
+  // se re-derivent depuis B-S-LINE a chaque modification de ce champ.
+  function handleBSLineChange(value: string) {
+    if (!form || !project) return;
+    const ligneBudget = value
+      ? budgetLines.find((b) => (b.our_line_code ?? "").toUpperCase() === value.toUpperCase())
+      : undefined;
+    setForm({
+      ...form,
+      b_s_line: value,
+      budget_line: ligneBudget?.budget_line ?? "",
+      categorie: ligneBudget?.categorie ?? "",
+      tag_projet_local: project.code_projet,
+    });
   }
 
   function cancelEdit() {
@@ -166,7 +201,7 @@ export default function JdepensePage() {
   }
 
   async function handleSave() {
-    if (!form || editingId === null || !project || !profile) return;
+    if (!form || editingId === null || !project || !profile || !peutModifier) return;
     setError(null);
 
     const montantDebit = form.montant_debit ? parseFloat(form.montant_debit) : 0;
@@ -202,6 +237,8 @@ export default function JdepensePage() {
         n_piece: form.n_piece || null,
         type_operation: form.type_operation,
         b_s_line: form.b_s_line || null,
+        budget_line: form.budget_line || null,
+        categorie: form.categorie || null,
         compte_debit: form.compte_debit.trim() || null,
         compte_credit: form.compte_credit.trim() || null,
         montant_debit: montantDebit,
@@ -278,12 +315,14 @@ export default function JdepensePage() {
               type="date"
               value={form.date_operation}
               onChange={(e) => setForm({ ...form, date_operation: e.target.value })}
+              disabled={champsRestreints}
             />
             <FormField label={t.jdepense.journal} required>
               <select
                 value={form.journal}
                 onChange={(e) => setForm({ ...form, journal: e.target.value })}
                 className={fieldControlClass}
+                disabled={champsRestreints}
               >
                 {JOURNAUX.map((j) => (
                   <option key={j} value={j}>
@@ -296,17 +335,20 @@ export default function JdepensePage() {
               label={t.jdepense.nEJ}
               value={form.n_ecriture_journal}
               onChange={(e) => setForm({ ...form, n_ecriture_journal: e.target.value })}
+              disabled={champsRestreints}
             />
             <FormField
               label={t.jdepense.nPiece}
               value={form.n_piece}
               onChange={(e) => setForm({ ...form, n_piece: e.target.value })}
+              disabled={champsRestreints}
             />
             <FormField label={t.jdepense.typeOperation} required>
               <select
                 value={form.type_operation}
                 onChange={(e) => setForm({ ...form, type_operation: e.target.value })}
                 className={fieldControlClass}
+                disabled={champsRestreints}
               >
                 {TYPES_OPERATION.map((op) => (
                   <option key={op} value={op}>
@@ -318,13 +360,17 @@ export default function JdepensePage() {
             <FormField
               label={t.jdepense.bSLine}
               value={form.b_s_line}
-              onChange={(e) => setForm({ ...form, b_s_line: e.target.value })}
+              onChange={(e) => handleBSLineChange(e.target.value)}
             />
+            <FormField label={t.jdepense.colBudgetLine} value={form.budget_line} disabled />
+            <FormField label={t.jdepense.colCategorie} value={form.categorie} disabled />
+            <FormField label={t.jdepense.tagProjetLocal} value={form.tag_projet_local} disabled />
             <FormField label={t.jdepense.zone}>
               <select
                 value={form.zone_id}
                 onChange={(e) => setForm({ ...form, zone_id: e.target.value })}
                 className={fieldControlClass}
+                disabled={champsRestreints}
               >
                 <option value="">—</option>
                 {zones.map((z) => (
@@ -341,6 +387,7 @@ export default function JdepensePage() {
                 value={form.tiers}
                 onChange={(e) => setForm({ ...form, tiers: e.target.value })}
                 className={fieldControlClass}
+                disabled={champsRestreints}
               />
               <datalist id="jdepense-tiers-list">
                 {thirdParties.map((tp) => (
@@ -358,6 +405,7 @@ export default function JdepensePage() {
                 value={form.compte_debit}
                 onChange={(e) => setForm({ ...form, compte_debit: e.target.value })}
                 className={fieldControlClass}
+                disabled={champsRestreints}
               />
             </FormField>
             <FormField
@@ -366,6 +414,7 @@ export default function JdepensePage() {
               step="0.01"
               value={form.montant_debit}
               onChange={(e) => setForm({ ...form, montant_debit: e.target.value })}
+              disabled={champsRestreints}
             />
             <FormField label={t.jdepense.nCompteCredit}>
               <input
@@ -374,6 +423,7 @@ export default function JdepensePage() {
                 value={form.compte_credit}
                 onChange={(e) => setForm({ ...form, compte_credit: e.target.value })}
                 className={fieldControlClass}
+                disabled={champsRestreints}
               />
             </FormField>
             <FormField
@@ -382,6 +432,7 @@ export default function JdepensePage() {
               step="0.01"
               value={form.montant_credit}
               onChange={(e) => setForm({ ...form, montant_credit: e.target.value })}
+              disabled={champsRestreints}
             />
             <datalist id="jdepense-comptes-list">
               {accounts.map((a) => (
@@ -399,26 +450,20 @@ export default function JdepensePage() {
                 required
                 value={form.libelle}
                 onChange={(e) => setForm({ ...form, libelle: e.target.value })}
+                disabled={champsRestreints}
               />
             </div>
             <FormField
               label={t.jdepense.refFactD}
               value={form.ref_fact_d}
               onChange={(e) => setForm({ ...form, ref_fact_d: e.target.value })}
+              disabled={champsRestreints}
             />
             <FormField
               label={t.jdepense.nChqOv}
               value={form.n_cheque_ov}
               onChange={(e) => setForm({ ...form, n_cheque_ov: e.target.value })}
-            />
-          </div>
-
-          <div className="mb-4 max-w-xs">
-            <FormField
-              label={t.jdepense.tagProjetLocal}
-              value={form.tag_projet_local}
-              onChange={(e) => setForm({ ...form, tag_projet_local: e.target.value })}
-              placeholder={project?.code_projet}
+              disabled={champsRestreints}
             />
           </div>
 
@@ -530,12 +575,14 @@ export default function JdepensePage() {
                 </td>
                 <td className="px-3 py-2">{e.utilisateur}</td>
                 <td className="px-3 py-2 text-right">
-                  <button
-                    onClick={() => startEdit(e)}
-                    className="text-accent-blue hover:underline"
-                  >
-                    {t.common.modifier}
-                  </button>
+                  {peutModifier && (
+                    <button
+                      onClick={() => startEdit(e)}
+                      className="text-accent-blue hover:underline"
+                    >
+                      {t.common.modifier}
+                    </button>
+                  )}
                 </td>
               </tr>
             ))}
