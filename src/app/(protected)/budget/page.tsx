@@ -70,8 +70,17 @@ export default function FinancialReportPage() {
   const [donor, setDonor] = useState<Donor | null>(null);
   const [periodeDebut, setPeriodeDebut] = useState(firstOfMonthIso());
   const [periodeFin, setPeriodeFin] = useState(todayIso());
-  const [tauxChange, setTauxChange] = useState("560");
+  const [tauxChange, setTauxChange] = useState("");
   const [loading, setLoading] = useState(true);
+
+  // Le taux de change et la devise ne doivent pas etre figes (ex: USD/560) -
+  // chaque projet a sa propre devise/taux configures (ex: WAHAFA est en
+  // EURO a 655.957, pas en USD a 560).
+  useEffect(() => {
+    if (project?.taux_conversion) setTauxChange(String(project.taux_conversion));
+  }, [project]);
+
+  const deviseLabel = project?.devise || "—";
 
   useEffect(() => {
     if (!project) return;
@@ -141,6 +150,8 @@ export default function FinancialReportPage() {
     };
   });
 
+  const colPeriodExpUsd = t.financialReport.colPeriodExpUsd.replace("{devise}", deviseLabel);
+
   const totalBudget = rows.reduce((s, r) => s + (r.total_cost ?? 0), 0);
   const totalPrior = rows.reduce((s, r) => s + r.priorExp, 0);
   const totalPeriod = rows.reduce((s, r) => s + r.periodExp, 0);
@@ -173,7 +184,7 @@ export default function FinancialReportPage() {
                   t.financialReport.colBudget,
                   t.financialReport.colPriorExp,
                   t.financialReport.colPeriodExp,
-                  t.financialReport.colPeriodExpUsd,
+                  colPeriodExpUsd,
                   t.financialReport.colVariance,
                   t.financialReport.colBurnRate,
                 ],
@@ -226,7 +237,7 @@ export default function FinancialReportPage() {
           onChange={(e) => setPeriodeFin(e.target.value)}
         />
         <FormField
-          label={t.financialReport.exchangeRate}
+          label={t.financialReport.exchangeRate.replace("{devise}", deviseLabel)}
           type="number"
           step="0.01"
           value={tauxChange}
@@ -254,13 +265,15 @@ export default function FinancialReportPage() {
       </div>
 
       <p className="mb-3 text-xs text-text-secondary">
-        {t.financialReport.methodologie.replace("{date}", dateDebutProjet)}
+        {t.financialReport.methodologie
+          .replace("{date}", dateDebutProjet)
+          .replace("{devise}", deviseLabel)}
       </p>
 
       <div className="max-h-[65vh] overflow-auto rounded-xl border border-border-subtle print:max-h-none print:overflow-visible">
         <table className="min-w-full table-auto text-sm [&_td]:border-r [&_td]:border-border-subtle [&_th]:border-r [&_th]:border-border-subtle [&_tr>*:last-child]:border-r-0">
           <MiniTableHeader
-            columns={[t.financialReport.colCode, t.financialReport.colDescription, t.financialReport.colUnit, t.financialReport.colQty, t.financialReport.colFreq, t.financialReport.colPctProject, t.financialReport.colBudget, t.financialReport.colPriorExp, t.financialReport.colPeriodExp, t.financialReport.colPeriodExpUsd, t.financialReport.colVariance, t.financialReport.colBurnRate]}
+            columns={[t.financialReport.colCode, t.financialReport.colDescription, t.financialReport.colUnit, t.financialReport.colQty, t.financialReport.colFreq, t.financialReport.colPctProject, t.financialReport.colBudget, t.financialReport.colPriorExp, t.financialReport.colPeriodExp, colPeriodExpUsd, t.financialReport.colVariance, t.financialReport.colBurnRate]}
             align={["left", "left", "left", "right", "right", "right", "right", "right", "right", "right", "right", "right"]}
           />
           <tbody className="divide-y divide-border-subtle bg-bg-card/60">

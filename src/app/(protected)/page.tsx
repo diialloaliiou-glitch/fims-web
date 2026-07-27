@@ -93,12 +93,22 @@ export default function DashboardPage() {
 
     const firstOfMonth = new Date();
     firstOfMonth.setDate(1);
+    // Une "ecriture" = un N°E-J (une ou plusieurs lignes debit contre une ou
+    // plusieurs lignes credit), pas une ligne journal_entries individuelle -
+    // compter les lignes brutes surestime largement le nombre d'ecritures.
     supabase
       .from("journal_entries")
-      .select("id", { count: "exact", head: true })
+      .select("n_ecriture_journal")
       .eq("project_id", project.id)
       .gte("date_operation", firstOfMonth.toISOString().slice(0, 10))
-      .then(({ count }) => setEntriesThisMonth(count ?? 0));
+      .then(({ data }) => {
+        const distinctes = new Set(
+          (data ?? [])
+            .map((e) => e.n_ecriture_journal)
+            .filter((nej): nej is string => !!nej)
+        );
+        setEntriesThisMonth(distinctes.size);
+      });
 
     // Reproduit la feuille BUD TRACKER : "Taux de conso budgetaire" (B2 =
     // AB209 = depense totale / budget approuve) et "Taux de conso de
