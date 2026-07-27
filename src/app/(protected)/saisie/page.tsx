@@ -335,6 +335,13 @@ export default function SaisiePage() {
     const [anneeOp, moisOp] = dateOperation.split("-");
     const idc = `${parseInt(moisOp, 10)}_${anneeOp}`;
 
+    // Reproduit BuildDatabaseLookup()/ValiderEtTransférer() : PROJECT ID,
+    // BUDGET LINE et CATEGORIE viennent d'une recherche sur B-S-LINE dans
+    // la table DATABASE (budget_lines chez nous), pas d'une saisie directe.
+    const ligneBudget = bSLine
+      ? budgetLines.find((b) => (b.our_line_code ?? "").toUpperCase() === bSLine.toUpperCase())
+      : undefined;
+
     const common = {
       organization_id: profile.organization_id,
       project_id: project.id,
@@ -344,6 +351,9 @@ export default function SaisiePage() {
       n_ecriture_journal: nej,
       idc,
       b_s_line: bSLine || null,
+      budget_line: ligneBudget?.budget_line ?? null,
+      categorie: ligneBudget?.categorie ?? null,
+      tag_projet_local: project.code_projet,
       zone_id: zoneId ? parseInt(zoneId, 10) : null,
       ref_fact_d: refFactD || null,
       n_cheque_ov: nChequeOv || null,
