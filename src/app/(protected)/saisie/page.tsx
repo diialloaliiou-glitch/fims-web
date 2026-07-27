@@ -12,7 +12,7 @@ import { PrimaryButton } from "@/components/ui/PrimaryButton";
 import { MiniTableHeader } from "@/components/ui/MiniTableHeader";
 import { Pill } from "@/components/ui/Pill";
 import { ModelesEcritureModal, type ResultatModele } from "@/components/ModelesEcritureModal";
-import { Cloud, Wand2 } from "lucide-react";
+import { Cloud, Wand2, Wallet2 } from "lucide-react";
 import type {
   BankJournal,
   BudgetLine,
@@ -408,9 +408,12 @@ export default function SaisiePage() {
           </Pill>
         </div>
 
-        <div className="mb-6">
+        <div className="mb-6 flex flex-wrap gap-3">
           <Pill icon={Wand2} onClick={() => setModelesOuvert(true)}>
             {t.saisie.modelesEcriture}
+          </Pill>
+          <Pill icon={Wallet2} href="/paie">
+            {t.paie.titre}
           </Pill>
         </div>
 
