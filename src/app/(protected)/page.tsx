@@ -26,6 +26,7 @@ import {
   FileSpreadsheet,
   Percent,
   TrendingUp,
+  Wallet2,
 } from "lucide-react";
 
 function formatPrenom(nomUtilisateur: string | undefined) {
@@ -166,6 +167,9 @@ export default function DashboardPage() {
   const tilesPrincipales = [
     ...(peutSaisir
       ? [{ key: "saisie", icon: PenLine, label: t.dashboard.tileSaisie, href: "/saisie", color: "teal" as const }]
+      : []),
+    ...(peutSaisir
+      ? [{ key: "paie", icon: Wallet2, label: t.dashboard.tilePaie, href: "/paie", color: "teal" as const }]
       : []),
     { key: "paf", icon: Feather, label: t.dashboard.tilePaf, href: "/fiche-paiement", color: "teal" as const },
     { key: "jdepense", icon: FileSpreadsheet, label: t.dashboard.tileJdepense, href: "/jdepense", color: "blue" as const },

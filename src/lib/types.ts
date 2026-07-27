@@ -112,10 +112,43 @@ export type Personnel = {
   its: number | null;
   tl_patronale: number | null;
   salaire_net: number;
+  amo: number | null;
   date_debut: string | null;
   date_fin: string | null;
   statut: string;
   zone_id: number | null;
+};
+
+export type PersonnelRepartition = {
+  id: number;
+  organization_id: string;
+  personnel_id: number;
+  mois: string;
+  project_id: string;
+  budget_line: string | null;
+  b_s_line: string | null;
+  pourcentage: number;
+  note: string | null;
+  created_at: string;
+};
+
+export type PayrollMappingKey =
+  | "SALAIRE_BRUT_DEBIT"
+  | "INPS_PATRONALE_DEBIT"
+  | "AMO_PATRONALE_DEBIT"
+  | "TL_PATRONALE_DEBIT"
+  | "SALAIRE_NET_CREDIT"
+  | "INPS_CREDIT"
+  | "AMO_CREDIT"
+  | "ITS_CREDIT"
+  | "TL_CREDIT";
+
+export type PayrollAccountMapping = {
+  id: number;
+  organization_id: string;
+  project_id: string;
+  cle: PayrollMappingKey;
+  compte: string;
 };
 
 export type PeriodClosure = {

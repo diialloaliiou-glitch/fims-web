@@ -7,6 +7,7 @@ import { useLanguage } from "@/lib/language-context";
 import { FormField, fieldControlClass } from "@/components/ui/FormField";
 import { MiniTableHeader } from "@/components/ui/MiniTableHeader";
 import { PrimaryButton } from "@/components/ui/PrimaryButton";
+import { PersonnelRepartitionModal } from "@/components/PersonnelRepartitionModal";
 import type { ChartOfAccount, Personnel, Zone } from "@/lib/types";
 
 const emptyForm = {
@@ -20,6 +21,7 @@ const emptyForm = {
   inps_ouvriere: "",
   its: "",
   tl_patronale: "",
+  amo: "",
   date_debut: "",
   date_fin: "",
   zone_id: "",
@@ -44,6 +46,7 @@ export default function PersonnelPage() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [filter, setFilter] = useState("");
+  const [repartitionPour, setRepartitionPour] = useState<Personnel | null>(null);
 
   async function loadPersonnel() {
     if (!profile || !project) return;
@@ -98,6 +101,7 @@ export default function PersonnelPage() {
       inps_ouvriere: p.inps_ouvriere != null ? String(p.inps_ouvriere) : "",
       its: p.its != null ? String(p.its) : "",
       tl_patronale: p.tl_patronale != null ? String(p.tl_patronale) : "",
+      amo: p.amo != null ? String(p.amo) : "",
       date_debut: p.date_debut ?? "",
       date_fin: p.date_fin ?? "",
       zone_id: p.zone_id != null ? String(p.zone_id) : "",
@@ -138,6 +142,7 @@ export default function PersonnelPage() {
       inps_ouvriere: form.inps_ouvriere ? parseFloat(form.inps_ouvriere) : null,
       its: form.its ? parseFloat(form.its) : null,
       tl_patronale: form.tl_patronale ? parseFloat(form.tl_patronale) : null,
+      amo: form.amo ? parseFloat(form.amo) : null,
       salaire_net: salaireNet,
       date_debut: form.date_debut || null,
       date_fin: form.date_fin || null,
@@ -291,6 +296,13 @@ export default function PersonnelPage() {
             onChange={(e) => setForm({ ...form, tl_patronale: e.target.value })}
           />
           <FormField
+            label={t.personnel.amo}
+            type="number"
+            step="0.01"
+            value={form.amo}
+            onChange={(e) => setForm({ ...form, amo: e.target.value })}
+          />
+          <FormField
             label={t.personnel.salaireNetCalcule}
             disabled
             value={salaireNetPreview.toLocaleString("fr-FR")}
@@ -374,9 +386,15 @@ export default function PersonnelPage() {
                   <td className="px-3 py-2 text-right">
                     <button
                       onClick={() => startEdit(p)}
-                      className="text-accent-blue hover:underline"
+                      className="mr-3 text-accent-blue hover:underline"
                     >
                       {t.common.modifier}
+                    </button>
+                    <button
+                      onClick={() => setRepartitionPour(p)}
+                      className="text-accent-teal hover:underline"
+                    >
+                      {t.personnel.repartition.bouton}
                     </button>
                   </td>
                 </tr>
@@ -384,6 +402,13 @@ export default function PersonnelPage() {
           </tbody>
         </table>
       </div>
+
+      {repartitionPour && (
+        <PersonnelRepartitionModal
+          employe={repartitionPour}
+          onClose={() => setRepartitionPour(null)}
+        />
+      )}
     </div>
   );
 }

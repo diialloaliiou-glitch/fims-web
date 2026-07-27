@@ -5,6 +5,7 @@ import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/lib/auth-context";
 import { useLanguage } from "@/lib/language-context";
 import { periodeCouranteFermee } from "@/lib/period-closure";
+import { nextSequence } from "@/lib/numerotation";
 import { FormField, fieldControlClass } from "@/components/ui/FormField";
 import { IconButton } from "@/components/ui/IconButton";
 import { PrimaryButton } from "@/components/ui/PrimaryButton";
@@ -46,28 +47,6 @@ type Ligne = {
 
 function todayIso() {
   return new Date().toISOString().slice(0, 10);
-}
-
-async function nextSequence(
-  projectId: string,
-  column: "n_ecriture_journal" | "n_piece",
-  prefix: string
-) {
-  const { data } = await supabase
-    .from("journal_entries")
-    .select(column)
-    .eq("project_id", projectId)
-    .like(column, `${prefix}-%`);
-
-  let max = 0;
-  (data ?? []).forEach((row: Record<string, string | null>) => {
-    const val = row[column];
-    if (!val) return;
-    const num = parseInt(val.split("-").pop() ?? "0", 10);
-    if (!isNaN(num) && num > max) max = num;
-  });
-
-  return `${prefix}-${String(max + 1).padStart(4, "0")}`;
 }
 
 let ligneIdCounter = 1;
