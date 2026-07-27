@@ -385,6 +385,19 @@ export default function SaisiePage() {
     nextSequence(project.id, "n_ecriture_journal", journal).then(setNEcritureJournal);
   }
 
+  // Reserve au COMPTABLE (+ ADMIN_N1) - ni RAF ni ADMIN_SITE ne doivent
+  // acceder a la Saisie, contrairement a la hierarchie de roles habituelle.
+  if (profile?.role !== "ADMIN_N1" && profile?.role !== "COMPTABLE") {
+    return (
+      <div>
+        <h1 className="mb-4 text-2xl font-semibold text-text-primary">{t.dashboard.tileSaisie}</h1>
+        <p className="text-sm text-text-secondary">
+          {t.saisie.permissionInfo.replace("{role}", profile?.role ?? "")}
+        </p>
+      </div>
+    );
+  }
+
   return (
     <div className="flex gap-6">
       <div className="hidden w-32 shrink-0 flex-col gap-3 sm:flex">

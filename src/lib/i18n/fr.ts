@@ -101,6 +101,7 @@ export const fr = {
     tileParametre: "Paramètre",
   },
   saisie: {
+    permissionInfo: "Ton rôle ({role}) ne permet pas d'accéder à la Saisie — réservée à ADMIN_N1 et COMPTABLE.",
     dateComptable: "DATE COMPTABLE :",
     accederJournalIntermediaire: "Accéder au journal intermédiaire",
     lettrage: "Lettrage",

@@ -105,6 +105,7 @@ export const en: typeof fr = {
     tileParametre: "Settings",
   },
   saisie: {
+    permissionInfo: "Your role ({role}) does not allow access to Saisie — reserved for ADMIN_N1 and COMPTABLE.",
     dateComptable: "ACCOUNTING DATE:",
     accederJournalIntermediaire: "Open intermediate journal",
     lettrage: "Matching",

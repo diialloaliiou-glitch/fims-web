@@ -158,8 +158,15 @@ export default function DashboardPage() {
     setSearching(false);
   }
 
+  // La Saisie est reservee au COMPTABLE (+ ADMIN_N1 pour l'administration
+  // du systeme) - ni RAF ni ADMIN_SITE ne doivent la voir, contrairement a
+  // la hierarchie de roles habituelle ou ils heritent des droits COMPTABLE.
+  const peutSaisir = profile?.role === "ADMIN_N1" || profile?.role === "COMPTABLE";
+
   const tilesPrincipales = [
-    { key: "saisie", icon: PenLine, label: t.dashboard.tileSaisie, href: "/saisie", color: "teal" as const },
+    ...(peutSaisir
+      ? [{ key: "saisie", icon: PenLine, label: t.dashboard.tileSaisie, href: "/saisie", color: "teal" as const }]
+      : []),
     { key: "paf", icon: Feather, label: t.dashboard.tilePaf, href: "/fiche-paiement", color: "teal" as const },
     { key: "jdepense", icon: FileSpreadsheet, label: t.dashboard.tileJdepense, href: "/jdepense", color: "blue" as const },
     { key: "budtracker", icon: TrendingUp, label: t.dashboard.tileBudTracker, href: "/bud-tracker", color: "blue" as const },
