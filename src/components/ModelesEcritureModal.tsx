@@ -6,6 +6,7 @@ import { useLanguage } from "@/lib/language-context";
 import { fieldControlClass } from "@/components/ui/FormField";
 import { PrimaryButton } from "@/components/ui/PrimaryButton";
 import { soldesEnAttente, type SoldeEnAttente } from "@/lib/soldes-attente";
+import { bSLinesPourReglement } from "@/lib/paie";
 import {
   getModeleProps,
   journauxPour,
@@ -21,6 +22,7 @@ type LigneGeneree = {
   montant: number;
   tiers?: string;
   nPieceOverride?: string;
+  bSLineOverride?: string;
 };
 
 export type ResultatModele = {
@@ -194,19 +196,23 @@ export function ModelesEcritureModal({
     setPieceForcee(s.numPiece);
   }
 
+  function cleSolde(s: SoldeEnAttente) {
+    return `${s.compte}|${s.numPiece}|${s.tiers}`;
+  }
+
   function cliquerSolde(s: SoldeEnAttente) {
-    const key = `${s.compte}|${s.numPiece}`;
+    const key = cleSolde(s);
     if (multiSelect) {
       const next = new Set(soldesCoches);
       if (next.has(key)) next.delete(key);
       else next.add(key);
       setSoldesCoches(next);
       if (next.size === 1) {
-        const only = soldes.find((x) => `${x.compte}|${x.numPiece}` === Array.from(next)[0]);
+        const only = soldes.find((x) => cleSolde(x) === Array.from(next)[0]);
         if (only) prefillDepuisSolde(only);
       } else if (next.size > 1) {
         const total = Array.from(next).reduce((sum, k) => {
-          const found = soldes.find((x) => `${x.compte}|${x.numPiece}` === k);
+          const found = soldes.find((x) => cleSolde(x) === k);
           return sum + (found ? Math.abs(found.soldeNet) : 0);
         }, 0);
         setMontant(String(total));
@@ -217,7 +223,7 @@ export function ModelesEcritureModal({
     }
   }
 
-  function handleGenerer() {
+  async function handleGenerer() {
     setError(null);
     if (!props) return;
 
@@ -243,15 +249,32 @@ export function ModelesEcritureModal({
         setError(t.saisie.modeles.erreurCompteCreditObligatoire);
         return;
       }
-      const selectionnees = soldes.filter((s) => soldesCoches.has(`${s.compte}|${s.numPiece}`));
-      const lignesDebit: LigneGeneree[] = selectionnees.map((s) => ({
-        compte: s.compte,
-        sens: "debit",
-        libelle: libelleSolde(s),
-        montant: Math.abs(s.soldeNet),
-        tiers: s.tiers || undefined,
-        nPieceOverride: s.numPiece,
-      }));
+      const selectionnees = soldes.filter((s) => soldesCoches.has(cleSolde(s)));
+
+      // Reglement groupe (ex: paie en mode groupe) : plusieurs tiers
+      // partagent parfois le meme reglement - on retrouve le B-S-Line propre
+      // a chaque employe (via sa repartition multi-projet) pour repartir
+      // analytiquement, plutot que d'imposer un seul B-S-Line a toute
+      // l'ecriture de reglement.
+      const bslParTiersEtMois = await bSLinesPourReglement(
+        project.organization_id,
+        project.id,
+        selectionnees.map((s) => ({ matricule: s.tiers, dateOperation: s.dateOp }))
+      );
+
+      const lignesDebit: LigneGeneree[] = selectionnees.map((s) => {
+        const mois = s.dateOp.slice(0, 7);
+        const bSLineOverride = s.tiers ? bslParTiersEtMois.get(`${s.tiers}|${mois}`) : undefined;
+        return {
+          compte: s.compte,
+          sens: "debit",
+          libelle: libelleSolde(s),
+          montant: Math.abs(s.soldeNet),
+          tiers: s.tiers || undefined,
+          nPieceOverride: s.numPiece,
+          bSLineOverride,
+        };
+      });
       const total = lignesDebit.reduce((sum, l) => sum + l.montant, 0);
 
       onGenerer({
@@ -461,7 +484,7 @@ export function ModelesEcritureModal({
                     </p>
                     <div className="max-h-40 overflow-y-auto">
                       {soldes.map((s) => {
-                        const key = `${s.compte}|${s.numPiece}`;
+                        const key = cleSolde(s);
                         const actif = multiSelect
                           ? soldesCoches.has(key)
                           : pieceForcee === s.numPiece && montant === String(Math.abs(s.soldeNet));

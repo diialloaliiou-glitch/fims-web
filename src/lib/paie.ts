@@ -188,6 +188,47 @@ export function genererLignesPaie(params: {
     });
 }
 
+// Au reglement (Modeles d'ecriture, soldes en attente), retrouve pour
+// chaque tiers = matricule d'employe le B-S-Line que la repartition
+// multi-projet lui attribuait le mois ou la dette a ete constatee - permet
+// de repartir analytiquement un reglement groupe (plusieurs employes, un
+// seul virement) au lieu d'un B-S-Line unique pour toute l'ecriture.
+export async function bSLinesPourReglement(
+  organizationId: string,
+  projectId: string,
+  lignes: { matricule: string; dateOperation: string }[]
+): Promise<Map<string, string>> {
+  const matricules = Array.from(new Set(lignes.map((l) => l.matricule).filter(Boolean)));
+  const resultat = new Map<string, string>();
+  if (matricules.length === 0) return resultat;
+
+  const { data: personnelData } = await supabase
+    .from("personnel")
+    .select("id, matricule")
+    .eq("organization_id", organizationId)
+    .in("matricule", matricules);
+
+  const matriculeParId = new Map((personnelData ?? []).map((p) => [p.id, p.matricule]));
+  const personnelIds = Array.from(matriculeParId.keys());
+  if (personnelIds.length === 0) return resultat;
+
+  const { data: repartitionData } = await supabase
+    .from("personnel_repartition")
+    .select("personnel_id, mois, b_s_line")
+    .eq("project_id", projectId)
+    .in("personnel_id", personnelIds);
+
+  (repartitionData ?? []).forEach((r) => {
+    if (!r.b_s_line) return;
+    const matricule = matriculeParId.get(r.personnel_id);
+    if (!matricule) return;
+    const mois = String(r.mois).slice(0, 7);
+    resultat.set(`${matricule}|${mois}`, r.b_s_line);
+  });
+
+  return resultat;
+}
+
 export async function verifierAntiDoublon(projectId: string, matricule: string, idc: string) {
   const { data } = await supabase
     .from("journal_entries")

@@ -89,6 +89,7 @@ export const CATALOGUE: { typeOp: string; journal: string; modeles: string[] }[]
       "ICR / Frais admin vers AMSODE",
       "Net personnel",
       "Reversement INPS",
+      "Reversement AMO/CANAM",
       "Reversement DGI ITS/TL",
       "Cash transfer direct",
       "Réception fonds bailleur",
@@ -361,6 +362,16 @@ export function getModeleProps(nom: string): ModeleProps | null {
         typeOp: "TRESORERIE",
         journal: "BQ",
         debit: { fixe: "431100" },
+        credit: { choix: BANQUES },
+        bslVisible: true,
+        avecSoldes: true,
+        multiSelect: true,
+      };
+    case "Reversement AMO/CANAM":
+      return {
+        typeOp: "TRESORERIE",
+        journal: "BQ",
+        debit: { fixe: "433300" },
         credit: { choix: BANQUES },
         bslVisible: true,
         avecSoldes: true,

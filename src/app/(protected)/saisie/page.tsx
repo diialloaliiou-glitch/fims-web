@@ -39,10 +39,13 @@ type Ligne = {
   libelle: string;
   montant: number;
   // Renseignes uniquement par les Modeles d'ecriture (reglement groupe de
-  // plusieurs soldes en attente) : chaque ligne debit garde alors le tiers
-  // et le n_piece de son solde d'origine plutot que ceux de l'en-tete.
+  // plusieurs soldes en attente) : chaque ligne debit garde alors le tiers,
+  // le n_piece et le B-S-Line de son solde d'origine plutot que ceux de
+  // l'en-tete (necessaire pour repartir analytiquement un reglement groupe,
+  // ex: prise en charge salaire en mode groupe).
   tiers?: string;
   nPieceOverride?: string;
+  bSLineOverride?: string;
 };
 
 function todayIso() {
@@ -269,6 +272,7 @@ export default function SaisiePage() {
         montant: l.montant,
         tiers: l.tiers,
         nPieceOverride: l.nPieceOverride,
+        bSLineOverride: l.bSLineOverride,
       })),
     ]);
   }
@@ -314,13 +318,6 @@ export default function SaisiePage() {
     const [anneeOp, moisOp] = dateOperation.split("-");
     const idc = `${parseInt(moisOp, 10)}_${anneeOp}`;
 
-    // Reproduit BuildDatabaseLookup()/ValiderEtTransférer() : PROJECT ID,
-    // BUDGET LINE et CATEGORIE viennent d'une recherche sur B-S-LINE dans
-    // la table DATABASE (budget_lines chez nous), pas d'une saisie directe.
-    const ligneBudget = bSLine
-      ? budgetLines.find((b) => (b.our_line_code ?? "").toUpperCase() === bSLine.toUpperCase())
-      : undefined;
-
     const common = {
       organization_id: profile.organization_id,
       project_id: project.id,
@@ -329,9 +326,6 @@ export default function SaisiePage() {
       journal,
       n_ecriture_journal: nej,
       idc,
-      b_s_line: bSLine || null,
-      budget_line: ligneBudget?.budget_line ?? null,
-      categorie: ligneBudget?.categorie ?? null,
       tag_projet_local: project.code_projet,
       zone_id: zoneId ? parseInt(zoneId, 10) : null,
       ref_fact_d: refFactD || null,
@@ -341,16 +335,32 @@ export default function SaisiePage() {
       created_at: new Date().toISOString(),
     };
 
-    const rows = lignes.map((l) => ({
-      ...common,
-      compte_debit: l.sens === "debit" ? l.compte : null,
-      compte_credit: l.sens === "credit" ? l.compte : null,
-      montant_debit: l.sens === "debit" ? l.montant : 0,
-      montant_credit: l.sens === "credit" ? l.montant : 0,
-      libelle: l.libelle,
-      n_piece: l.nPieceOverride ?? nPiece ?? null,
-      tiers: l.tiers ?? tiers ?? null,
-    }));
+    // Chaque ligne peut porter son propre B-S-Line (bSLineOverride, pose par
+    // un reglement groupe de Modeles d'ecriture) plutot que celui de
+    // l'en-tete - necessaire pour repartir analytiquement un reglement
+    // couvrant plusieurs employes/projets en une seule ecriture bancaire.
+    // Reproduit BuildDatabaseLookup()/ValiderEtTransférer() : BUDGET LINE et
+    // CATEGORIE viennent d'une recherche sur B-S-LINE dans la table DATABASE
+    // (budget_lines chez nous), pas d'une saisie directe.
+    const rows = lignes.map((l) => {
+      const bSLineLigne = l.bSLineOverride ?? bSLine;
+      const ligneBudgetLigne = bSLineLigne
+        ? budgetLines.find((b) => (b.our_line_code ?? "").toUpperCase() === bSLineLigne.toUpperCase())
+        : undefined;
+      return {
+        ...common,
+        b_s_line: bSLineLigne || null,
+        budget_line: ligneBudgetLigne?.budget_line ?? null,
+        categorie: ligneBudgetLigne?.categorie ?? null,
+        compte_debit: l.sens === "debit" ? l.compte : null,
+        compte_credit: l.sens === "credit" ? l.compte : null,
+        montant_debit: l.sens === "debit" ? l.montant : 0,
+        montant_credit: l.sens === "credit" ? l.montant : 0,
+        libelle: l.libelle,
+        n_piece: l.nPieceOverride ?? nPiece ?? null,
+        tiers: l.tiers ?? tiers ?? null,
+      };
+    });
 
     const { error: insertError } = await supabase.from("journal_entries").insert(rows);
 
@@ -739,7 +749,7 @@ export default function SaisiePage() {
                         {new Date(dateOperation).toLocaleDateString("fr-FR")}
                       </td>
                       <td className="px-2 py-1.5">{typeOperation}</td>
-                      <td className="px-2 py-1.5">{bSLine}</td>
+                      <td className="px-2 py-1.5">{l.bSLineOverride ?? bSLine}</td>
                       <td className="px-2 py-1.5">{journal}</td>
                       <td className="px-2 py-1.5">{nEcritureJournal}</td>
                       <td className="px-2 py-1.5">{l.sens === "debit" ? l.compte : ""}</td>

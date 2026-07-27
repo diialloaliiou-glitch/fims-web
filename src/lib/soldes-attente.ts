@@ -14,9 +14,15 @@ export type SoldeEnAttente = {
 };
 
 // Reproduit LireSoldesClasse4() de mod_ModeleEcriture.bas : regroupe les
-// ecritures par (compte classe 4, n_piece), garde les groupes dont le solde
-// net (debit - credit) depasse 0.01 en valeur absolue, et prend le
-// tiers/BSL/zone/reference/libelle de l'ecriture la plus recente du groupe.
+// ecritures par (compte classe 4, n_piece, tiers), garde les groupes dont le
+// solde net (debit - credit) depasse 0.01 en valeur absolue, et prend le
+// BSL/zone/reference/libelle de l'ecriture la plus recente du groupe.
+// Le tiers fait partie de la cle de regroupement (pas juste compte+piece) :
+// necessaire pour la prise en charge salaire en mode groupe, ou plusieurs
+// employes partagent le meme N°Piece - sans ca, leurs dettes 422100/etc.
+// seraient fusionnees en un seul solde impossible a regler individuellement.
+// Sans impact sur les autres usages (fournisseur/prestataire ont deja 1
+// piece = 1 tiers).
 // Exclut 471202 (compte groupe<->projet, jamais une avance a apurer).
 function estClasse4(compte: string | null): boolean {
   if (!compte) return false;
@@ -67,7 +73,8 @@ export async function soldesEnAttente(project: Project): Promise<SoldeEnAttente[
 
   function accumuler(compte: string, montantD: number, montantC: number, e: (typeof entries)[number]) {
     const pce = e.n_piece ?? "";
-    const key = `${compte}|${pce}`;
+    const tiers = e.tiers ?? "";
+    const key = `${compte}|${pce}|${tiers}`;
     let g = groupes.get(key);
     if (!g) {
       g = {
@@ -75,7 +82,7 @@ export async function soldesEnAttente(project: Project): Promise<SoldeEnAttente[
         numPiece: pce,
         debit: 0,
         credit: 0,
-        tiers: "",
+        tiers,
         dateOp: "1900-01-01",
         bsl: "",
         zoneId: null,
@@ -88,7 +95,6 @@ export async function soldesEnAttente(project: Project): Promise<SoldeEnAttente[
     g.credit += montantC;
     if (e.date_operation >= g.dateOp) {
       g.dateOp = e.date_operation;
-      g.tiers = e.tiers ?? "";
       g.bsl = e.b_s_line ?? "";
       g.zoneId = e.zone_id;
       g.refFactD = e.ref_fact_d ?? "";
