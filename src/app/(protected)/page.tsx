@@ -43,6 +43,7 @@ export default function DashboardPage() {
     date_operation: string;
   } | null>(null);
   const [soldeTresorerie, setSoldeTresorerie] = useState<number | null>(null);
+  const [soldeParCompte, setSoldeParCompte] = useState<{ compte: string; libelle: string; solde: number }[]>([]);
   const [entriesThisMonth, setEntriesThisMonth] = useState<number | null>(null);
   const [tauxConsoBudgetaire, setTauxConsoBudgetaire] = useState<number | null>(null);
   const [tauxConsoAvance, setTauxConsoAvance] = useState<number | null>(null);
@@ -85,14 +86,38 @@ export default function DashboardPage() {
       .select("compte_debit, compte_credit, montant_debit, montant_credit")
       .eq("project_id", project.id)
       .eq("type_operation", "TRESORERIE")
-      .then(({ data }) => {
+      .then(async ({ data }) => {
         if (!data) return;
         let solde = 0;
+        const parCompte = new Map<string, number>();
         data.forEach((e) => {
-          if (e.compte_debit?.startsWith("5")) solde += e.montant_debit;
-          if (e.compte_credit?.startsWith("5")) solde -= e.montant_credit;
+          if (e.compte_debit?.startsWith("5")) {
+            solde += e.montant_debit;
+            parCompte.set(e.compte_debit, (parCompte.get(e.compte_debit) ?? 0) + e.montant_debit);
+          }
+          if (e.compte_credit?.startsWith("5")) {
+            solde -= e.montant_credit;
+            parCompte.set(e.compte_credit, (parCompte.get(e.compte_credit) ?? 0) - e.montant_credit);
+          }
         });
         setSoldeTresorerie(solde);
+
+        const codes = Array.from(parCompte.keys());
+        const { data: coa } = await supabase
+          .from("chart_of_accounts")
+          .select("ccompte, libelle")
+          .eq("project_id", project.id)
+          .in("ccompte", codes);
+        const libelleParCode = new Map((coa ?? []).map((c) => [c.ccompte, c.libelle]));
+        setSoldeParCompte(
+          codes
+            .sort()
+            .map((compte) => ({
+              compte,
+              libelle: libelleParCode.get(compte) ?? "",
+              solde: parCompte.get(compte) ?? 0,
+            }))
+        );
       });
 
     const firstOfMonth = new Date();
@@ -248,17 +273,30 @@ export default function DashboardPage() {
       </div>
 
       <div className="relative mb-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
-        <StatCard
-          size="lg"
-          label={t.dashboard.soldeDisponible}
-          value={
-            soldeTresorerie === null
-              ? "..."
-              : Math.round(soldeTresorerie).toLocaleString("fr-FR")
-          }
-          valueColor="teal"
-          icon={Wallet}
-        />
+        <div>
+          <StatCard
+            size="lg"
+            label={t.dashboard.soldeDisponible}
+            value={
+              soldeTresorerie === null
+                ? "..."
+                : Math.round(soldeTresorerie).toLocaleString("fr-FR")
+            }
+            valueColor="teal"
+            icon={Wallet}
+          />
+          {soldeParCompte.length > 0 && (
+            <p className="mt-1.5 px-1 text-[11px] leading-relaxed text-text-secondary">
+              {soldeParCompte.map((s, i) => (
+                <span key={s.compte}>
+                  {i > 0 && " · "}
+                  {s.compte}
+                  {s.libelle ? ` (${s.libelle})` : ""} : {Math.round(s.solde).toLocaleString("fr-FR")}
+                </span>
+              ))}
+            </p>
+          )}
+        </div>
         <StatCard
           size="lg"
           label={t.dashboard.derniereOperation}
