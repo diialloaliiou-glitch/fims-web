@@ -178,6 +178,8 @@ export const en: typeof fr = {
       erreurTiersObligatoire: "Please select the third party.",
       erreurComptesObligatoires: "Debit and credit accounts are required.",
       erreurCompteCreditObligatoire: "Select the credit (bank) account.",
+      compteIntrouvable: "account not found in this project's chart of accounts",
+      erreurCompteIntrouvable: "Account {compte} no longer exists in this project's chart of accounts — fix the chart of accounts or choose another account.",
     },
   },
   grandLivre: {

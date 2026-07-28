@@ -174,6 +174,8 @@ export const fr = {
       erreurTiersObligatoire: "Veuillez sélectionner le tiers.",
       erreurComptesObligatoires: "Compte débit et crédit obligatoires.",
       erreurCompteCreditObligatoire: "Sélectionnez le compte crédit (banque).",
+      compteIntrouvable: "compte introuvable dans le plan comptable de ce projet",
+      erreurCompteIntrouvable: "Le compte {compte} n'existe plus dans le plan comptable de ce projet — corrigez le plan comptable ou choisissez un autre compte.",
     },
   },
   grandLivre: {

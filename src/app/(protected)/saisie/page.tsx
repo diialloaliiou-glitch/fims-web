@@ -683,6 +683,7 @@ export default function SaisiePage() {
           open={modelesOuvert}
           onClose={() => setModelesOuvert(false)}
           project={project}
+          accounts={accounts}
           thirdParties={thirdParties}
           zones={zones}
           budgetLines={budgetLines}

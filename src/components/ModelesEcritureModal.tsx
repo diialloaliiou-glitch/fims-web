@@ -13,7 +13,7 @@ import {
   modelesPour,
   typesOperationDisponibles,
 } from "@/lib/modeles-ecriture";
-import type { BankJournal, OperationType, Project, ThirdParty, Zone } from "@/lib/types";
+import type { BankJournal, ChartOfAccount, OperationType, Project, ThirdParty, Zone } from "@/lib/types";
 
 type LigneGeneree = {
   compte: string;
@@ -41,6 +41,7 @@ export function ModelesEcritureModal({
   open,
   onClose,
   project,
+  accounts,
   thirdParties,
   zones,
   budgetLines,
@@ -51,6 +52,7 @@ export function ModelesEcritureModal({
   open: boolean;
   onClose: () => void;
   project: Project;
+  accounts: ChartOfAccount[];
   thirdParties: ThirdParty[];
   zones: Zone[];
   budgetLines: { our_line_code: string | null; description: string | null }[];
@@ -82,6 +84,19 @@ export function ModelesEcritureModal({
   const [soldesCoches, setSoldesCoches] = useState<Set<string>>(new Set());
 
   const props = modeleNom ? getModeleProps(modeleNom) : null;
+
+  // Le catalogue de modeles code des libelles en dur (fidele au VBA
+  // d'origine), mais le plan comptable reel peut evoluer (renommage,
+  // suppression) independamment - on affiche toujours le libelle reel du
+  // projet courant quand le compte existe, et on signale les comptes qui
+  // n'existent plus plutot que de laisser echouer la creation de l'ecriture.
+  const libelleParCode = new Map(accounts.map((a) => [a.ccompte, a.libelle]));
+  function compteExiste(code: string) {
+    return libelleParCode.has(code);
+  }
+  function libelleAffiche(code: string, labelHardcode: string) {
+    return libelleParCode.get(code) ?? labelHardcode;
+  }
 
   // Le catalogue reproduit fidelement le VBA d'origine (donc peut lister
   // des types/journaux jamais configures pour cette organisation, ex:
@@ -249,6 +264,10 @@ export function ModelesEcritureModal({
         setError(t.saisie.modeles.erreurCompteCreditObligatoire);
         return;
       }
+      if (!compteExiste(compteCResolved)) {
+        setError(t.saisie.modeles.erreurCompteIntrouvable.replace("{compte}", compteCResolved));
+        return;
+      }
       const selectionnees = soldes.filter((s) => soldesCoches.has(cleSolde(s)));
 
       // Reglement groupe (ex: paie en mode groupe) : plusieurs tiers
@@ -308,6 +327,14 @@ export function ModelesEcritureModal({
     }
     if (!compteDResolved.trim() || !compteCResolved.trim()) {
       setError(t.saisie.modeles.erreurComptesObligatoires);
+      return;
+    }
+    if (!compteExiste(compteDResolved)) {
+      setError(t.saisie.modeles.erreurCompteIntrouvable.replace("{compte}", compteDResolved));
+      return;
+    }
+    if (!compteExiste(compteCResolved)) {
+      setError(t.saisie.modeles.erreurCompteIntrouvable.replace("{compte}", compteCResolved));
       return;
     }
 
@@ -435,14 +462,20 @@ export function ModelesEcritureModal({
                       >
                         <option value="">—</option>
                         {props.debit.choix.map((c) => (
-                          <option key={c.code} value={c.code}>
-                            {c.code} — {c.label}
+                          <option key={c.code} value={c.code} disabled={!compteExiste(c.code)}>
+                            {c.code} — {libelleAffiche(c.code, c.label)}
+                            {!compteExiste(c.code) ? ` (${t.saisie.modeles.compteIntrouvable})` : ""}
                           </option>
                         ))}
                       </select>
                     ) : (
                       <p className="rounded-xl border border-border-subtle bg-bg-card-muted px-3 py-2 text-text-primary">
-                        {props.debit?.fixe}
+                        {props.debit?.fixe} — {libelleAffiche(props.debit?.fixe ?? "", "")}
+                        {props.debit?.fixe && !compteExiste(props.debit.fixe) && (
+                          <span className="ml-2 text-xs font-semibold text-accent-red">
+                            {t.saisie.modeles.compteIntrouvable}
+                          </span>
+                        )}
                       </p>
                     )}
                   </div>
@@ -458,14 +491,20 @@ export function ModelesEcritureModal({
                       >
                         <option value="">—</option>
                         {props.credit.choix.map((c) => (
-                          <option key={c.code} value={c.code}>
-                            {c.code} — {c.label}
+                          <option key={c.code} value={c.code} disabled={!compteExiste(c.code)}>
+                            {c.code} — {libelleAffiche(c.code, c.label)}
+                            {!compteExiste(c.code) ? ` (${t.saisie.modeles.compteIntrouvable})` : ""}
                           </option>
                         ))}
                       </select>
                     ) : (
                       <p className="rounded-xl border border-border-subtle bg-bg-card-muted px-3 py-2 text-text-primary">
-                        {props.credit?.fixe}
+                        {props.credit?.fixe} — {libelleAffiche(props.credit?.fixe ?? "", "")}
+                        {props.credit?.fixe && !compteExiste(props.credit.fixe) && (
+                          <span className="ml-2 text-xs font-semibold text-accent-red">
+                            {t.saisie.modeles.compteIntrouvable}
+                          </span>
+                        )}
                       </p>
                     )}
                   </div>
