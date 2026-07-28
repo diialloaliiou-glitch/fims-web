@@ -8,6 +8,7 @@ import { ActionCard } from "@/components/ui/ActionCard";
 import { StatCard } from "@/components/ui/StatCard";
 import { MiniTableHeader } from "@/components/ui/MiniTableHeader";
 import { scopeToProjectSpending } from "@/lib/project-scope";
+import { niveauTaux } from "@/lib/taux-couleur";
 import { hasRole } from "@/lib/roles";
 import type { BudgetLine, JournalEntry } from "@/lib/types";
 import Link from "next/link";
@@ -272,7 +273,7 @@ export default function DashboardPage() {
         )}
       </div>
 
-      <div className="relative mb-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
+      <div className="relative mb-6 grid grid-cols-1 gap-4 lg:grid-cols-[3fr_2fr]">
         <div>
           <StatCard
             size="lg"
@@ -307,45 +308,43 @@ export default function DashboardPage() {
             </div>
           )}
         </div>
-        <StatCard
-          size="lg"
-          label={t.dashboard.derniereOperation}
-          value={lastEntry?.n_ecriture_journal ?? "—"}
-          valueColor="blue"
-        />
-        <StatCard
-          size="lg"
-          label={t.dashboard.ecrituresCeMois}
-          value={entriesThisMonth === null ? "..." : entriesThisMonth}
-          valueColor="amber"
-        />
-      </div>
 
-      <div className="relative mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2">
-        <StatCard
-          label={t.dashboard.tauxConsoBudgetaire}
-          value={
-            !tauxLoaded
-              ? "..."
-              : tauxConsoBudgetaire === null
-                ? "—"
-                : `${(tauxConsoBudgetaire * 100).toFixed(1)}%`
-          }
-          valueColor="teal"
-          icon={Percent}
-        />
-        <StatCard
-          label={t.dashboard.tauxConsoAvance}
-          value={
-            !tauxLoaded
-              ? "..."
-              : tauxConsoAvance === null
-                ? "—"
-                : `${(tauxConsoAvance * 100).toFixed(1)}%`
-          }
-          valueColor="amber"
-          icon={Percent}
-        />
+        <div className="grid grid-cols-2 gap-3 content-start">
+          <StatCard
+            label={t.dashboard.derniereOperation}
+            value={lastEntry?.n_ecriture_journal ?? "—"}
+            valueColor="blue"
+          />
+          <StatCard
+            label={t.dashboard.ecrituresCeMois}
+            value={entriesThisMonth === null ? "..." : entriesThisMonth}
+            valueColor="amber"
+          />
+          <StatCard
+            label={t.dashboard.tauxConsoBudgetaire}
+            value={
+              !tauxLoaded
+                ? "..."
+                : tauxConsoBudgetaire === null
+                  ? "—"
+                  : `${(tauxConsoBudgetaire * 100).toFixed(1)}%`
+            }
+            valueColor={tauxConsoBudgetaire === null ? "teal" : niveauTaux(tauxConsoBudgetaire)}
+            icon={Percent}
+          />
+          <StatCard
+            label={t.dashboard.tauxConsoAvance}
+            value={
+              !tauxLoaded
+                ? "..."
+                : tauxConsoAvance === null
+                  ? "—"
+                  : `${(tauxConsoAvance * 100).toFixed(1)}%`
+            }
+            valueColor={tauxConsoAvance === null ? "teal" : niveauTaux(tauxConsoAvance)}
+            icon={Percent}
+          />
+        </div>
       </div>
 
       {searchResults !== null && (

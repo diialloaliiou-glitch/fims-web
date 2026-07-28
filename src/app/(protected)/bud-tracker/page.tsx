@@ -8,6 +8,7 @@ import { useAuth } from "@/lib/auth-context";
 import { useLanguage } from "@/lib/language-context";
 import { scopeToProjectSpending } from "@/lib/project-scope";
 import { cumulAvanceRecue } from "@/lib/avance-recue";
+import { couleurTauxClass } from "@/lib/taux-couleur";
 import type { BudgetLine, ProjectOutput } from "@/lib/types";
 
 type Mois = { idc: string; label: string };
@@ -62,13 +63,9 @@ type LigneCalculee = BudgetLine & {
   pctConsoA: number;
 };
 
-// Seuils visuels du % de consommation (present./ambre/rouge) - purement
-// presentation, ne recalcule rien.
-function couleurTaux(pct: number) {
-  if (pct > 1) return "text-accent-red";
-  if (pct >= 0.8) return "text-accent-amber";
-  return "text-accent-teal";
-}
+// Seuils visuels du % de consommation (sain/ambre/rouge) - definis dans
+// src/lib/taux-couleur.ts, partages avec le Dashboard.
+const couleurTaux = couleurTauxClass;
 
 // Largeurs/decalages fixes pour les colonnes gelees a gauche - necessaires
 // pour un positionnement sticky fiable (chaque cellule gelee doit connaitre
