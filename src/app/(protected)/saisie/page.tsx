@@ -66,6 +66,7 @@ export default function SaisiePage() {
   const [bankJournals, setBankJournals] = useState<BankJournal[]>([]);
   const [modelesOuvert, setModelesOuvert] = useState(false);
   const [journalIntermediaireOuvert, setJournalIntermediaireOuvert] = useState(false);
+  const [pafPropose, setPafPropose] = useState<string | null>(null);
 
   const [dateOperation, setDateOperation] = useState(todayIso());
   const [journal, setJournal] = useState("");
@@ -373,6 +374,16 @@ export default function SaisiePage() {
     }
 
     setSuccess(`${t.saisie.ecritureEnregistree} ${nej} ${t.saisie.enregistreeNLignes} (${rows.length} ${t.saisie.lignesLabel}).`);
+
+    // Une ecriture de tresorerie est une DEPENSE (pas une reception de
+    // fonds) quand l'argent sort de la banque/caisse - donc quand le compte
+    // credit commence par "5", meme convention que le reste de l'appli
+    // (BANQUES/CAISSE = comptes racine 5xxxxx) pour distinguer un reglement
+    // sortant d'une reception entrante.
+    const estDepenseTresorerie =
+      typeOperation === "TRESORERIE" && rows.some((r) => r.compte_credit?.startsWith("5"));
+    if (estDepenseTresorerie) setPafPropose(nej);
+
     setLignes([]);
     setCompte("");
     setMontant("");
@@ -777,6 +788,35 @@ export default function SaisiePage() {
                   ))}
                 </tbody>
               </table>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {pafPropose && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
+          <div className="w-full max-w-sm rounded-xl border border-border-subtle bg-bg-card p-6">
+            <p className="mb-2 text-base font-semibold text-text-primary">
+              {t.saisie.paf.titre}
+            </p>
+            <p className="mb-5 text-sm text-text-secondary">
+              {t.saisie.paf.message.replace("{nej}", pafPropose)}
+            </p>
+            <div className="flex justify-end gap-3">
+              <button
+                onClick={() => setPafPropose(null)}
+                className="text-sm text-text-secondary hover:text-text-primary"
+              >
+                {t.saisie.paf.plusTard}
+              </button>
+              <PrimaryButton
+                onClick={() => {
+                  window.open(`/fiche-paiement/${pafPropose}`, "_blank");
+                  setPafPropose(null);
+                }}
+              >
+                {t.saisie.paf.ouvrirFiche}
+              </PrimaryButton>
             </div>
           </div>
         </div>

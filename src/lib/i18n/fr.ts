@@ -150,6 +150,12 @@ export const fr = {
     reglement: "Règlement",
     modelesEcriture: "Modèles d'écriture",
     champInactif: "Non applicable pour cette sélection",
+    paf: {
+      titre: "Fiche de paiement (PAF)",
+      message: "L'écriture {nej} est un décaissement — souhaites-tu enregistrer ou imprimer la fiche PAF correspondante ?",
+      plusTard: "Plus tard",
+      ouvrirFiche: "Ouvrir la fiche PAF",
+    },
     journalIntermediaire: {
       titre: "Journal intermédiaire — lignes en attente de validation",
       vide: "Aucune ligne en attente.",

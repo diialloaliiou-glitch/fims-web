@@ -154,6 +154,12 @@ export const en: typeof fr = {
     reglement: "Payment",
     modelesEcriture: "Entry templates",
     champInactif: "Not applicable for this selection",
+    paf: {
+      titre: "Payment slip (PAF)",
+      message: "Entry {nej} is a cash disbursement — would you like to save or print the matching PAF slip?",
+      plusTard: "Later",
+      ouvrirFiche: "Open the PAF slip",
+    },
     journalIntermediaire: {
       titre: "Intermediate journal — lines pending validation",
       vide: "No lines pending.",
