@@ -7,7 +7,6 @@ import { useLanguage } from "@/lib/language-context";
 import { ActionCard } from "@/components/ui/ActionCard";
 import { StatCard } from "@/components/ui/StatCard";
 import { MiniTableHeader } from "@/components/ui/MiniTableHeader";
-import { PREFIXE_COMPTE_BANQUE_PROJET } from "@/lib/solde-banque";
 import { scopeToProjectSpending } from "@/lib/project-scope";
 import { hasRole } from "@/lib/roles";
 import type { BudgetLine, JournalEntry } from "@/lib/types";
@@ -76,8 +75,11 @@ export default function DashboardPage() {
         if (data && data.length > 0) setLastEntry(data[0]);
       });
 
-    // Reproduit CalculerSoldeBanqueProjet() : solde des mouvements TRESORERIE
-    // sur le compte banque du projet (prefixe "5211") uniquement.
+    // Solde disponible = tresorerie totale du projet, tous comptes
+    // banque/caisse confondus (521100, 522xxx regionaux, caisse 571000...),
+    // pas un seul compte fige - les comptes de transit inter-banques
+    // (585000) s'annulent naturellement puisque chaque virement y debite
+    // et credite en paire.
     supabase
       .from("journal_entries")
       .select("compte_debit, compte_credit, montant_debit, montant_credit")
@@ -87,8 +89,8 @@ export default function DashboardPage() {
         if (!data) return;
         let solde = 0;
         data.forEach((e) => {
-          if (e.compte_debit?.startsWith(PREFIXE_COMPTE_BANQUE_PROJET)) solde += e.montant_debit;
-          if (e.compte_credit?.startsWith(PREFIXE_COMPTE_BANQUE_PROJET)) solde -= e.montant_credit;
+          if (e.compte_debit?.startsWith("5")) solde += e.montant_debit;
+          if (e.compte_credit?.startsWith("5")) solde -= e.montant_credit;
         });
         setSoldeTresorerie(solde);
       });

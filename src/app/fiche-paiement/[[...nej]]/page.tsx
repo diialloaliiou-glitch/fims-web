@@ -6,7 +6,7 @@ import { Home, Download, Printer, PenLine, BadgeCheck } from "lucide-react";
 import { QRCodeSVG } from "qrcode.react";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/lib/auth-context";
-import { PREFIXE_COMPTE_BANQUE_PROJET } from "@/lib/solde-banque";
+import { compteBanquePiece } from "@/lib/solde-banque";
 import { getOrCreateVerificationToken } from "@/lib/verification-piece";
 import type { BudgetLine, JournalEntry } from "@/lib/types";
 
@@ -92,33 +92,41 @@ export default function FichePaiementPage() {
       );
       setBudgetGlobal(total);
 
-      const { data: allTreso } = await supabase
-        .from("journal_entries")
-        .select(
-          "compte_debit, compte_credit, montant_debit, montant_credit, n_ecriture_journal, date_heure_saisie"
-        )
-        .eq("project_id", project.id)
-        .eq("type_operation", "TRESORERIE");
+      // Le solde/l'ordre des pieces se suit par rapport au compte
+      // bancaire/caisse REELLEMENT utilise par CETTE piece (521100, 522100
+      // regional, caisse...) - jamais un seul compte fige, sinon une piece
+      // payee depuis un autre compte se retrouve comparee a l'historique
+      // d'un compte totalement different.
+      const compteBanque = compteBanquePiece(rows);
+      if (compteBanque) {
+        const { data: allTreso } = await supabase
+          .from("journal_entries")
+          .select(
+            "compte_debit, compte_credit, montant_debit, montant_credit, n_ecriture_journal, date_heure_saisie"
+          )
+          .eq("project_id", project.id)
+          .eq("type_operation", "TRESORERIE");
 
-      let solde = 0;
-      let dernier: { nej: string; date: string } | null = null;
+        let solde = 0;
+        let dernier: { nej: string; date: string } | null = null;
 
-      (allTreso ?? []).forEach((e) => {
-        const surCompteD = (e.compte_debit ?? "").startsWith(PREFIXE_COMPTE_BANQUE_PROJET);
-        const surCompteC = (e.compte_credit ?? "").startsWith(PREFIXE_COMPTE_BANQUE_PROJET);
-        if (surCompteD) solde += e.montant_debit;
-        if (surCompteC) solde -= e.montant_credit;
+        (allTreso ?? []).forEach((e) => {
+          const surCompteD = e.compte_debit === compteBanque;
+          const surCompteC = e.compte_credit === compteBanque;
+          if (surCompteD) solde += e.montant_debit;
+          if (surCompteC) solde -= e.montant_credit;
 
-        if (surCompteD || surCompteC) {
-          if (!dernier || e.date_heure_saisie >= dernier.date) {
-            dernier = { nej: e.n_ecriture_journal ?? "", date: e.date_heure_saisie };
+          if (surCompteD || surCompteC) {
+            if (!dernier || e.date_heure_saisie >= dernier.date) {
+              dernier = { nej: e.n_ecriture_journal ?? "", date: e.date_heure_saisie };
+            }
           }
-        }
-      });
+        });
 
-      setSoldeActuel(solde);
-      if (dernier && (dernier as { nej: string }).nej.toUpperCase() !== nej.trim().toUpperCase()) {
-        setDernierNEJCompte((dernier as { nej: string }).nej);
+        setSoldeActuel(solde);
+        if (dernier && (dernier as { nej: string }).nej.toUpperCase() !== nej.trim().toUpperCase()) {
+          setDernierNEJCompte((dernier as { nej: string }).nej);
+        }
       }
 
       setLoading(false);
