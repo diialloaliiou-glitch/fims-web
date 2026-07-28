@@ -112,7 +112,7 @@ export function validerLignes(
   rawRows: Record<string, unknown>[],
   colonnesTrouvees: BudgetImportKey[],
   ourLineCodesExistants: Set<string>,
-  rubriquesInfo: Map<string, { rubrique: string; code: string }> = new Map(),
+  rubriquesInfo: Map<string, { categorie: string; code_categorie: string }> = new Map(),
   outputsInfo: Map<string, { id: number; code: string }> = new Map()
 ): BudgetImportRow[] {
   const vusDansFichier = new Map<string, number>();
@@ -164,11 +164,11 @@ export function validerLignes(
       const normRubrique = normaliserEnTete(rubriqueBrute);
       const match = rubriquesInfo.get(normRubrique);
       if (match) {
-        values.rubrique = match.rubrique;
-        categorie = match.code;
+        values.rubrique = match.categorie;
+        categorie = match.code_categorie;
       } else {
         errors.push(
-          `Rubrique "${rubriqueBrute}" invalide — valeurs autorisées : ${[...new Set([...rubriquesInfo.values()].map((r) => r.rubrique))].join(", ")}.`
+          `Rubrique "${rubriqueBrute}" invalide — valeurs autorisées : ${[...new Set([...rubriquesInfo.values()].map((r) => r.categorie))].join(", ")}.`
         );
       }
     }

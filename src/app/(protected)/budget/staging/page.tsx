@@ -64,7 +64,7 @@ export default function BudgetStagingPage() {
         .from("rubriques")
         .select("*")
         .eq("organization_id", project.organization_id)
-        .order("rubrique")
+        .order("categorie")
         .then(({ data }) => setRubriques((data as Rubrique[]) ?? []));
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -168,7 +168,7 @@ export default function BudgetStagingPage() {
         : unitCost;
 
     const categorie =
-      rubriques.find((r) => r.rubrique === row.rubrique)?.code ?? null;
+      rubriques.find((r) => r.categorie === row.rubrique)?.code_categorie ?? null;
 
     const { error: insertError } = await supabase.from("budget_lines").insert({
       organization_id: profile.organization_id,
@@ -267,8 +267,8 @@ export default function BudgetStagingPage() {
             >
               <option value="">—</option>
               {rubriques.map((r) => (
-                <option key={r.id} value={r.rubrique}>
-                  {r.rubrique}
+                <option key={r.id} value={r.categorie}>
+                  {r.categorie}
                 </option>
               ))}
             </select>

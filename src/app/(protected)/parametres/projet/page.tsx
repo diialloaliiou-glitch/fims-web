@@ -7,7 +7,7 @@ import { useLanguage } from "@/lib/language-context";
 import { hasRole } from "@/lib/roles";
 import { FormField, fieldControlClass } from "@/components/ui/FormField";
 import { PrimaryButton } from "@/components/ui/PrimaryButton";
-import type { Donor } from "@/lib/types";
+import type { ChartOfAccount, Donor } from "@/lib/types";
 
 function estNumerique(v: string) {
   return v.trim() !== "" && !isNaN(Number(v.trim()));
@@ -17,6 +17,7 @@ export default function ParametresProjetPage() {
   const { profile, project } = useAuth();
   const { t } = useLanguage();
   const [donors, setDonors] = useState<Donor[]>([]);
+  const [comptes, setComptes] = useState<ChartOfAccount[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -41,6 +42,7 @@ export default function ParametresProjetPage() {
     program_coordinator_president: "",
     devise: "",
     taux_conversion: "",
+    compte_reception_fonds: "",
   });
 
   const canManage = hasRole(profile?.role, ["ADMIN_N1", "ADMIN_SITE", "RAF"]);
@@ -62,9 +64,16 @@ export default function ParametresProjetPage() {
       program_coordinator_president: project.program_coordinator_president ?? "",
       devise: project.devise ?? "",
       taux_conversion: project.taux_conversion != null ? String(project.taux_conversion) : "",
+      compte_reception_fonds: project.compte_reception_fonds ?? "",
     });
 
     loadDonors();
+    supabase
+      .from("chart_of_accounts")
+      .select("*")
+      .eq("project_id", project.id)
+      .order("ccompte")
+      .then(({ data }) => setComptes((data as ChartOfAccount[]) ?? []));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [project, profile]);
 
@@ -156,6 +165,7 @@ export default function ParametresProjetPage() {
         program_coordinator_president: form.program_coordinator_president.trim() || null,
         devise: form.devise.trim() || null,
         taux_conversion: form.taux_conversion.trim() ? Number(form.taux_conversion) : null,
+        compte_reception_fonds: form.compte_reception_fonds.trim() || null,
       })
       .eq("id", project.id);
 
@@ -298,6 +308,22 @@ export default function ParametresProjetPage() {
             value={form.taux_conversion}
             onChange={(e) => setForm({ ...form, taux_conversion: e.target.value })}
           />
+          <div>
+            <FormField
+              label={t.infoProjet.compteReceptionFonds}
+              list="comptes-reception-list"
+              placeholder={t.infoProjet.compteReceptionFondsPlaceholder}
+              value={form.compte_reception_fonds}
+              onChange={(e) => setForm({ ...form, compte_reception_fonds: e.target.value })}
+            />
+            <datalist id="comptes-reception-list">
+              {comptes.map((c) => (
+                <option key={c.id} value={c.ccompte}>
+                  {c.libelle}
+                </option>
+              ))}
+            </datalist>
+          </div>
           <FormField
             label={t.infoProjet.startingDate}
             type="date"

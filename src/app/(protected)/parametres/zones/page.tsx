@@ -10,7 +10,7 @@ import { MiniTableHeader } from "@/components/ui/MiniTableHeader";
 import { PrimaryButton } from "@/components/ui/PrimaryButton";
 import type { Country, Zone } from "@/lib/types";
 
-const emptyForm = { code: "", country_id: "" };
+const emptyForm = { code: "", country_id: "", parent_zone_id: "" };
 
 export default function ZonesPage() {
   const { profile } = useAuth();
@@ -102,6 +102,7 @@ export default function ZonesPage() {
       organization_id: profile.organization_id,
       code: form.code.trim(),
       country_id: Number(form.country_id),
+      parent_zone_id: form.parent_zone_id ? Number(form.parent_zone_id) : null,
     });
 
     setSaving(false);
@@ -143,6 +144,17 @@ export default function ZonesPage() {
       return;
     }
 
+    loadZones();
+  }
+
+  // Le niveau "Region" est optionnel et configurable par organisation : une
+  // zone devient une region intermediaire dès qu'une autre zone la choisit
+  // comme parent_zone_id - pas de notion de region separee dans le schema.
+  async function handleChangerParent(z: Zone, parentZoneId: string) {
+    await supabase
+      .from("zones")
+      .update({ parent_zone_id: parentZoneId ? Number(parentZoneId) : null })
+      .eq("id", z.id);
     loadZones();
   }
 
@@ -231,6 +243,20 @@ export default function ZonesPage() {
               )}
               {erreurPays && <p className="mt-1 text-xs text-accent-red">{erreurPays}</p>}
             </div>
+            <FormField label="Région / zone parente (optionnel)">
+              <select
+                value={form.parent_zone_id}
+                onChange={(e) => setForm({ ...form, parent_zone_id: e.target.value })}
+                className={fieldControlClass}
+              >
+                <option value="">—</option>
+                {zones.map((z) => (
+                  <option key={z.id} value={z.id}>
+                    {z.code}
+                  </option>
+                ))}
+              </select>
+            </FormField>
           </div>
 
           {error && <p className="mb-3 text-sm text-accent-red">{error}</p>}
@@ -245,18 +271,21 @@ export default function ZonesPage() {
 
       <div className="max-h-[65vh] overflow-auto rounded-xl border border-border-subtle print:max-h-none print:overflow-visible">
         <table className="min-w-full table-auto text-sm [&_td]:border-r [&_td]:border-border-subtle [&_th]:border-r [&_th]:border-border-subtle [&_tr>*:last-child]:border-r-0">
-          <MiniTableHeader columns={["Zone", "Pays", "Action"]} align={["left", "left", "right"]} />
+          <MiniTableHeader
+            columns={["Zone", "Pays", "Région / zone parente", "Action"]}
+            align={["left", "left", "left", "right"]}
+          />
           <tbody className="divide-y divide-border-subtle bg-bg-card/60">
             {loading && (
               <tr>
-                <td colSpan={3} className="px-3 py-4 text-center text-text-secondary">
+                <td colSpan={4} className="px-3 py-4 text-center text-text-secondary">
                   {t.common.chargement}
                 </td>
               </tr>
             )}
             {!loading && zones.length === 0 && (
               <tr>
-                <td colSpan={3} className="px-3 py-4 text-center text-text-secondary">
+                <td colSpan={4} className="px-3 py-4 text-center text-text-secondary">
                   Aucune zone enregistrée.
                 </td>
               </tr>
@@ -267,6 +296,28 @@ export default function ZonesPage() {
                 <tr key={z.id} className="text-text-primary">
                   <td className="px-3 py-2">{z.code}</td>
                   <td className="px-3 py-2 text-text-secondary">{pays?.nom ?? ""}</td>
+                  <td className="px-3 py-2">
+                    {canManage ? (
+                      <select
+                        value={z.parent_zone_id ?? ""}
+                        onChange={(e) => handleChangerParent(z, e.target.value)}
+                        className={`${fieldControlClass} py-1 text-xs`}
+                      >
+                        <option value="">—</option>
+                        {zones
+                          .filter((autre) => autre.id !== z.id)
+                          .map((autre) => (
+                            <option key={autre.id} value={autre.id}>
+                              {autre.code}
+                            </option>
+                          ))}
+                      </select>
+                    ) : (
+                      <span className="text-text-secondary">
+                        {zones.find((autre) => autre.id === z.parent_zone_id)?.code ?? ""}
+                      </span>
+                    )}
+                  </td>
                   <td className="px-3 py-2 text-right">
                     {canManage && (
                       <button

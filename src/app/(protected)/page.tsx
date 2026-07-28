@@ -9,6 +9,7 @@ import { StatCard } from "@/components/ui/StatCard";
 import { MiniTableHeader } from "@/components/ui/MiniTableHeader";
 import { PREFIXE_COMPTE_BANQUE_PROJET } from "@/lib/solde-banque";
 import { scopeToProjectSpending } from "@/lib/project-scope";
+import { hasRole } from "@/lib/roles";
 import type { BudgetLine, JournalEntry } from "@/lib/types";
 import Link from "next/link";
 import {
@@ -26,6 +27,7 @@ import {
   FileSpreadsheet,
   Percent,
   TrendingUp,
+  Globe2,
 } from "lucide-react";
 
 function formatPrenom(nomUtilisateur: string | undefined) {
@@ -172,6 +174,7 @@ export default function DashboardPage() {
   // du systeme) - ni RAF ni ADMIN_SITE ne doivent la voir, contrairement a
   // la hierarchie de roles habituelle ou ils heritent des droits COMPTABLE.
   const peutSaisir = profile?.role === "ADMIN_N1" || profile?.role === "COMPTABLE";
+  const peutVoirKpi = hasRole(profile?.role, ["ADMIN_N1", "ADMIN_SITE", "RAF"]);
 
   const tilesPrincipales = [
     ...(peutSaisir
@@ -180,6 +183,9 @@ export default function DashboardPage() {
     { key: "paf", icon: Feather, label: t.dashboard.tilePaf, href: "/fiche-paiement", color: "teal" as const },
     { key: "jdepense", icon: FileSpreadsheet, label: t.dashboard.tileJdepense, href: "/jdepense", color: "blue" as const },
     { key: "budtracker", icon: TrendingUp, label: t.dashboard.tileBudTracker, href: "/bud-tracker", color: "blue" as const },
+    ...(peutVoirKpi
+      ? [{ key: "kpiOrganisationnel", icon: Globe2, label: t.dashboard.tileKpiOrganisationnel, href: "/kpi-organisationnel", color: "teal" as const }]
+      : []),
     { key: "reporting", icon: BarChart3, label: t.dashboard.tileReporting, href: "/reporting", color: "blue" as const },
     { key: "glivre", icon: BookOpen, label: t.dashboard.tileGLivre, href: "/grand-livre", color: "blue" as const },
     { key: "balance", icon: Scale, label: t.dashboard.tileBalance, href: "/balance", color: "blue" as const },

@@ -9,13 +9,13 @@ import { hasRole } from "@/lib/roles";
 import { FormField } from "@/components/ui/FormField";
 import { MiniTableHeader } from "@/components/ui/MiniTableHeader";
 import { BUDGET_IMPORT_COLUMNS, type BudgetImportColumn } from "@/lib/budget-import";
-import type { BudgetLine, ProjectOutput } from "@/lib/types";
+import type { BudgetLine, ProjectOutput, Secteur } from "@/lib/types";
 
 type ColonneAffichee = {
   key: string;
   header: string;
   align: "left" | "right";
-  render: (l: BudgetLine) => string;
+  render: (l: BudgetLine) => React.ReactNode;
 };
 
 export default function BudgetDataPage() {
@@ -24,6 +24,7 @@ export default function BudgetDataPage() {
   const peutImporter = hasRole(profile?.role, ["ADMIN_N1", "ADMIN_SITE", "RAF"]);
   const [lignes, setLignes] = useState<BudgetLine[]>([]);
   const [outputsParId, setOutputsParId] = useState<Map<number, ProjectOutput>>(new Map());
+  const [secteurs, setSecteurs] = useState<Secteur[]>([]);
   const [recherche, setRecherche] = useState("");
   const [loading, setLoading] = useState(true);
 
@@ -33,14 +34,24 @@ export default function BudgetDataPage() {
     Promise.all([
       supabase.from("budget_lines").select("*").eq("project_id", project.id).order("code_1"),
       supabase.from("project_outputs").select("*").eq("project_id", project.id),
-    ]).then(([lignesRes, outputsRes]) => {
+      supabase.from("secteurs").select("*").eq("organization_id", project.organization_id).order("nom"),
+    ]).then(([lignesRes, outputsRes, secteursRes]) => {
       setLignes((lignesRes.data as BudgetLine[]) ?? []);
       const map = new Map<number, ProjectOutput>();
       ((outputsRes.data as ProjectOutput[]) ?? []).forEach((o) => map.set(o.id, o));
       setOutputsParId(map);
+      setSecteurs((secteursRes.data as Secteur[]) ?? []);
       setLoading(false);
     });
   }, [project]);
+
+  // "Secteur" n'est jamais importe depuis l'Excel (pas de colonne dediee) -
+  // assigne manuellement ligne par ligne ici, seul point d'entree pour
+  // alimenter le KPI organisationnel "resultat par secteur".
+  async function handleChangerSecteur(ligne: BudgetLine, secteur: string) {
+    setLignes((prev) => prev.map((l) => (l.id === ligne.id ? { ...l, secteur: secteur || null } : l)));
+    await supabase.from("budget_lines").update({ secteur: secteur || null }).eq("id", ligne.id);
+  }
 
   const colonnesAffichees: ColonneAffichee[] = (() => {
     const standard = (c: BudgetImportColumn): ColonneAffichee => ({
@@ -84,6 +95,26 @@ export default function BudgetDataPage() {
             l.output_id != null
               ? outputsParId.get(l.output_id)?.label ?? ""
               : t.outputs.nonClasse,
+        });
+        colonnes.push({
+          key: "secteur",
+          header: t.budgetData.colSecteur,
+          align: "left",
+          render: (l) => (
+            <select
+              value={l.secteur ?? ""}
+              onChange={(e) => handleChangerSecteur(l, e.target.value)}
+              onClick={(e) => e.stopPropagation()}
+              className="w-full rounded-md border border-border-subtle bg-bg-card px-2 py-1 text-xs text-text-primary"
+            >
+              <option value="">—</option>
+              {secteurs.map((s) => (
+                <option key={s.id} value={s.nom}>
+                  {s.nom}
+                </option>
+              ))}
+            </select>
+          ),
         });
       } else {
         colonnes.push(standard(c));

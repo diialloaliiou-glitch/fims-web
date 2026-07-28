@@ -1,11 +1,12 @@
 import type { LucideIcon } from "lucide-react";
 
-type ValueColor = "teal" | "blue" | "amber";
+type ValueColor = "teal" | "blue" | "amber" | "red";
 
 const VALUE_CLASSES: Record<ValueColor, string> = {
   teal: "text-accent-teal",
   blue: "text-accent-blue",
   amber: "text-accent-amber",
+  red: "text-accent-red",
 };
 
 export function StatCard({

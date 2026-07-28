@@ -26,6 +26,7 @@ export type Project = {
   program_coordinator_president: string | null;
   devise: string | null;
   taux_conversion: number | null;
+  compte_reception_fonds: string | null;
 };
 
 export type Organization = {
@@ -82,6 +83,7 @@ export type Zone = {
   organization_id: string;
   code: string;
   country_id: number | null;
+  parent_zone_id: number | null;
 };
 
 export type Country = {
@@ -203,8 +205,14 @@ export type Donor = {
 export type Rubrique = {
   id: number;
   organization_id: string;
-  rubrique: string;
-  code: string;
+  categorie: string;
+  code_categorie: string;
+};
+
+export type Secteur = {
+  id: number;
+  organization_id: string;
+  nom: string;
 };
 
 export type BudgetLine = {
@@ -218,6 +226,7 @@ export type BudgetLine = {
   description: string | null;
   rubrique: string | null;
   categorie: string | null;
+  secteur: string | null;
   unit: string | null;
   quantity: number | null;
   frequence: number | null;

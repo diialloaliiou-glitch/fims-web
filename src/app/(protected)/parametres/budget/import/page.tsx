@@ -35,9 +35,9 @@ export default function ImportBudgetPage() {
     colonnesTrouvees: BudgetImportKey[];
   } | null>(null);
   const [ourLineCodesExistants, setOurLineCodesExistants] = useState<Set<string>>(new Set());
-  const [rubriquesInfo, setRubriquesInfo] = useState<Map<string, { rubrique: string; code: string }>>(
-    new Map()
-  );
+  const [rubriquesInfo, setRubriquesInfo] = useState<
+    Map<string, { categorie: string; code_categorie: string }>
+  >(new Map());
   const [outputsInfo, setOutputsInfo] = useState<Map<string, { id: number; code: string }>>(new Map());
   const [erreurFichier, setErreurFichier] = useState<string | null>(null);
   const [confirmingReplace, setConfirmingReplace] = useState(false);
@@ -54,12 +54,12 @@ export default function ImportBudgetPage() {
     if (!profile?.organization_id) return;
     supabase
       .from("rubriques")
-      .select("rubrique, code")
+      .select("categorie, code_categorie")
       .eq("organization_id", profile.organization_id)
       .then(({ data }) => {
-        const map = new Map<string, { rubrique: string; code: string }>();
-        ((data ?? []) as { rubrique: string; code: string }[]).forEach((r) => {
-          map.set(normaliserEnTete(r.rubrique), { rubrique: r.rubrique, code: r.code });
+        const map = new Map<string, { categorie: string; code_categorie: string }>();
+        ((data ?? []) as { categorie: string; code_categorie: string }[]).forEach((r) => {
+          map.set(normaliserEnTete(r.categorie), { categorie: r.categorie, code_categorie: r.code_categorie });
         });
         setRubriquesInfo(map);
       });

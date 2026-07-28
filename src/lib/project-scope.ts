@@ -14,3 +14,20 @@ import type { Project } from "./types";
 export function scopeToProjectSpending(query: any, project: Pick<Project, "id" | "code_projet">): any {
   return query.eq("project_id", project.id).eq("tag_projet_local", project.code_projet);
 }
+
+// Meme filtre que scopeToProjectSpending, mais pour plusieurs projets a la
+// fois (KPI organisationnel) : chaque projet garde sa propre paire
+// project_id+tag_projet_local, jamais un simple .in("project_id", ids) qui
+// perdrait la garde tag_projet_local par-projet.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function scopeToProjectsSpending(
+  query: any,
+  projects: Pick<Project, "id" | "code_projet">[]
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+): any {
+  if (projects.length === 0) return query.eq("project_id", "__none__");
+  const clause = projects
+    .map((p) => `and(project_id.eq.${p.id},tag_projet_local.eq.${p.code_projet})`)
+    .join(",");
+  return query.or(clause);
+}

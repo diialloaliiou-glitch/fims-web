@@ -1,6 +1,6 @@
 "use client";
 
-import { BookText, Users, UserSquare2, UserCog, FolderKanban, Info, KeyRound, Table2, Building2, Tags, Target, AlertTriangle, MapPin, ListTree, Wallet2 } from "lucide-react";
+import { BookText, Users, UserSquare2, UserCog, FolderKanban, Info, KeyRound, Table2, Building2, Tags, Target, AlertTriangle, MapPin, ListTree, Wallet2, Globe2 } from "lucide-react";
 import { ActionCard } from "@/components/ui/ActionCard";
 import { NavigationSecondaire } from "@/components/ui/NavigationSecondaire";
 import { useAuth } from "@/lib/auth-context";
@@ -15,6 +15,7 @@ export default function ParametresPage() {
     { href: "/parametres/plan-comptable", label: t.parametres.tilePlanComptable, icon: BookText, color: "teal" as const },
     { href: "/parametres/budget", label: t.parametres.tileBudget, icon: Table2, color: "blue" as const },
     { href: "/parametres/rubriques", label: t.parametres.tileRubriques, icon: Tags, color: "muted" as const },
+    { href: "/parametres/secteurs", label: t.parametres.tileSecteurs, icon: Globe2, color: "teal" as const },
     { href: "/parametres/outputs", label: t.parametres.tileOutputs, icon: Target, color: "teal" as const },
     { href: "/parametres/zones", label: "Zones", icon: MapPin, color: "teal" as const },
     { href: "/parametres/types-journaux", label: "Types & Journaux", icon: ListTree, color: "blue" as const },
