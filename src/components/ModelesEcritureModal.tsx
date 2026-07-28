@@ -80,6 +80,9 @@ export function ModelesEcritureModal({
   const [tiersVal, setTiersVal] = useState("");
   const [zoneVal, setZoneVal] = useState("");
   const [datePiece, setDatePiece] = useState(dateOperation);
+  const [lignesDebitMulti, setLignesDebitMulti] = useState<
+    { compte: string; montant: string; bsl: string }[]
+  >([{ compte: "", montant: "", bsl: "" }]);
   const [error, setError] = useState<string | null>(null);
 
   const [soldes, setSoldes] = useState<SoldeEnAttente[]>([]);
@@ -132,9 +135,21 @@ export function ModelesEcritureModal({
     setTiersVal("");
     setZoneVal("");
     setDatePiece(dateOperation);
+    setLignesDebitMulti([{ compte: "", montant: "", bsl: "" }]);
     setError(null);
     setPieceForcee(null);
     setSoldesCoches(new Set());
+  }
+
+  function ajouterLigneDebit() {
+    setLignesDebitMulti([...lignesDebitMulti, { compte: "", montant: "", bsl: "" }]);
+  }
+  function supprimerLigneDebit(index: number) {
+    if (lignesDebitMulti.length <= 1) return;
+    setLignesDebitMulti(lignesDebitMulti.filter((_, i) => i !== index));
+  }
+  function modifierLigneDebit(index: number, champ: "compte" | "montant" | "bsl", valeur: string) {
+    setLignesDebitMulti(lignesDebitMulti.map((l, i) => (i === index ? { ...l, [champ]: valeur } : l)));
   }
 
   useEffect(() => {
@@ -191,7 +206,9 @@ export function ModelesEcritureModal({
   );
 
   const multiSelect = !!props?.multiSelect;
+  const multiDebit = !!props?.multiDebit;
   const nbCoches = soldesCoches.size;
+  const totalDebitMulti = lignesDebitMulti.reduce((s, l) => s + (parseFloat(l.montant) || 0), 0);
 
   function libelleSolde(s: SoldeEnAttente) {
     return s.libelle
@@ -200,8 +217,13 @@ export function ModelesEcritureModal({
   }
 
   function prefillDepuisSolde(s: SoldeEnAttente) {
-    setMontant(String(Math.abs(s.soldeNet)));
-    if (s.bsl) setBsl(s.bsl);
+    // En mode multiDebit, le solde clique identifie seulement QUEL credit
+    // (quelle avance/piece) est regularise - le montant et le B-S-Line se
+    // saisissent ligne par ligne dans le detail des depenses, pas ici.
+    if (!multiDebit) {
+      setMontant(String(Math.abs(s.soldeNet)));
+      if (s.bsl) setBsl(s.bsl);
+    }
     if (s.zoneId != null) setZoneVal(String(s.zoneId));
     // Reproduit lstSoldes_Click() : seule la Ref. Fact/D d'origine (txtRef)
     // est reportee - le N°/CHQ/OV reel n'est jamais reporte automatiquement
@@ -211,7 +233,7 @@ export function ModelesEcritureModal({
     if (s.tiers) setTiersVal(s.tiers);
     // Si le compte du solde correspond a une des options "choix" du debit
     // ou du credit de ce modele, on la selectionne automatiquement.
-    if (props?.debit?.choix?.some((c) => c.code === s.compte)) setCompteDChoisi(s.compte);
+    if (!multiDebit && props?.debit?.choix?.some((c) => c.code === s.compte)) setCompteDChoisi(s.compte);
     if (props?.credit?.choix?.some((c) => c.code === s.compte)) setCompteCChoisi(s.compte);
     setPieceForcee(s.numPiece);
   }
@@ -251,7 +273,7 @@ export function ModelesEcritureModal({
       setError(t.saisie.modeles.erreurDatePieceObligatoire);
       return;
     }
-    if (props.bslVisible && !bsl.trim()) {
+    if (props.bslVisible && !multiDebit && !bsl.trim()) {
       setError(t.saisie.modeles.erreurBslObligatoire);
       return;
     }
@@ -265,6 +287,63 @@ export function ModelesEcritureModal({
     }
     if (compteTiersActif && !tiersVal.trim()) {
       setError(t.saisie.modeles.erreurTiersObligatoire);
+      return;
+    }
+
+    if (multiDebit) {
+      if (!compteCResolved.trim()) {
+        setError(t.saisie.modeles.erreurCompteCreditObligatoire);
+        return;
+      }
+      if (!compteExiste(compteCResolved)) {
+        setError(t.saisie.modeles.erreurCompteIntrouvable.replace("{compte}", compteCResolved));
+        return;
+      }
+      for (const l of lignesDebitMulti) {
+        if (!l.compte.trim() || !l.montant.trim() || !l.bsl.trim()) {
+          setError(t.saisie.modeles.erreurLigneDebitIncomplete);
+          return;
+        }
+        if (!compteExiste(l.compte)) {
+          setError(t.saisie.modeles.erreurCompteIntrouvable.replace("{compte}", l.compte));
+          return;
+        }
+        if (!(parseFloat(l.montant) > 0)) {
+          setError(t.saisie.erreurMontantPositif);
+          return;
+        }
+      }
+
+      const lignesDebit: LigneGeneree[] = lignesDebitMulti.map((l) => ({
+        compte: l.compte,
+        sens: "debit",
+        libelle: libelle.trim() || modeleNom,
+        montant: parseFloat(l.montant),
+        bSLineOverride: l.bsl,
+      }));
+      const total = lignesDebit.reduce((sum, l) => sum + l.montant, 0);
+
+      onGenerer({
+        typeOperation: typeOp,
+        journal,
+        bSLine: "",
+        zoneId: zoneVal,
+        tiers: tiersVal,
+        refFactD,
+        nChequeOv: refReel,
+        nPiece: pieceForcee ?? "",
+        datePiece,
+        lignes: [
+          ...lignesDebit,
+          {
+            compte: compteCResolved,
+            sens: "credit",
+            libelle: libelle.trim() || modeleNom,
+            montant: total,
+          },
+        ],
+      });
+      fermer();
       return;
     }
 
@@ -473,36 +552,38 @@ export function ModelesEcritureModal({
               </p>
             ) : (
               <>
-                <div className="mb-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
-                  <div>
-                    <label className="mb-1 block text-[11px] font-semibold uppercase tracking-wide text-text-secondary">
-                      {t.saisie.modeles.compteDebit}
-                    </label>
-                    {props.debit?.choix ? (
-                      <select
-                        value={compteDChoisi}
-                        onChange={(e) => setCompteDChoisi(e.target.value)}
-                        className={fieldControlClass}
-                      >
-                        <option value="">—</option>
-                        {props.debit.choix.map((c) => (
-                          <option key={c.code} value={c.code} disabled={!compteExiste(c.code)}>
-                            {c.code} — {libelleAffiche(c.code, c.label)}
-                            {!compteExiste(c.code) ? ` (${t.saisie.modeles.compteIntrouvable})` : ""}
-                          </option>
-                        ))}
-                      </select>
-                    ) : (
-                      <p className="rounded-xl border border-border-subtle bg-bg-card-muted px-3 py-2 text-text-primary">
-                        {props.debit?.fixe} — {libelleAffiche(props.debit?.fixe ?? "", "")}
-                        {props.debit?.fixe && !compteExiste(props.debit.fixe) && (
-                          <span className="ml-2 text-xs font-semibold text-accent-red">
-                            {t.saisie.modeles.compteIntrouvable}
-                          </span>
-                        )}
-                      </p>
-                    )}
-                  </div>
+                <div className={`mb-4 grid grid-cols-1 gap-4 ${multiDebit ? "" : "sm:grid-cols-2"}`}>
+                  {!multiDebit && (
+                    <div>
+                      <label className="mb-1 block text-[11px] font-semibold uppercase tracking-wide text-text-secondary">
+                        {t.saisie.modeles.compteDebit}
+                      </label>
+                      {props.debit?.choix ? (
+                        <select
+                          value={compteDChoisi}
+                          onChange={(e) => setCompteDChoisi(e.target.value)}
+                          className={fieldControlClass}
+                        >
+                          <option value="">—</option>
+                          {props.debit.choix.map((c) => (
+                            <option key={c.code} value={c.code} disabled={!compteExiste(c.code)}>
+                              {c.code} — {libelleAffiche(c.code, c.label)}
+                              {!compteExiste(c.code) ? ` (${t.saisie.modeles.compteIntrouvable})` : ""}
+                            </option>
+                          ))}
+                        </select>
+                      ) : (
+                        <p className="rounded-xl border border-border-subtle bg-bg-card-muted px-3 py-2 text-text-primary">
+                          {props.debit?.fixe} — {libelleAffiche(props.debit?.fixe ?? "", "")}
+                          {props.debit?.fixe && !compteExiste(props.debit.fixe) && (
+                            <span className="ml-2 text-xs font-semibold text-accent-red">
+                              {t.saisie.modeles.compteIntrouvable}
+                            </span>
+                          )}
+                        </p>
+                      )}
+                    </div>
+                  )}
                   <div>
                     <label className="mb-1 block text-[11px] font-semibold uppercase tracking-wide text-text-secondary">
                       {t.saisie.modeles.compteCredit}
@@ -550,7 +631,7 @@ export function ModelesEcritureModal({
                         const key = cleSolde(s);
                         const actif = multiSelect
                           ? soldesCoches.has(key)
-                          : pieceForcee === s.numPiece && montant === String(Math.abs(s.soldeNet));
+                          : pieceForcee === s.numPiece && (multiDebit || montant === String(Math.abs(s.soldeNet)));
                         return (
                           <button
                             key={key}
@@ -589,21 +670,92 @@ export function ModelesEcritureModal({
                   </div>
                 )}
 
-                <div className="mb-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
-                  <div>
-                    <label className="mb-1 block text-[11px] font-semibold uppercase tracking-wide text-text-secondary">
-                      {t.saisie.montant}
-                      <span className="text-accent-amber"> *</span>
-                    </label>
-                    <input
-                      type="number"
-                      step="0.01"
-                      value={montant}
-                      disabled={nbCoches > 1}
-                      onChange={(e) => setMontant(e.target.value)}
-                      className={fieldControlClass}
-                    />
+                {multiDebit && (
+                  <div className="mb-4 rounded-lg border border-border-subtle p-3">
+                    <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-text-secondary">
+                      {t.saisie.modeles.lignesDebit}
+                    </p>
+                    <div className="flex flex-col gap-2">
+                      {lignesDebitMulti.map((l, i) => (
+                        <div key={i} className="grid grid-cols-1 gap-2 sm:grid-cols-[2fr_1fr_1.4fr_auto]">
+                          <select
+                            value={l.compte}
+                            onChange={(e) => modifierLigneDebit(i, "compte", e.target.value)}
+                            className={fieldControlClass}
+                          >
+                            <option value="">—</option>
+                            {props.debit?.choix?.map((c) => (
+                              <option key={c.code} value={c.code} disabled={!compteExiste(c.code)}>
+                                {c.code} — {libelleAffiche(c.code, c.label)}
+                                {!compteExiste(c.code) ? ` (${t.saisie.modeles.compteIntrouvable})` : ""}
+                              </option>
+                            ))}
+                          </select>
+                          <input
+                            type="number"
+                            step="0.01"
+                            placeholder={t.saisie.montant}
+                            value={l.montant}
+                            onChange={(e) => modifierLigneDebit(i, "montant", e.target.value)}
+                            className={fieldControlClass}
+                          />
+                          <select
+                            value={l.bsl}
+                            onChange={(e) => modifierLigneDebit(i, "bsl", e.target.value)}
+                            className={fieldControlClass}
+                          >
+                            <option value="">{t.saisie.bSLine}</option>
+                            {bslOptions.map((b) => (
+                              <option key={b.our_line_code} value={b.our_line_code ?? ""}>
+                                {b.our_line_code} — {b.description}
+                              </option>
+                            ))}
+                          </select>
+                          <button
+                            type="button"
+                            onClick={() => supprimerLigneDebit(i)}
+                            disabled={lignesDebitMulti.length <= 1}
+                            className="rounded-md border border-border-subtle px-2 text-sm text-accent-red disabled:opacity-30"
+                            aria-label={t.common.annuler}
+                          >
+                            ×
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                    <button
+                      type="button"
+                      onClick={ajouterLigneDebit}
+                      className="mt-3 text-sm text-accent-blue hover:underline"
+                    >
+                      {t.saisie.modeles.ajouterLigneDebit}
+                    </button>
+                    <p className="mt-3 text-xs text-text-secondary">
+                      {t.saisie.modeles.totalLignesDebit}{" "}
+                      <span className="font-semibold text-text-primary">
+                        {totalDebitMulti.toLocaleString("fr-FR")}
+                      </span>
+                    </p>
                   </div>
+                )}
+
+                <div className="mb-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
+                  {!multiDebit && (
+                    <div>
+                      <label className="mb-1 block text-[11px] font-semibold uppercase tracking-wide text-text-secondary">
+                        {t.saisie.montant}
+                        <span className="text-accent-amber"> *</span>
+                      </label>
+                      <input
+                        type="number"
+                        step="0.01"
+                        value={montant}
+                        disabled={nbCoches > 1}
+                        onChange={(e) => setMontant(e.target.value)}
+                        className={fieldControlClass}
+                      />
+                    </div>
+                  )}
                   <div>
                     <label className="mb-1 block text-[11px] font-semibold uppercase tracking-wide text-text-secondary">
                       {t.common.libelle}
@@ -617,7 +769,7 @@ export function ModelesEcritureModal({
                   </div>
                 </div>
 
-                {props.bslVisible && (
+                {props.bslVisible && !multiDebit && (
                   <div className="mb-4">
                     <label className="mb-1 block text-[11px] font-semibold uppercase tracking-wide text-text-secondary">
                       {t.saisie.bSLine}

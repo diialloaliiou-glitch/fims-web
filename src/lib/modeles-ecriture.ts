@@ -18,6 +18,12 @@ export type ModeleProps = {
   bslVisible: boolean;
   avecSoldes?: boolean;
   multiSelect?: boolean;
+  // Plusieurs lignes de debit (comptes/montants/B-S-Line distincts)
+  // regroupees contre un credit unique - une avance couvre souvent
+  // plusieurs categories de depense a la fois (ex: perdiem + carburant +
+  // hebergement pour une meme avance terrain), chacune pouvant relever
+  // d'une ligne budgetaire differente.
+  multiDebit?: boolean;
   info?: string;
 };
 
@@ -276,6 +282,7 @@ export function getModeleProps(nom: string): ModeleProps | null {
         credit: { choix: ZONES_471 },
         bslVisible: true,
         avecSoldes: true,
+        multiDebit: true,
       };
     case "Apurement avance salaire":
       return {
@@ -294,6 +301,7 @@ export function getModeleProps(nom: string): ModeleProps | null {
         credit: { fixe: "471100" },
         bslVisible: true,
         avecSoldes: true,
+        multiDebit: true,
       };
     case "Cash transfer via avance":
       return {
