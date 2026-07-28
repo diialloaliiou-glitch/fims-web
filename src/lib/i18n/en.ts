@@ -172,6 +172,7 @@ export const en: typeof fr = {
       soldesMultiInfo: "{n} balance(s) — check several for a batch settlement",
       selectionMultiple: "{n} balance(s) selected — a single credit line will be generated",
       pieceConservee: "Piece No. kept: {piece} — the settlement will be linked to this piece.",
+      erreurDatePieceObligatoire: "The piece date is required.",
       erreurBslObligatoire: "B-S-LINE is required for this type of movement.",
       erreurRefObligatoire: "The reference (Ref. Fact/D) is required.",
       erreurRefReelleObligatoire: "Check/transfer No. is required for this journal (BQ/CS).",

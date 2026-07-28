@@ -168,6 +168,7 @@ export const fr = {
       soldesMultiInfo: "{n} compte(s) — cochez plusieurs pour un règlement groupé",
       selectionMultiple: "{n} compte(s) sélectionné(s) — un crédit unique sera généré",
       pieceConservee: "N° pièce conservé : {piece} — le règlement sera lié à cette pièce.",
+      erreurDatePieceObligatoire: "La date de la pièce est obligatoire.",
       erreurBslObligatoire: "B-S-LINE obligatoire pour ce type de mouvement.",
       erreurRefObligatoire: "La référence (Réf. Fact/D) est obligatoire.",
       erreurRefReelleObligatoire: "N°/Chq/OV réel obligatoire pour ce journal (BQ/CS).",

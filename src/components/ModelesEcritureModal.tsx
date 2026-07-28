@@ -34,6 +34,7 @@ export type ResultatModele = {
   refFactD: string;
   nChequeOv: string;
   nPiece: string;
+  datePiece: string;
   lignes: LigneGeneree[];
 };
 
@@ -47,6 +48,7 @@ export function ModelesEcritureModal({
   budgetLines,
   operationTypes,
   bankJournals,
+  dateOperation,
   onGenerer,
 }: {
   open: boolean;
@@ -58,6 +60,7 @@ export function ModelesEcritureModal({
   budgetLines: { our_line_code: string | null; description: string | null }[];
   operationTypes: OperationType[];
   bankJournals: BankJournal[];
+  dateOperation: string;
   onGenerer: (resultat: ResultatModele) => void;
 }) {
   const { t } = useLanguage();
@@ -76,6 +79,7 @@ export function ModelesEcritureModal({
   const [refReel, setRefReel] = useState("");
   const [tiersVal, setTiersVal] = useState("");
   const [zoneVal, setZoneVal] = useState("");
+  const [datePiece, setDatePiece] = useState(dateOperation);
   const [error, setError] = useState<string | null>(null);
 
   const [soldes, setSoldes] = useState<SoldeEnAttente[]>([]);
@@ -127,6 +131,7 @@ export function ModelesEcritureModal({
     setRefReel("");
     setTiersVal("");
     setZoneVal("");
+    setDatePiece(dateOperation);
     setError(null);
     setPieceForcee(null);
     setSoldesCoches(new Set());
@@ -242,6 +247,10 @@ export function ModelesEcritureModal({
     setError(null);
     if (!props) return;
 
+    if (!datePiece.trim()) {
+      setError(t.saisie.modeles.erreurDatePieceObligatoire);
+      return;
+    }
     if (props.bslVisible && !bsl.trim()) {
       setError(t.saisie.modeles.erreurBslObligatoire);
       return;
@@ -305,6 +314,7 @@ export function ModelesEcritureModal({
         refFactD,
         nChequeOv: refReel,
         nPiece: "",
+        datePiece,
         lignes: [
           ...lignesDebit,
           {
@@ -347,6 +357,7 @@ export function ModelesEcritureModal({
       refFactD,
       nChequeOv: refReel,
       nPiece: pieceForcee ?? "",
+      datePiece,
       lignes: [
         {
           compte: compteDResolved,
@@ -442,6 +453,19 @@ export function ModelesEcritureModal({
               {t.saisie.modeles.retour}
             </button>
             <p className="mb-4 text-sm font-medium text-text-secondary">{modeleNom}</p>
+
+            <div className="mb-4">
+              <label className="mb-1 block text-[11px] font-semibold uppercase tracking-wide text-text-secondary">
+                {t.saisie.dateDeLaPiece}
+                <span className="text-accent-amber"> *</span>
+              </label>
+              <input
+                type="date"
+                value={datePiece}
+                onChange={(e) => setDatePiece(e.target.value)}
+                className={fieldControlClass}
+              />
+            </div>
 
             {props.info ? (
               <p className="rounded-md bg-accent-amber/10 px-4 py-3 text-sm text-accent-amber">

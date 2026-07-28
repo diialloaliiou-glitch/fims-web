@@ -255,6 +255,7 @@ export default function SaisiePage() {
   function appliquerModele(resultat: ResultatModele) {
     setTypeOperation(resultat.typeOperation);
     setJournal(resultat.journal);
+    if (resultat.datePiece) setDateOperation(resultat.datePiece);
     if (resultat.bSLine) setBSLine(resultat.bSLine);
     if (resultat.zoneId) setZoneId(resultat.zoneId);
     if (resultat.tiers) setTiers(resultat.tiers);
@@ -689,6 +690,7 @@ export default function SaisiePage() {
           budgetLines={budgetLines}
           operationTypes={operationTypes}
           bankJournals={bankJournals}
+          dateOperation={dateOperation}
           onGenerer={appliquerModele}
         />
       )}
