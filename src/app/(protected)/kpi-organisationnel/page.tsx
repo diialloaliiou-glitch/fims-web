@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { geoMercator, geoPath } from "d3-geo";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/lib/auth-context";
 import { useLanguage } from "@/lib/language-context";
@@ -10,6 +11,7 @@ import {
   chargerDonneesKpi,
   consommationMensuelleCumulee,
   fondsRecusEtCourbe,
+  fondsRecusTotalCumule,
   repartitionParRegion,
   resultatParDimension,
   rythmeLineaireIdeal,
@@ -111,6 +113,67 @@ function BarreDivergente({ valeur, max, couleurPositif, couleurNegatif }: { vale
   );
 }
 
+function normaliserNomZone(s: string) {
+  return s
+    .toUpperCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "");
+}
+
+type FeatureMaliAdm1 = { type: "Feature"; properties: { shapeName: string }; geometry: GeoJSON.Geometry };
+
+// Limites administratives regionales du Mali (ADM1) - geoBoundaries.org, CC BY 4.0,
+// servies localement (public/geo/) plutot que via un CDN externe. Ce jeu de
+// donnees ne couvre pas toutes les zones reelles d'AMSODE (ex. localites comme
+// FARAGOUARA, ou "Zone Nord" qui est un label interne sans polygone officiel) -
+// ces zones restent visibles dans le classement mais sans forme sur la carte.
+function RegionMapMali({ resultatRegion }: { resultatRegion: ResultatRegion[] }) {
+  const [geo, setGeo] = useState<{ type: "FeatureCollection"; features: FeatureMaliAdm1[] } | null>(null);
+
+  useEffect(() => {
+    fetch("/geo/mali-adm1.geojson")
+      .then((r) => r.json())
+      .then(setGeo);
+  }, []);
+
+  if (!geo) return null;
+
+  const largeur = 280;
+  const hauteur = 280;
+  const projection = geoMercator().fitSize([largeur, hauteur], geo as unknown as GeoJSON.GeoJSON);
+  const path = geoPath(projection);
+  const parNom = new Map(resultatRegion.map((r) => [normaliserNomZone(r.nom), r]));
+  const max = Math.max(1, ...resultatRegion.map((r) => r.montant));
+
+  return (
+    <div>
+      <svg viewBox={`0 0 ${largeur} ${hauteur}`} className="h-auto w-full max-w-[280px]">
+        {geo.features.map((f) => {
+          const match = parNom.get(normaliserNomZone(f.properties.shapeName));
+          return (
+            <path
+              key={f.properties.shapeName}
+              d={path(f as unknown as GeoJSON.Feature) ?? undefined}
+              fill="var(--accent-teal)"
+              fillOpacity={match ? Math.max(0.15, match.montant / max) : 0.06}
+              stroke="var(--border-subtle)"
+              strokeWidth={1}
+            >
+              <title>
+                {f.properties.shapeName}
+                {match ? ` : ${formatM(match.montant)} FCFA` : " : aucune dépense enregistrée"}
+              </title>
+            </path>
+          );
+        })}
+      </svg>
+      <p className="mt-2 text-[10px] text-text-secondary">
+        Limites administratives : geoBoundaries.org (CC BY 4.0)
+      </p>
+    </div>
+  );
+}
+
 export default function KpiOrganisationnelPage() {
   const { profile, organization, projects: projetsAssignes } = useAuth();
   const { t } = useLanguage();
@@ -124,6 +187,8 @@ export default function KpiOrganisationnelPage() {
   const [budgetLines, setBudgetLines] = useState<BudgetLine[]>([]);
   const [lignes, setLignes] = useState<LigneDepenseKpi[]>([]);
   const [fondsRecus, setFondsRecus] = useState<FondsRecusResultat | null>(null);
+  const [depenseTotaleCumulee, setDepenseTotaleCumulee] = useState(0);
+  const [fondsRecusCumule, setFondsRecusCumule] = useState(0);
   const [loading, setLoading] = useState(true);
   const [modeReception, setModeReception] = useState<"mensuel" | "cumule">("cumule");
 
@@ -157,18 +222,24 @@ export default function KpiOrganisationnelPage() {
       setBudgetLines([]);
       setLignes([]);
       setFondsRecus(null);
+      setDepenseTotaleCumulee(0);
+      setFondsRecusCumule(0);
       setLoading(false);
       return;
     }
     setLoading(true);
-    Promise.all([chargerDonneesKpi(projetsInclus, annee), fondsRecusEtCourbe(projetsInclus, annee)]).then(
-      ([donnees, recus]) => {
-        setBudgetLines(donnees.budgetLines);
-        setLignes(donnees.lignes);
-        setFondsRecus(recus);
-        setLoading(false);
-      }
-    );
+    Promise.all([
+      chargerDonneesKpi(projetsInclus, annee),
+      fondsRecusEtCourbe(projetsInclus, annee),
+      fondsRecusTotalCumule(projetsInclus),
+    ]).then(([donnees, recus, cumule]) => {
+      setBudgetLines(donnees.budgetLines);
+      setLignes(donnees.lignes);
+      setDepenseTotaleCumulee(donnees.depenseTotaleCumulee);
+      setFondsRecus(recus);
+      setFondsRecusCumule(cumule);
+      setLoading(false);
+    });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [projetsInclus, annee]);
 
@@ -190,9 +261,13 @@ export default function KpiOrganisationnelPage() {
   }
 
   const totalBudget = budgetTotalAnnuel(budgetLines);
-  const depenseTotale = lignes.reduce((s, l) => s + l.montant, 0);
-  const tauxConso = fondsRecus && fondsRecus.total > 0 ? depenseTotale / fondsRecus.total : null;
+  // Le taux de consommation global se lit comme un taux d'utilisation du
+  // stock de fonds recus DEPUIS LE DEBUT du projet (comme le Dashboard par
+  // projet) - jamais un ratio de flux d'une seule annee civile, que le
+  // selecteur d'annee ne doit donc pas affecter.
+  const tauxConso = fondsRecusCumule > 0 ? depenseTotaleCumulee / fondsRecusCumule : null;
   const statutTaux = tauxConso != null ? statutTauxKpi(tauxConso) : null;
+  const fondsRestant = fondsRecusCumule - depenseTotaleCumulee;
 
   const courbeConsommation = consommationMensuelleCumulee(lignes);
   const courbeIdeale = rythmeLineaireIdeal(totalBudget);
@@ -290,7 +365,7 @@ export default function KpiOrganisationnelPage() {
         <p className="text-sm text-text-secondary">{t.common.chargement}</p>
       ) : (
         <>
-          <div className="mb-6 grid grid-cols-1 gap-6 sm:grid-cols-2">
+          <div className="mb-6 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
             <div className="rounded-2xl border border-border-subtle bg-bg-card p-6">
               <p className="mb-4 text-sm text-text-secondary">
                 {t.kpiOrganisationnel.fondsRecus.replace("{annee}", String(annee))}
@@ -326,6 +401,32 @@ export default function KpiOrganisationnelPage() {
                     </div>
                   );
                 })}
+              </div>
+            </div>
+
+            <div className="rounded-2xl border border-border-subtle bg-bg-card p-6">
+              <p className="mb-2 text-sm text-text-secondary">{t.kpiOrganisationnel.fondsRecusCumules}</p>
+              <div className="flex items-baseline gap-2">
+                <p className="text-3xl font-extrabold text-accent-teal">
+                  {fondsRecusCumule.toLocaleString("fr-FR")}
+                </p>
+                <p className="text-sm text-text-secondary">FCFA</p>
+              </div>
+              <div className="my-4 h-px bg-border-subtle" />
+              <p className="mb-2 text-sm text-text-secondary">{t.kpiOrganisationnel.montantConsomme}</p>
+              <div className="flex items-baseline gap-2">
+                <p className="text-3xl font-extrabold text-accent-amber">
+                  {depenseTotaleCumulee.toLocaleString("fr-FR")}
+                </p>
+                <p className="text-sm text-text-secondary">FCFA</p>
+              </div>
+              <div className="my-4 h-px bg-border-subtle" />
+              <p className="mb-2 text-sm text-text-secondary">{t.kpiOrganisationnel.fondsRestantDisponible}</p>
+              <div className="flex items-baseline gap-2">
+                <p className={`text-3xl font-extrabold ${fondsRestant >= 0 ? "text-accent-blue" : "text-accent-red"}`}>
+                  {fondsRestant.toLocaleString("fr-FR")}
+                </p>
+                <p className="text-sm text-text-secondary">FCFA</p>
               </div>
             </div>
 
@@ -526,7 +627,9 @@ export default function KpiOrganisationnelPage() {
             <p className="mb-5 mt-1 text-xs text-text-secondary">
               {t.kpiOrganisationnel.resultatParRegionSousTitre}
             </p>
-            <div className="flex flex-col gap-3">
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-[280px_1fr]">
+              <RegionMapMali resultatRegion={resultatRegion} />
+              <div className="flex flex-col gap-3">
               {resultatRegion.length === 0 && (
                 <p className="text-sm text-text-secondary">{t.kpiOrganisationnel.aucuneDonnee}</p>
               )}
@@ -554,6 +657,7 @@ export default function KpiOrganisationnelPage() {
                   </span>
                 </div>
               ))}
+              </div>
             </div>
           </div>
         </>

@@ -772,6 +772,9 @@ export const en: typeof fr = {
     avertissementCompteManquant:
       "No fund receipt account configured for: {projets} — see Settings > Project Info.",
     fondsRecus: "Funds received — {annee}",
+    fondsRecusCumules: "Cumulative funds received (all-time)",
+    montantConsomme: "Amount consumed (all-time)",
+    fondsRestantDisponible: "Remaining funds available",
     tauxConsoGlobal: "Global consumption rate of funds received",
     legendeSain: "Healthy ≥ 85%",
     legendeSurveiller: "To watch 60–84%",

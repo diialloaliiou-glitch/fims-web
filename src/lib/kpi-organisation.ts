@@ -25,7 +25,8 @@ export type LigneDepenseKpi = {
 // ligne est resolue via la cle (project_id, b_s_line) - jamais b_s_line seul.
 export async function chargerDonneesKpi(projects: ProjetKpi[], annee: number) {
   const projectIds = projects.map((p) => p.id);
-  if (projectIds.length === 0) return { budgetLines: [] as BudgetLine[], lignes: [] as LigneDepenseKpi[] };
+  if (projectIds.length === 0)
+    return { budgetLines: [] as BudgetLine[], lignes: [] as LigneDepenseKpi[], depenseTotaleCumulee: 0 };
 
   const [budgetLinesRes, entriesRes] = await Promise.all([
     supabase.from("budget_lines").select("*").in("project_id", projectIds).neq("our_line_code", "52B"),
@@ -53,22 +54,32 @@ export async function chargerDonneesKpi(projects: ProjetKpi[], annee: number) {
   });
 
   const lignes: LigneDepenseKpi[] = [];
+  // depenseTotaleCumulee = depuis toujours (aucune restriction d'annee) -
+  // sert de base au taux de consommation global, qui doit se lire comme un
+  // taux d'utilisation du stock de fonds recus depuis le debut du projet,
+  // pas un ratio de flux d'une seule annee civile (un bailleur peut verser
+  // en annee N et le projet depense sur plusieurs mois qui debordent sur
+  // N+1, ce qui fausserait un ratio calcule annee par annee).
+  let depenseTotaleCumulee = 0;
   entriesRaw.forEach((e) => {
     if (!e.montant_debit || !e.idc) return;
-    const [moisStr, anneeStr] = e.idc.split("_");
-    if (anneeStr !== String(annee)) return;
     const compteD = e.compte_debit ?? "";
     if (compteD.startsWith("5") || compteD.startsWith("411")) return;
     const bsl = (e.b_s_line ?? "").toUpperCase();
     if (!bsl) return;
     const budgetLine = budgetLineParClef.get(`${e.project_id}|${bsl}`) ?? null;
     if (!budgetLine) return;
+
+    depenseTotaleCumulee += e.montant_debit;
+
+    const [moisStr, anneeStr] = e.idc.split("_");
+    if (anneeStr !== String(annee)) return;
     const mois = parseInt(moisStr, 10);
     if (isNaN(mois) || mois < 1 || mois > 12) return;
     lignes.push({ project_id: e.project_id, mois, montant: e.montant_debit, budgetLine, zone_id: e.zone_id });
   });
 
-  return { budgetLines, lignes };
+  return { budgetLines, lignes, depenseTotaleCumulee };
 }
 
 export function budgetTotalAnnuel(budgetLines: BudgetLine[]) {
@@ -221,6 +232,29 @@ export async function fondsRecusEtCourbe(
 
   const total = parProjet.reduce((s, p) => s + p.total, 0);
   return { parProjet, parMois, total, projetsSansCompte };
+}
+
+// Base du taux de consommation global : cumul depuis toujours (aucun
+// filtre d'annee), comme le fait deja le Dashboard pour son propre "Taux de
+// conso de l'avance recue" par projet - un ratio annee par annee serait
+// fausse par le decalage entre le versement d'une tranche et sa depense
+// etalee sur plusieurs mois qui peuvent deborder sur l'annee suivante.
+export async function fondsRecusTotalCumule(projects: ProjetKpi[]): Promise<number> {
+  let total = 0;
+  await Promise.all(
+    projects.map(async (p) => {
+      if (!p.compte_reception_fonds) return;
+      const { data } = await supabase
+        .from("journal_entries")
+        .select("montant_credit")
+        .eq("project_id", p.id)
+        .eq("compte_credit", p.compte_reception_fonds);
+      (data ?? []).forEach((r) => {
+        total += r.montant_credit;
+      });
+    })
+  );
+  return total;
 }
 
 export function statutTauxKpi(pct: number): { color: "teal" | "amber" | "red"; label: string } {

@@ -769,6 +769,9 @@ export const fr = {
     avertissementCompteManquant:
       "Compte de réception des fonds non configuré pour : {projets} — voir Paramètres > Info Projet.",
     fondsRecus: "Fonds reçus — année {annee}",
+    fondsRecusCumules: "Fonds reçus cumulés (depuis toujours)",
+    montantConsomme: "Montant consommé (depuis toujours)",
+    fondsRestantDisponible: "Fonds restant disponible",
     tauxConsoGlobal: "Taux de consommation global des fonds reçus",
     legendeSain: "Sain ≥ 85%",
     legendeSurveiller: "À surveiller 60–84%",
