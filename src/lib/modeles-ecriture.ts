@@ -31,6 +31,17 @@ export const BANQUES: ChoixCompte[] = [
   { code: "522500", label: "Banque régionale SIKASSO" },
 ];
 
+export const ACHATS_DIRECTS: ChoixCompte[] = [
+  { code: "601100", label: "Fournitures de bureau" },
+  { code: "601200", label: "Fournitures informatiques" },
+  { code: "601300", label: "Matériels non immobilisables" },
+  { code: "601400", label: "Produits alimentaires / NFI" },
+  { code: "601500", label: "Médicaments et consommables" },
+  { code: "601600", label: "Matériaux et petits outillages" },
+  { code: "601700", label: "Carburant véhicules opérationnels" },
+  { code: "601800", label: "Autres achats directs programme" },
+];
+
 export const ZONES_471: ChoixCompte[] = [
   { code: "471101", label: "Avance zone BAMAKO" },
   { code: "471102", label: "Avance zone TOMBOUCTOU" },
@@ -75,7 +86,12 @@ export const CATALOGUE: { typeOp: string; journal: string; modeles: string[] }[]
   {
     typeOp: "OPERATIONS DIVERSES",
     journal: "OD",
-    modeles: ["Apurement avance terrain", "Apurement avance salaire", "Cash transfer via avance"],
+    modeles: [
+      "Apurement avance terrain",
+      "Apurement avance salaire",
+      "Apurement avance activité",
+      "Cash transfer via avance",
+    ],
   },
   {
     typeOp: "TRESORERIE",
@@ -84,6 +100,7 @@ export const CATALOGUE: { typeOp: string; journal: string; modeles: string[] }[]
       "Règlement fournisseur",
       "Règlement prestataire",
       "Avance comptable terrain",
+      "Avance activité",
       "Virement vers banque régionale",
       "Réception banque régionale",
       "ICR / Frais admin vers AMSODE",
@@ -117,18 +134,7 @@ export function getModeleProps(nom: string): ModeleProps | null {
       return {
         typeOp: "PRISE EN CHARGE",
         journal: "AC",
-        debit: {
-          choix: [
-            { code: "601100", label: "Fournitures de bureau" },
-            { code: "601200", label: "Fournitures informatiques" },
-            { code: "601300", label: "Matériels non immobilisables" },
-            { code: "601400", label: "Produits alimentaires / NFI" },
-            { code: "601500", label: "Médicaments et consommables" },
-            { code: "601600", label: "Matériaux et petits outillages" },
-            { code: "601700", label: "Carburant véhicules opérationnels" },
-            { code: "601800", label: "Autres achats directs programme" },
-          ],
-        },
+        debit: { choix: ACHATS_DIRECTS },
         credit: { fixe: "401100" },
         bslVisible: false,
       };
@@ -280,6 +286,15 @@ export function getModeleProps(nom: string): ModeleProps | null {
         bslVisible: false,
         avecSoldes: true,
       };
+    case "Apurement avance activité":
+      return {
+        typeOp: "OPERATIONS DIVERSES",
+        journal: "OD",
+        debit: { choix: ACHATS_DIRECTS },
+        credit: { fixe: "471100" },
+        bslVisible: true,
+        avecSoldes: true,
+      };
     case "Cash transfer via avance":
       return {
         typeOp: "OPERATIONS DIVERSES",
@@ -312,6 +327,14 @@ export function getModeleProps(nom: string): ModeleProps | null {
         typeOp: "TRESORERIE",
         journal: "BQ",
         debit: { choix: ZONES_471 },
+        credit: { choix: BANQUES },
+        bslVisible: false,
+      };
+    case "Avance activité":
+      return {
+        typeOp: "TRESORERIE",
+        journal: "BQ",
+        debit: { fixe: "471100" },
         credit: { choix: BANQUES },
         bslVisible: false,
       };
