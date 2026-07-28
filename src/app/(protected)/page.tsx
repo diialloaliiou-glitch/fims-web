@@ -286,15 +286,25 @@ export default function DashboardPage() {
             icon={Wallet}
           />
           {soldeParCompte.length > 0 && (
-            <p className="mt-1.5 px-1 text-[11px] leading-relaxed text-text-secondary">
-              {soldeParCompte.map((s, i) => (
-                <span key={s.compte}>
-                  {i > 0 && " · "}
-                  {s.compte}
-                  {s.libelle ? ` (${s.libelle})` : ""} : {Math.round(s.solde).toLocaleString("fr-FR")}
-                </span>
+            <div className="mt-2 flex flex-wrap gap-1.5">
+              {soldeParCompte.map((s) => (
+                <div
+                  key={s.compte}
+                  className="flex items-center gap-2 rounded-lg border border-border-subtle bg-bg-card-muted px-2.5 py-1.5"
+                >
+                  <Landmark className="h-3.5 w-3.5 shrink-0 text-text-secondary" strokeWidth={1.75} />
+                  <div className="min-w-0">
+                    <p className="truncate text-[10px] leading-tight text-text-secondary">
+                      {s.compte}
+                      {s.libelle ? ` — ${s.libelle}` : ""}
+                    </p>
+                    <p className="text-xs font-semibold leading-tight text-text-primary">
+                      {Math.round(s.solde).toLocaleString("fr-FR")} FCFA
+                    </p>
+                  </div>
+                </div>
               ))}
-            </p>
+            </div>
           )}
         </div>
         <StatCard
