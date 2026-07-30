@@ -110,4 +110,25 @@ body {
   .print\:hidden {
     display: none !important;
   }
+
+  /* Les en-tetes/colonnes figes (position: sticky, pour le confort de
+     scroll a l'ecran) cassent la repetition native du <thead> par le
+     navigateur sur plusieurs pages imprimees - l'en-tete se retrouve
+     repositionne au milieu du contenu au lieu de se repeter en haut de
+     chaque page. On neutralise tout positionnement sticky/fixed dans les
+     tableaux a l'impression pour laisser le navigateur gerer nativement
+     la repetition de <thead> (comportement par defaut de "table-header-
+     group", sans besoin de CSS dedie). */
+  thead,
+  th,
+  td,
+  tr {
+    position: static !important;
+    top: auto !important;
+    left: auto !important;
+    right: auto !important;
+    bottom: auto !important;
+    z-index: auto !important;
+    box-shadow: none !important;
+  }
 }
