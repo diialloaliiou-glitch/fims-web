@@ -608,7 +608,10 @@ export default function ErbPage() {
       <NavigationSecondaire actuel="erb" />
 
       <h1 className="mb-2 text-2xl font-semibold text-text-primary">{t.erb.titre}</h1>
-      <p className="mb-6 text-sm text-text-secondary">{t.erb.description}</p>
+      <p className="text-sm text-text-secondary">
+        {project?.nom_projet} ({project?.code_projet})
+      </p>
+      <p className="mb-6 text-sm text-text-secondary print:hidden">{t.erb.description}</p>
 
       {selected ? (
         <DetailRapprochement

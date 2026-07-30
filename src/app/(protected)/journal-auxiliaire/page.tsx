@@ -75,9 +75,14 @@ export default function JournalAuxiliairePage() {
       <NavigationSecondaire actuel="jaux" />
 
       <div className="mb-6 flex items-center justify-between">
-        <h1 className="text-2xl font-semibold text-text-primary">
-          {t.journalAuxiliaire.titre}
-        </h1>
+        <div>
+          <h1 className="text-2xl font-semibold text-text-primary">
+            {t.journalAuxiliaire.titre}
+          </h1>
+          <p className="text-sm text-text-secondary">
+            {project?.nom_projet} ({project?.code_projet})
+          </p>
+        </div>
         <div className="flex gap-2 print:hidden">
           <Pill
             onClick={() =>

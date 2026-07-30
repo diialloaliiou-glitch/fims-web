@@ -141,7 +141,12 @@ export default function ReportingPage() {
   return (
     <div>
       <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
-        <h1 className="text-2xl font-semibold text-text-primary">{t.reporting.titre}</h1>
+        <div>
+          <h1 className="text-2xl font-semibold text-text-primary">{t.reporting.titre}</h1>
+          <p className="text-sm text-text-secondary">
+            {project?.nom_projet} ({project?.code_projet})
+          </p>
+        </div>
         <div className="flex items-center gap-4 print:hidden">
           <Link href="/budget" className="text-sm text-accent-blue hover:underline">
             {t.reporting.voirFinancialReport}
