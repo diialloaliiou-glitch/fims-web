@@ -30,6 +30,7 @@ export const en: typeof fr = {
     zone: "Zone",
     aucunResultat: "No results.",
     retourDashboard: "Back to dashboard",
+    retourPage: "← Back",
     changerTheme: "Switch theme",
     deconnexion: "Sign out",
     exportExcel: "Export Excel",

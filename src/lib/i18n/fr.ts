@@ -26,6 +26,7 @@ export const fr = {
     zone: "Zone",
     aucunResultat: "Aucun résultat.",
     retourDashboard: "Retour au dashboard",
+    retourPage: "← Retour",
     changerTheme: "Changer de thème",
     deconnexion: "Déconnexion",
     exportExcel: "Export Excel",

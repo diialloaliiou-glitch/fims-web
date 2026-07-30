@@ -3,7 +3,7 @@
 import { useEffect } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
-import { House, Moon, Sun } from "lucide-react";
+import { ArrowLeft, House, Moon, Sun } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 import { useTheme } from "@/lib/theme-context";
 import { useLanguage } from "@/lib/language-context";
@@ -59,6 +59,15 @@ export default function ProtectedLayout({
       <header className="sticky top-0 z-30 flex min-h-16 items-center border-b border-border-subtle bg-bg-card px-4 py-2 print:hidden">
         <div className="mx-auto flex w-full max-w-[1800px] flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-3">
+            {pathname !== "/" && (
+              <button
+                onClick={() => router.back()}
+                className="flex h-8 w-8 items-center justify-center rounded-full bg-bg-card text-text-secondary hover:opacity-80"
+                aria-label={t.common.retourPage}
+              >
+                <ArrowLeft className="h-4 w-4" strokeWidth={1.75} />
+              </button>
+            )}
             <Link
               href="/"
               className="flex h-8 w-8 items-center justify-center rounded-full bg-bg-card text-text-secondary hover:opacity-80"
