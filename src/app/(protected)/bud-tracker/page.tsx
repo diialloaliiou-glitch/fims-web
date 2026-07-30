@@ -586,9 +586,12 @@ export default function BudTrackerPage() {
                     </tr>
                   );
                 })}
-              </tbody>
-              {lignesAffichees.length > 0 && (
-                <tfoot>
+
+                {/* Total unique - voir grand-livre/reporting pour la meme
+                    correction : <tfoot> se reproduit nativement sur chaque
+                    page imprimee, donc rendu comme derniere ligne de
+                    <tbody>. */}
+                {lignesAffichees.length > 0 && (
                   <tr className="font-bold text-text-primary">
                     <td
                       colSpan={3}
@@ -662,8 +665,8 @@ export default function BudTrackerPage() {
                         : "—"}
                     </td>
                   </tr>
-                </tfoot>
-              )}
+                )}
+              </tbody>
             </table>
           </div>
         </>

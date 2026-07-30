@@ -284,9 +284,15 @@ export default function GrandLivrePage() {
                   </tr>
                 );
               })}
-            </tbody>
-            <tfoot className="bg-bg-card font-semibold text-text-primary">
-              <tr>
+
+              {/* Le solde final est un total UNIQUE pour tout le compte, pas
+                  un sous-total a repeter sur chaque page - <tfoot> se
+                  reproduit nativement en bas de CHAQUE page imprimee (meme
+                  comportement que <thead> en haut), ce qui ferait
+                  apparaitre CLOSING BALANCE sur les pages intermediaires.
+                  On le rend comme derniere ligne de <tbody> pour qu'il ne
+                  s'affiche qu'une fois, a la suite de la derniere ecriture. */}
+              <tr className="bg-bg-card font-semibold text-text-primary">
                 <td className="px-3 py-2" colSpan={2}></td>
                 <td className="px-3 py-2">{t.grandLivre.soldeFinal}</td>
                 <td className="px-3 py-2" colSpan={2}></td>
@@ -294,7 +300,7 @@ export default function GrandLivrePage() {
                 <td className="px-3 py-2 text-right">{totalCredit.toLocaleString("fr-FR")}</td>
                 <td className="px-3 py-2 text-right">{soldeFinal.toLocaleString("fr-FR")}</td>
               </tr>
-            </tfoot>
+            </tbody>
           </table>
         </div>
       )}

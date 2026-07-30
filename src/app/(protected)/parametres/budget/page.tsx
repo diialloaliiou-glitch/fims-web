@@ -197,10 +197,12 @@ export default function BudgetDataPage() {
                 ))}
               </tr>
             ))}
-          </tbody>
-          {filtrees.length > 0 && (
-            <tfoot className="bg-bg-card font-semibold text-text-primary">
-              <tr>
+
+            {/* Total unique - voir grand-livre/reporting pour la meme
+                correction : <tfoot> se reproduit nativement sur chaque
+                page imprimee, donc rendu comme derniere ligne de <tbody>. */}
+            {filtrees.length > 0 && (
+              <tr className="bg-bg-card font-semibold text-text-primary">
                 <td
                   className="px-3 py-2"
                   colSpan={colonnesAffichees.findIndex((c) => c.key === "total_cost")}
@@ -219,8 +221,8 @@ export default function BudgetDataPage() {
                   }
                 />
               </tr>
-            </tfoot>
-          )}
+            )}
+          </tbody>
         </table>
       </div>
     </div>

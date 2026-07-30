@@ -319,10 +319,13 @@ export default function FinancialReportPage() {
                   </td>
                 </tr>
               ))}
-          </tbody>
-          {rows.length > 0 && (
-            <tfoot className="bg-bg-card font-semibold text-text-primary">
-              <tr>
+
+            {/* Total unique pour tout le budget - voir grand-livre/reporting
+                pour la meme correction : <tfoot> se reproduit nativement
+                sur chaque page imprimee, donc rendu comme derniere ligne de
+                <tbody> pour qu'il ne s'affiche qu'une fois. */}
+            {rows.length > 0 && (
+              <tr className="bg-bg-card font-semibold text-text-primary">
                 <td className="px-3 py-2" colSpan={6}>
                   {t.common.total}
                 </td>
@@ -349,8 +352,8 @@ export default function FinancialReportPage() {
                   {(globalBurnRate * 100).toFixed(0)}%
                 </td>
               </tr>
-            </tfoot>
-          )}
+            )}
+          </tbody>
         </table>
       </div>
 

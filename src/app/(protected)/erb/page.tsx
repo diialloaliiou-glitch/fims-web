@@ -297,16 +297,18 @@ function ItemSection({
                 </td>
               </tr>
             ))}
-          </tbody>
-          <tfoot className="bg-bg-card font-semibold text-text-primary">
-            <tr>
+
+            {/* Total unique - voir grand-livre/reporting pour la meme
+                correction : <tfoot> se reproduit nativement sur chaque
+                page imprimee, donc rendu comme derniere ligne de <tbody>. */}
+            <tr className="bg-bg-card font-semibold text-text-primary">
               <td className="px-2 py-1.5" colSpan={2}>
                 {t.common.total}
               </td>
               <td className="px-2 py-1.5 text-right">{total.toLocaleString("fr-FR")}</td>
               <td className="px-2 py-1.5" />
             </tr>
-          </tfoot>
+          </tbody>
         </table>
       </div>
 

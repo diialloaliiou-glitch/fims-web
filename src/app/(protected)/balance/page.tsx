@@ -263,10 +263,12 @@ export default function BalancePage() {
                 </td>
               </tr>
             ))}
-          </tbody>
-          {rows.length > 0 && (
-            <tfoot className="bg-bg-card font-semibold text-text-primary">
-              <tr>
+
+            {/* Total unique - voir grand-livre/reporting pour la meme
+                correction : <tfoot> se reproduit nativement sur chaque
+                page imprimee, donc rendu comme derniere ligne de <tbody>. */}
+            {rows.length > 0 && (
+              <tr className="bg-bg-card font-semibold text-text-primary">
                 <td className="px-3 py-2" colSpan={2}>
                   {t.common.total}
                 </td>
@@ -286,8 +288,8 @@ export default function BalancePage() {
                   {totals.soldeCrediteur.toLocaleString("fr-FR")}
                 </td>
               </tr>
-            </tfoot>
-          )}
+            )}
+          </tbody>
         </table>
       </div>
 

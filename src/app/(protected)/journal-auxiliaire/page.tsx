@@ -178,10 +178,13 @@ export default function JournalAuxiliairePage() {
                 <td className="px-3 py-2">{e.n_piece}</td>
               </tr>
             ))}
-          </tbody>
-          {entries.length > 0 && (
-            <tfoot className="bg-bg-card font-semibold text-text-primary">
-              <tr>
+
+            {/* Total unique pour toute la periode - voir grand-livre/reporting
+                pour la meme correction : <tfoot> se reproduit nativement
+                sur chaque page imprimee, donc rendu comme derniere ligne de
+                <tbody> pour qu'il ne s'affiche qu'une fois. */}
+            {entries.length > 0 && (
+              <tr className="bg-bg-card font-semibold text-text-primary">
                 <td className="px-3 py-2" colSpan={7}>
                   {t.common.total}
                 </td>
@@ -193,8 +196,8 @@ export default function JournalAuxiliairePage() {
                 </td>
                 <td className="px-3 py-2" />
               </tr>
-            </tfoot>
-          )}
+            )}
+          </tbody>
         </table>
       </div>
 

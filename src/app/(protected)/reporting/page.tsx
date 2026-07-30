@@ -245,10 +245,14 @@ export default function ReportingPage() {
                 <td className="px-3 py-2">{r.nEcritureJournal}</td>
               </tr>
             ))}
-          </tbody>
-          {rows.length > 0 && (
-            <tfoot className="bg-bg-card font-semibold text-text-primary">
-              <tr>
+
+            {/* Un total unique pour toute la periode, pas un sous-total a
+                repeter sur chaque page - <tfoot> se reproduit nativement en
+                bas de CHAQUE page imprimee, ce qui le ferait apparaitre sur
+                les pages intermediaires. Rendu comme derniere ligne de
+                <tbody> pour qu'il ne s'affiche qu'une fois. */}
+            {rows.length > 0 && (
+              <tr className="bg-bg-card font-semibold text-text-primary">
                 <td className="px-3 py-2" colSpan={9}>
                   {t.common.total}
                 </td>
@@ -257,8 +261,8 @@ export default function ReportingPage() {
                 </td>
                 <td className="px-3 py-2" />
               </tr>
-            </tfoot>
-          )}
+            )}
+          </tbody>
         </table>
       </div>
 
