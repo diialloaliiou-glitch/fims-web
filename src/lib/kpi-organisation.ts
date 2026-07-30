@@ -63,10 +63,14 @@ export async function chargerDonneesKpi(projects: ProjetKpi[], annee: number) {
   let depenseTotaleCumulee = 0;
   entriesRaw.forEach((e) => {
     if (!e.montant_debit || !e.idc) return;
-    const compteD = e.compte_debit ?? "";
-    if (compteD.startsWith("5") || compteD.startsWith("411")) return;
     const bsl = (e.b_s_line ?? "").toUpperCase();
     if (!bsl) return;
+    // IC8.1 (ICR) est une ligne de reversement : sa depense reelle consiste
+    // precisement a transferer les frais admin vers un compte de tresorerie
+    // (585000) puis vers AMSODE - l'exclusion 5xxxxx/411xxx, pensee pour les
+    // lignes normales, cacherait a tort sa vraie consommation.
+    const compteD = e.compte_debit ?? "";
+    if (bsl !== "IC8.1" && (compteD.startsWith("5") || compteD.startsWith("411"))) return;
     const budgetLine = budgetLineParClef.get(`${e.project_id}|${bsl}`) ?? null;
     if (!budgetLine) return;
 
