@@ -5,6 +5,7 @@ import * as XLSX from "xlsx";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/lib/auth-context";
 import { hasRole } from "@/lib/roles";
+import { chargerComptesEffectifs } from "@/lib/comptes-projet";
 import { FormField, fieldControlClass } from "@/components/ui/FormField";
 import { MiniTableHeader } from "@/components/ui/MiniTableHeader";
 import { PrimaryButton } from "@/components/ui/PrimaryButton";
@@ -66,10 +67,7 @@ export default function MigrationJdepensePage() {
     }
     setChargementRef(true);
     Promise.all([
-      supabase
-        .from("chart_of_accounts")
-        .select("ccompte")
-        .eq("project_id", targetProjectId),
+      chargerComptesEffectifs(targetProject),
       supabase
         .from("zones")
         .select("id, code")
@@ -78,9 +76,9 @@ export default function MigrationJdepensePage() {
         .from("operation_types")
         .select("code")
         .eq("organization_id", targetProject.organization_id),
-    ]).then(([comptesRes, zonesRes, typesRes]) => {
+    ]).then(([comptes, zonesRes, typesRes]) => {
       setComptesValides(
-        new Set(((comptesRes.data ?? []) as { ccompte: string }[]).map((c) => c.ccompte))
+        new Set(comptes.filter((c) => c.actif).map((c) => c.ccompte))
       );
       const map = new Map<string, number>();
       ((zonesRes.data ?? []) as { id: number; code: string }[]).forEach((z) =>

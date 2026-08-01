@@ -6,8 +6,9 @@ import { useAuth } from "@/lib/auth-context";
 import { useLanguage } from "@/lib/language-context";
 import { hasRole } from "@/lib/roles";
 import { PAYROLL_MAPPING_KEYS } from "@/lib/paie";
+import { chargerComptesEffectifs, type CompteEffectif } from "@/lib/comptes-projet";
 import { PrimaryButton } from "@/components/ui/PrimaryButton";
-import type { ChartOfAccount, PayrollAccountMapping, PayrollMappingKey } from "@/lib/types";
+import type { PayrollAccountMapping, PayrollMappingKey } from "@/lib/types";
 
 export default function PaieComptesPage() {
   const { profile, project } = useAuth();
@@ -15,7 +16,7 @@ export default function PaieComptesPage() {
 
   const peutGerer = hasRole(profile?.role, ["ADMIN_N1", "ADMIN_SITE", "RAF"]);
 
-  const [comptes, setComptes] = useState<ChartOfAccount[]>([]);
+  const [comptes, setComptes] = useState<CompteEffectif[]>([]);
   const [valeurs, setValeurs] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -26,12 +27,9 @@ export default function PaieComptesPage() {
     if (!project) return;
     setLoading(true);
 
-    supabase
-      .from("chart_of_accounts")
-      .select("*")
-      .eq("project_id", project.id)
-      .order("ccompte")
-      .then(({ data }) => setComptes((data as ChartOfAccount[]) ?? []));
+    chargerComptesEffectifs(project).then((list) =>
+      setComptes(list.filter((c) => c.actif))
+    );
 
     supabase
       .from("payroll_account_mapping")

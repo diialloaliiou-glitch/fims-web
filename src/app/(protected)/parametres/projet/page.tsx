@@ -5,9 +5,10 @@ import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/lib/auth-context";
 import { useLanguage } from "@/lib/language-context";
 import { hasRole } from "@/lib/roles";
+import { chargerComptesEffectifs, type CompteEffectif } from "@/lib/comptes-projet";
 import { FormField, fieldControlClass } from "@/components/ui/FormField";
 import { PrimaryButton } from "@/components/ui/PrimaryButton";
-import type { ChartOfAccount, Donor } from "@/lib/types";
+import type { Donor } from "@/lib/types";
 
 function estNumerique(v: string) {
   return v.trim() !== "" && !isNaN(Number(v.trim()));
@@ -17,7 +18,7 @@ export default function ParametresProjetPage() {
   const { profile, project } = useAuth();
   const { t } = useLanguage();
   const [donors, setDonors] = useState<Donor[]>([]);
-  const [comptes, setComptes] = useState<ChartOfAccount[]>([]);
+  const [comptes, setComptes] = useState<CompteEffectif[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -68,12 +69,9 @@ export default function ParametresProjetPage() {
     });
 
     loadDonors();
-    supabase
-      .from("chart_of_accounts")
-      .select("*")
-      .eq("project_id", project.id)
-      .order("ccompte")
-      .then(({ data }) => setComptes((data as ChartOfAccount[]) ?? []));
+    chargerComptesEffectifs(project).then((list) =>
+      setComptes(list.filter((c) => c.actif))
+    );
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [project, profile]);
 

@@ -6,6 +6,7 @@ import { useAuth } from "@/lib/auth-context";
 import { useLanguage } from "@/lib/language-context";
 import { periodeCouranteFermee } from "@/lib/period-closure";
 import { nextSequence } from "@/lib/numerotation";
+import { chargerComptesEffectifs, type CompteEffectif } from "@/lib/comptes-projet";
 import { FormField, fieldControlClass } from "@/components/ui/FormField";
 import { IconButton } from "@/components/ui/IconButton";
 import { PrimaryButton } from "@/components/ui/PrimaryButton";
@@ -16,7 +17,6 @@ import { Cloud, Wand2, Wallet2 } from "lucide-react";
 import type {
   BankJournal,
   BudgetLine,
-  ChartOfAccount,
   OperationType,
   ThirdParty,
   Zone,
@@ -58,7 +58,7 @@ export default function SaisiePage() {
   const { profile, project } = useAuth();
   const { t } = useLanguage();
 
-  const [accounts, setAccounts] = useState<ChartOfAccount[]>([]);
+  const [accounts, setAccounts] = useState<CompteEffectif[]>([]);
   const [thirdParties, setThirdParties] = useState<ThirdParty[]>([]);
   const [zones, setZones] = useState<Zone[]>([]);
   const [budgetLines, setBudgetLines] = useState<BudgetLine[]>([]);
@@ -93,12 +93,9 @@ export default function SaisiePage() {
   useEffect(() => {
     if (!project) return;
 
-    supabase
-      .from("chart_of_accounts")
-      .select("*")
-      .eq("project_id", project.id)
-      .order("compte")
-      .then(({ data }) => setAccounts((data as ChartOfAccount[]) ?? []));
+    chargerComptesEffectifs(project).then((list) =>
+      setAccounts(list.filter((c) => c.actif))
+    );
 
     supabase
       .from("third_parties")

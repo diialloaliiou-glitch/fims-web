@@ -29,11 +29,6 @@ export default function ProjetsPage() {
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [linkError, setLinkError] = useState<string | null>(null);
 
-  const [sourceProjectId, setSourceProjectId] = useState<Record<string, string>>({});
-  const [cloneTables, setCloneTables] = useState<Record<string, Set<string>>>({});
-  const [cloning, setCloning] = useState<string | null>(null);
-  const [cloneMessage, setCloneMessage] = useState<string | null>(null);
-
   const canManage = hasRole(profile?.role, ["ADMIN_N1", "ADMIN_SITE", "RAF"]);
 
   async function loadAll() {
@@ -114,68 +109,6 @@ export default function ProjetsPage() {
     loadAll();
   }
 
-  function toggleCloneTable(projectId: string, table: string) {
-    setCloneTables((prev) => {
-      const current = new Set(prev[projectId] ?? []);
-      if (current.has(table)) current.delete(table);
-      else current.add(table);
-      return { ...prev, [projectId]: current };
-    });
-  }
-
-  // Copie le plan comptable depuis un projet source vers un projet cible —
-  // pour amorcer un nouveau projet (meme bailleur : clone un projet
-  // existant ; nouveau bailleur : clone le projet marque "modele"). Tiers
-  // et personnel ne sont plus clones : ils sont propres a l'organisation,
-  // pas au projet, donc deja visibles sans duplication.
-  async function handleCloner(targetProjectId: string) {
-    setCloneMessage(null);
-    const source = sourceProjectId[targetProjectId];
-    const tables = cloneTables[targetProjectId] ?? new Set<string>();
-    if (!source || tables.size === 0 || !profile) {
-      setCloneMessage(t.projets.erreurCloner);
-      return;
-    }
-
-    setCloning(targetProjectId);
-
-    const tasks: Promise<{ table: string; count: number; error: string | null }>[] = [];
-
-    if (tables.has("chart_of_accounts")) {
-      tasks.push(
-        (async () => {
-          const { data } = await supabase
-            .from("chart_of_accounts")
-            .select("compte, sous_compte, compte_tiers, ccompte, s_compte, libelle, type_compte")
-            .eq("project_id", source);
-          const rows = (data ?? []).map((r) => ({
-            ...r,
-            organization_id: profile.organization_id,
-            project_id: targetProjectId,
-          }));
-          const { error } = rows.length
-            ? await supabase.from("chart_of_accounts").insert(rows)
-            : { error: null };
-          return { table: t.projets.tablePlanComptable, count: rows.length, error: error?.message ?? null };
-        })()
-      );
-    }
-
-    const results = await Promise.all(tasks);
-    setCloning(null);
-
-    const erreurs = results.filter((r) => r.error);
-    if (erreurs.length > 0) {
-      setCloneMessage(
-        `${t.projets.erreurs} ${erreurs.map((r) => `${r.table} — ${r.error}`).join(" · ")}`
-      );
-      return;
-    }
-
-    setCloneMessage(
-      `${t.projets.resultatCopie} ${results.map((r) => `${r.table} (${r.count})`).join(", ")}.`
-    );
-  }
 
   async function toggleAssignment(projectId: string, profileId: string, assigned: boolean) {
     setLinkError(null);
@@ -241,7 +174,6 @@ export default function ProjetsPage() {
       </form>
 
       {linkError && <p className="mb-4 text-sm text-accent-red">{linkError}</p>}
-      {cloneMessage && <p className="mb-4 text-sm text-accent-teal">{cloneMessage}</p>}
 
       <div className="max-h-[65vh] overflow-auto rounded-xl border border-border-subtle print:max-h-none print:overflow-visible">
         <table className="min-w-full table-auto text-sm [&_td]:border-r [&_td]:border-border-subtle [&_th]:border-r [&_th]:border-border-subtle [&_tr>*:last-child]:border-r-0">
@@ -333,47 +265,9 @@ export default function ProjetsPage() {
                           <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-text-secondary">
                             {t.projets.amorcerDonnees}
                           </p>
-                          <div className="flex flex-wrap items-end gap-3">
-                            <select
-                              value={sourceProjectId[p.id] ?? ""}
-                              onChange={(e) =>
-                                setSourceProjectId({ ...sourceProjectId, [p.id]: e.target.value })
-                              }
-                              className="rounded-md border border-border-subtle bg-bg-card px-2 py-1.5 text-sm text-text-primary"
-                            >
-                              <option value="">{t.projets.choisirProjetSource}</option>
-                              {projects
-                                .filter((autre) => autre.id !== p.id)
-                                .map((autre) => (
-                                  <option key={autre.id} value={autre.id}>
-                                    {autre.is_template ? "★ " : ""}
-                                    {autre.code_projet} — {autre.nom_projet}
-                                  </option>
-                                ))}
-                            </select>
-                            {[
-                              { key: "chart_of_accounts", label: t.projets.tablePlanComptable },
-                            ].map((tbl) => (
-                              <label
-                                key={tbl.key}
-                                className="flex items-center gap-1.5 text-sm text-text-secondary"
-                              >
-                                <input
-                                  type="checkbox"
-                                  checked={(cloneTables[p.id] ?? new Set()).has(tbl.key)}
-                                  onChange={() => toggleCloneTable(p.id, tbl.key)}
-                                />
-                                {tbl.label}
-                              </label>
-                            ))}
-                            <button
-                              onClick={() => handleCloner(p.id)}
-                              disabled={cloning === p.id}
-                              className="rounded-md bg-accent-teal px-4 py-1.5 text-sm font-medium text-on-accent-light hover:opacity-90 disabled:opacity-60"
-                            >
-                              {cloning === p.id ? t.projets.copie : t.projets.cloner}
-                            </button>
-                          </div>
+                          <p className="text-sm text-text-secondary">
+                            {t.projets.planComptablePartage}
+                          </p>
                         </div>
                       </td>
                     </tr>

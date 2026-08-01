@@ -8,7 +8,8 @@ import { FormField, fieldControlClass } from "@/components/ui/FormField";
 import { MiniTableHeader } from "@/components/ui/MiniTableHeader";
 import { PrimaryButton } from "@/components/ui/PrimaryButton";
 import { PersonnelRepartitionModal } from "@/components/PersonnelRepartitionModal";
-import type { ChartOfAccount, Personnel, Zone } from "@/lib/types";
+import { chargerComptesEffectifs, type CompteEffectif } from "@/lib/comptes-projet";
+import type { Personnel, Zone } from "@/lib/types";
 
 const emptyForm = {
   matricule: "",
@@ -38,7 +39,7 @@ export default function PersonnelPage() {
   const { profile, project } = useAuth();
   const { t } = useLanguage();
   const [personnel, setPersonnel] = useState<Personnel[]>([]);
-  const [comptes, setComptes] = useState<ChartOfAccount[]>([]);
+  const [comptes, setComptes] = useState<CompteEffectif[]>([]);
   const [zones, setZones] = useState<Zone[]>([]);
   const [loading, setLoading] = useState(true);
   const [editingId, setEditingId] = useState<number | null>(null);
@@ -64,13 +65,9 @@ export default function PersonnelPage() {
   useEffect(() => {
     loadPersonnel();
     if (project) {
-      supabase
-        .from("chart_of_accounts")
-        .select("*")
-        .eq("project_id", project.id)
-        .eq("compte_tiers", true)
-        .order("ccompte")
-        .then(({ data }) => setComptes((data as ChartOfAccount[]) ?? []));
+      chargerComptesEffectifs(project).then((list) =>
+        setComptes(list.filter((c) => c.actif && c.compte_tiers))
+      );
 
       supabase
         .from("zones")

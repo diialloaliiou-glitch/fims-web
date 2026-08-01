@@ -8,6 +8,7 @@ import { ActionCard } from "@/components/ui/ActionCard";
 import { StatCard } from "@/components/ui/StatCard";
 import { MiniTableHeader } from "@/components/ui/MiniTableHeader";
 import { scopeToProjectSpending } from "@/lib/project-scope";
+import { chargerComptesEffectifs } from "@/lib/comptes-projet";
 import { niveauTaux } from "@/lib/taux-couleur";
 import { hasRole } from "@/lib/roles";
 import type { BudgetLine, JournalEntry } from "@/lib/types";
@@ -104,12 +105,8 @@ export default function DashboardPage() {
         setSoldeTresorerie(solde);
 
         const codes = Array.from(parCompte.keys());
-        const { data: coa } = await supabase
-          .from("chart_of_accounts")
-          .select("ccompte, libelle")
-          .eq("project_id", project.id)
-          .in("ccompte", codes);
-        const libelleParCode = new Map((coa ?? []).map((c) => [c.ccompte, c.libelle]));
+        const comptes = await chargerComptesEffectifs(project);
+        const libelleParCode = new Map(comptes.map((c) => [c.ccompte, c.libelle]));
         setSoldeParCompte(
           codes
             .sort()

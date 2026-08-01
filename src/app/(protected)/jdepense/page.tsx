@@ -5,10 +5,11 @@ import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/lib/auth-context";
 import { useLanguage } from "@/lib/language-context";
 import { periodeCouranteFermee } from "@/lib/period-closure";
+import { chargerComptesEffectifs, type CompteEffectif } from "@/lib/comptes-projet";
 import { FormField, fieldControlClass } from "@/components/ui/FormField";
 import { MiniTableHeader } from "@/components/ui/MiniTableHeader";
 import { PrimaryButton } from "@/components/ui/PrimaryButton";
-import type { BudgetLine, ChartOfAccount, JournalEntry, ThirdParty, Zone } from "@/lib/types";
+import type { BudgetLine, JournalEntry, ThirdParty, Zone } from "@/lib/types";
 
 const JOURNAUX = ["AC", "BQ", "OD", "SA"];
 const TYPES_OPERATION = [
@@ -76,7 +77,7 @@ export default function JdepensePage() {
   const { profile, project } = useAuth();
   const { t } = useLanguage();
 
-  const [accounts, setAccounts] = useState<ChartOfAccount[]>([]);
+  const [accounts, setAccounts] = useState<CompteEffectif[]>([]);
   const [thirdParties, setThirdParties] = useState<ThirdParty[]>([]);
   const [zones, setZones] = useState<Zone[]>([]);
   const [budgetLines, setBudgetLines] = useState<BudgetLine[]>([]);
@@ -144,12 +145,10 @@ export default function JdepensePage() {
 
   useEffect(() => {
     if (!project) return;
-    supabase
-      .from("chart_of_accounts")
-      .select("*")
-      .eq("project_id", project.id)
-      .order("ccompte")
-      .then(({ data }) => setAccounts((data as ChartOfAccount[]) ?? []));
+    // Liste complete (pas filtree sur actif) : le filtre par compte et le
+    // datalist d'edition doivent aussi couvrir les comptes desactives d'un
+    // ecriture historique.
+    chargerComptesEffectifs(project).then((list) => setAccounts(list));
 
     supabase
       .from("third_parties")

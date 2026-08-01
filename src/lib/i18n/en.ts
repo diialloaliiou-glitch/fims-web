@@ -728,7 +728,9 @@ export const en: typeof fr = {
     utilisateurs: "user(s)",
     gerer: "manage",
     masquer: "hide",
-    amorcerDonnees: "Bootstrap data (copy from another project)",
+    amorcerDonnees: "Chart of accounts",
+    planComptablePartage:
+      "The chart of accounts is automatically shared across all projects in the organization — no copy is needed for this new project.",
     choisirProjetSource: "Choose a source project...",
     tablePlanComptable: "Chart of Accounts",
     cloner: "Clone",

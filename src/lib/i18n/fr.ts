@@ -725,7 +725,9 @@ export const fr = {
     utilisateurs: "utilisateur(s)",
     gerer: "gérer",
     masquer: "masquer",
-    amorcerDonnees: "Amorcer les données (copier depuis un autre projet)",
+    amorcerDonnees: "Plan comptable",
+    planComptablePartage:
+      "Le plan comptable est partagé automatiquement entre tous les projets de l'organisation — aucune copie n'est nécessaire pour ce nouveau projet.",
     choisirProjetSource: "Choisir un projet source...",
     tablePlanComptable: "Plan comptable",
     cloner: "Cloner",

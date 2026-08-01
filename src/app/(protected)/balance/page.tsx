@@ -9,7 +9,8 @@ import { FormField, fieldControlClass } from "@/components/ui/FormField";
 import { MiniTableHeader } from "@/components/ui/MiniTableHeader";
 import { Pill } from "@/components/ui/Pill";
 import { SignatureBlock } from "@/components/ui/SignatureBlock";
-import type { ChartOfAccount, JournalEntry } from "@/lib/types";
+import { chargerComptesEffectifs, type CompteEffectif } from "@/lib/comptes-projet";
+import type { JournalEntry } from "@/lib/types";
 
 function firstOfMonthIso() {
   const d = new Date();
@@ -102,7 +103,7 @@ export default function BalancePage() {
   const [dateDebut, setDateDebut] = useState(firstOfMonthIso());
   const [dateFin, setDateFin] = useState(todayIso());
   const [entries, setEntries] = useState<JournalEntry[]>([]);
-  const [accounts, setAccounts] = useState<ChartOfAccount[]>([]);
+  const [accounts, setAccounts] = useState<CompteEffectif[]>([]);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -111,10 +112,10 @@ export default function BalancePage() {
 
     Promise.all([
       supabase.from("journal_entries").select("*").eq("project_id", project.id),
-      supabase.from("chart_of_accounts").select("*").eq("project_id", project.id),
-    ]).then(([entriesRes, accountsRes]) => {
+      chargerComptesEffectifs(project),
+    ]).then(([entriesRes, comptes]) => {
       setEntries((entriesRes.data as JournalEntry[]) ?? []);
-      setAccounts((accountsRes.data as ChartOfAccount[]) ?? []);
+      setAccounts(comptes);
       setLoading(false);
     });
   }, [project]);

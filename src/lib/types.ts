@@ -50,7 +50,6 @@ export type License = {
 export type ChartOfAccount = {
   id: number;
   organization_id: string;
-  project_id: string;
   compte: string;
   sous_compte: string | null;
   compte_tiers: boolean | null;
@@ -58,6 +57,16 @@ export type ChartOfAccount = {
   s_compte: string | null;
   libelle: string;
   type_compte: string | null;
+};
+
+export type ProjectAccount = {
+  id: number;
+  project_id: string;
+  ccompte: string;
+  actif: boolean;
+  libelle_local: string | null;
+  meta: Record<string, unknown> | null;
+  created_at: string;
 };
 
 export type ThirdParty = {

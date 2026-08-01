@@ -7,6 +7,7 @@ import { useLanguage } from "@/lib/language-context";
 import { FormField, fieldControlClass } from "@/components/ui/FormField";
 import { MiniTableHeader } from "@/components/ui/MiniTableHeader";
 import { PrimaryButton } from "@/components/ui/PrimaryButton";
+import { hasRole } from "@/lib/roles";
 import type { ChartOfAccount } from "@/lib/types";
 
 // Liste exacte de la validation de liste deroulante "TYPE COMPTE" (colonne O
@@ -31,8 +32,9 @@ const emptyForm = {
 };
 
 export default function PlanComptablePage() {
-  const { profile, project } = useAuth();
+  const { profile } = useAuth();
   const { t } = useLanguage();
+  const peutModifier = hasRole(profile?.role, ["ADMIN_N1", "RAF"]);
   const [accounts, setAccounts] = useState<ChartOfAccount[]>([]);
   const [loading, setLoading] = useState(true);
   const [editingId, setEditingId] = useState<number | null>(null);
@@ -42,12 +44,12 @@ export default function PlanComptablePage() {
   const [filter, setFilter] = useState("");
 
   async function loadAccounts() {
-    if (!project) return;
+    if (!profile) return;
     setLoading(true);
     const { data } = await supabase
       .from("chart_of_accounts")
       .select("*")
-      .eq("project_id", project.id)
+      .eq("organization_id", profile.organization_id)
       .order("ccompte");
     setAccounts((data as ChartOfAccount[]) ?? []);
     setLoading(false);
@@ -56,7 +58,7 @@ export default function PlanComptablePage() {
   useEffect(() => {
     loadAccounts();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [project]);
+  }, [profile]);
 
   function startCreate() {
     setEditingId(null);
@@ -83,7 +85,7 @@ export default function PlanComptablePage() {
       setError(t.planComptable.erreurChampsObligatoires);
       return;
     }
-    if (!project || !profile) return;
+    if (!profile || !peutModifier) return;
 
     setSaving(true);
 
@@ -108,7 +110,6 @@ export default function PlanComptablePage() {
       : await supabase.from("chart_of_accounts").insert({
           ...payload,
           organization_id: profile.organization_id,
-          project_id: project.id,
         });
 
     setSaving(false);
@@ -136,7 +137,7 @@ export default function PlanComptablePage() {
         {t.planComptable.titre}
       </h1>
 
-      <form
+      {peutModifier && <form
         onSubmit={handleSubmit}
         className="mb-6 max-w-3xl rounded-xl border border-border-subtle bg-bg-card p-6"
       >
@@ -202,7 +203,7 @@ export default function PlanComptablePage() {
             </button>
           )}
         </div>
-      </form>
+      </form>}
 
       <div className="mb-4 max-w-sm">
         <FormField
@@ -237,12 +238,14 @@ export default function PlanComptablePage() {
                     {a.compte_tiers ? "✓" : ""}
                   </td>
                   <td className="px-3 py-2 text-right">
-                    <button
-                      onClick={() => startEdit(a)}
-                      className="text-accent-blue hover:underline"
-                    >
-                      {t.common.modifier}
-                    </button>
+                    {peutModifier && (
+                      <button
+                        onClick={() => startEdit(a)}
+                        className="text-accent-blue hover:underline"
+                      >
+                        {t.common.modifier}
+                      </button>
+                    )}
                   </td>
                 </tr>
               ))}

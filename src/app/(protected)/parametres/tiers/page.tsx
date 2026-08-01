@@ -7,7 +7,8 @@ import { useLanguage } from "@/lib/language-context";
 import { FormField, fieldControlClass } from "@/components/ui/FormField";
 import { MiniTableHeader } from "@/components/ui/MiniTableHeader";
 import { PrimaryButton } from "@/components/ui/PrimaryButton";
-import type { ChartOfAccount, ThirdParty, Zone } from "@/lib/types";
+import { chargerComptesEffectifs, type CompteEffectif } from "@/lib/comptes-projet";
+import type { ThirdParty, Zone } from "@/lib/types";
 
 // Liste exacte de la validation de liste deroulante "Type" (colonne D de la
 // feuille SUIVI DES TIERS du fichier BASE Excel).
@@ -27,7 +28,7 @@ export default function TiersPage() {
   const { t } = useLanguage();
   const [tiers, setTiers] = useState<ThirdParty[]>([]);
   const [zones, setZones] = useState<Zone[]>([]);
-  const [comptesTiers, setComptesTiers] = useState<ChartOfAccount[]>([]);
+  const [comptesTiers, setComptesTiers] = useState<CompteEffectif[]>([]);
   const [loading, setLoading] = useState(true);
   const [editingId, setEditingId] = useState<number | null>(null);
   const [form, setForm] = useState(emptyForm);
@@ -57,13 +58,9 @@ export default function TiersPage() {
         .order("code")
         .then(({ data }) => setZones((data as Zone[]) ?? []));
 
-      supabase
-        .from("chart_of_accounts")
-        .select("*")
-        .eq("project_id", project.id)
-        .eq("compte_tiers", true)
-        .order("ccompte")
-        .then(({ data }) => setComptesTiers((data as ChartOfAccount[]) ?? []));
+      chargerComptesEffectifs(project).then((list) =>
+        setComptesTiers(list.filter((c) => c.actif && c.compte_tiers))
+      );
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [project]);
